@@ -1,11 +1,10 @@
 // Backend test setup for Health Bridge
-import { Test } from '@nestjs/testing';
 
 // Global test configuration
-beforeAll(async () => {
+beforeAll(() => {
   // Set test environment variables
   if (!process.env.NODE_ENV) {
-    (process.env as any).NODE_ENV = 'test';
+    process.env.NODE_ENV = 'test';
   }
   process.env.JWT_SECRET = 'test-jwt-secret';
   process.env.DATABASE_URL = 'mongodb://localhost:27017/health_bridge_test';

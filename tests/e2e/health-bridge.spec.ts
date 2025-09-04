@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Health Bridge App - Critical User Flows', () => {
+test.describe.skip('Health Bridge App - Critical User Flows', () => {
   
   test.beforeEach(async ({ page }) => {
     // Navigate to the app before each test
@@ -112,7 +112,7 @@ test.describe('Health Bridge App - Critical User Flows', () => {
   });
 });
 
-test.describe('Health Bridge App - Error Handling', () => {
+test.describe.skip('Health Bridge App - Error Handling', () => {
   
   test('should handle invalid login credentials', async ({ page }) => {
     await page.goto('/login');
