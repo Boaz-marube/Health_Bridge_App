@@ -38,10 +38,15 @@ jobs:
 
       - name: Lint changed files only
         run: |
-          # Get changed files
-          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | grep -E '\.(ts|tsx|js|jsx)$' | tr '\n' ' ')
-          if [ ! -z "$CHANGED_FILES" ]; then
-            npx eslint $CHANGED_FILES
+          # Check if there are changes in apps/ or packages/
+          CHANGED_APPS=$(git diff --name-only HEAD~1 HEAD | grep -E '^apps/' | head -1)
+          CHANGED_PACKAGES=$(git diff --name-only HEAD~1 HEAD | grep -E '^packages/' | head -1)
+          
+          if [ ! -z "$CHANGED_APPS" ] || [ ! -z "$CHANGED_PACKAGES" ]; then
+            echo "Running lint on changed workspaces..."
+            npm run lint
+          else
+            echo "No changes in apps or packages, skipping lint"
           fi
 
   # Test Coverage Check
