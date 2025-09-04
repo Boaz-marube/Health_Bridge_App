@@ -1,23 +1,32 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/await-thenable */
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { JwtService } from '@nestjs/jwt';
+import { AuthenticationGuard } from '../guards/authentication.guard';
+
+// Mock the AuthService to avoid dependency issues
+const mockAuthService = {
+  doctorSignup: jest.fn(),
+  patientSignup: jest.fn(),
+  login: jest.fn(),
+  getUserProfile: jest.fn(),
+  changePassword: jest.fn(),
+  forgotPassword: jest.fn(),
+  resetPassword: jest.fn(),
+  refreshTokens: jest.fn(),
+};
+
+const mockJwtService = {
+  sign: jest.fn(),
+  verify: jest.fn(),
+};
+
+const mockAuthGuard = {
+  canActivate: jest.fn(() => true),
+};
 
 describe('AuthController', () => {
   let controller: AuthController;
-  let authService: AuthService;
-
-  const mockAuthService = {
-    register: jest.fn(),
-    login: jest.fn(),
-  };
-
-  const mockJwtService = {
-    sign: jest.fn(),
-    verify: jest.fn(),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,84 +35,47 @@ describe('AuthController', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: JwtService, useValue: mockJwtService },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthenticationGuard)
+      .useValue(mockAuthGuard)
+      .compile();
 
     controller = module.get<AuthController>(AuthController);
-    authService = module.get<AuthService>(AuthService);
   });
 
-  describe('register', () => {
-    it('should register a new user', async () => {
-      const registerDto = {
-        email: 'test@example.com',
-        password: 'password123',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'patient',
-      };
+  it('should call doctorSignup', async () => {
+    const doctorData = {
+      name: 'Dr. Smith',
+      email: 'doctor@test.com',
+      password: 'password123',
+      specialization: 'Cardiology',
+      licenseNumber: 'MD123',
+      phoneNumber: '+1234567890',
+    };
 
-      const expectedResult = {
-        access_token: 'jwt-token',
-        user: {
-          id: '123',
-          email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'patient',
-        },
-      };
-
-      mockAuthService.register.mockResolvedValue(expectedResult);
-
-      const result = await controller.register(registerDto);
-
-      expect(mockAuthService.register).toHaveBeenCalledWith(registerDto);
-      expect(result).toEqual(expectedResult);
-    });
+    await controller.doctorSignUp(doctorData);
+    expect(mockAuthService.doctorSignup).toHaveBeenCalledWith(doctorData);
   });
 
-  describe('login', () => {
-    it('should login user with valid credentials', async () => {
-      const loginDto = {
-        email: 'test@example.com',
-        password: 'password123',
-      };
+  it('should call patientSignup', async () => {
+    const patientData = {
+      name: 'Jane Doe',
+      email: 'patient@test.com',
+      password: 'password123',
+      phoneNumber: '+1234567890',
+      dateOfBirth: '1990-01-01',
+      address: '123 Main St',
+    };
 
-      const expectedResult = {
-        access_token: 'jwt-token',
-        user: {
-          id: '123',
-          email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          role: 'patient',
-        },
-      };
-
-      mockAuthService.login.mockResolvedValue(expectedResult);
-
-      const result = await controller.login(loginDto);
-
-      expect(mockAuthService.login).toHaveBeenCalledWith(loginDto);
-      expect(result).toEqual(expectedResult);
-    });
+    await controller.patientSignUp(patientData);
+    expect(mockAuthService.patientSignup).toHaveBeenCalledWith(patientData);
   });
 
-  describe('getProfile', () => {
-    it('should return user profile', async () => {
-      const mockRequest = {
-        user: {
-          email: 'test@example.com',
-          sub: '123',
-          role: 'patient',
-        },
-      };
+  it('should return user profile', async () => {
+    const mockUser = { id: '123', name: 'Dr. Smith', userType: 'doctor' };
+    mockAuthService.getUserProfile.mockResolvedValue(mockUser);
 
-      const result = await controller.getProfile(mockRequest);
-
-      expect(result).toEqual({
-        user: mockRequest.user,
-      });
-    });
+    const result = await controller.getProfile({ userId: '123' });
+    expect(result).toEqual(mockUser);
   });
 });

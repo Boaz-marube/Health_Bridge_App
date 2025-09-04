@@ -1,86 +1,231 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { DoctorSignupDto } from './dtos/doctor-signup.dto';
+import { PatientSignupDto } from './dtos/patient-signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { User } from './schemas/user.schema';
+import mongoose, { Model } from 'mongoose';
+import * as bcrypt from 'bcrypt';
+import { LoginDto } from './dtos/login.dto';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
-import { User } from '../users/user.schema';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { RefreshToken } from './schemas/refresh-token.schema';
+import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
+import { ResetToken } from './schemas/reset-token.schema';
+import { MailService } from 'src/services/mail.service';
+import { RolesService } from 'src/roles/roles.service';
+import { UserType } from './enums/user-type.enum';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(User.name) private UserModel: Model<User>,
+    @InjectModel(RefreshToken.name)
+    private RefreshTokenModel: Model<RefreshToken>,
+    @InjectModel(ResetToken.name)
+    private ResetTokenModel: Model<ResetToken>,
     private jwtService: JwtService,
+    private mailService: MailService,
+    private rolesService: RolesService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
-    const { email, password, firstName, lastName, role } = registerDto;
+  async doctorSignup(signupData: DoctorSignupDto) {
+    const {
+      email,
+      password,
+      name,
+      specialization,
+      licenseNumber,
+      phoneNumber,
+    } = signupData;
 
-    // Check if user exists
-    const existingUser = await this.userModel.findOne({ email });
-    if (existingUser) {
-      throw new Error('User already exists');
+    const emailInUse = await this.UserModel.findOne({ email });
+    if (emailInUse) {
+      throw new BadRequestException('Email already in use');
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    const user = new this.userModel({
+    await this.UserModel.create({
+      name,
       email,
       password: hashedPassword,
-      firstName,
-      lastName,
-      role: role || 'patient',
+      userType: UserType.DOCTOR,
+      specialization,
+      licenseNumber,
+      phoneNumber,
     });
+  }
 
-    await user.save();
+  async patientSignup(signupData: PatientSignupDto) {
+    const { email, password, name, phoneNumber, dateOfBirth, address } =
+      signupData;
 
-    // Generate JWT
-    const payload = { email: user.email, sub: user._id, role: user.role };
-    const token = this.jwtService.sign(payload);
+    const emailInUse = await this.UserModel.findOne({ email });
+    if (emailInUse) {
+      throw new BadRequestException('Email already in use');
+    }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.UserModel.create({
+      name,
+      email,
+      password: hashedPassword,
+      userType: UserType.PATIENT,
+      phoneNumber,
+      dateOfBirth: new Date(dateOfBirth),
+      address,
+    });
+  }
+
+  async login(credentials: LoginDto) {
+    const { email, password } = credentials;
+    //Find if user exists by email
+    const user = await this.UserModel.findOne({ email });
+    if (!user) {
+      throw new UnauthorizedException('Wrong credentials');
+    }
+
+    //Compare entered password with existing password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Wrong credentials');
+    }
+
+    //Generate JWT tokens
+    const tokens = await this.generateUserTokens(user._id);
     return {
-      access_token: token,
-      user: {
-        id: user._id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-      },
+      ...tokens,
+      userId: user._id,
     };
   }
 
-  async login(loginDto: LoginDto) {
-    const { email, password } = loginDto;
-
-    // Find user
-    const user = await this.userModel.findOne({ email });
+  async changePassword(userId, oldPassword: string, newPassword: string) {
+    //Find the user
+    const user = await this.UserModel.findById(userId);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new NotFoundException('User not found...');
     }
 
-    // Check password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+    //Compare the old password with the password in DB
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Wrong credentials');
     }
 
-    // Generate JWT
-    const payload = { email: user.email, sub: user._id, role: user.role };
-    const token = this.jwtService.sign(payload);
+    //Change user's password
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = newHashedPassword;
+    await user.save();
+  }
 
-    return {
-      access_token: token,
-      user: {
-        id: user._id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-      },
+  async forgotPassword(email: string) {
+    //Check that user exists
+    const user = await this.UserModel.findOne({ email });
+
+    if (user) {
+      //If user exists, generate password reset link
+      const expiryDate = new Date();
+      expiryDate.setHours(expiryDate.getHours() + 1);
+
+      const resetToken = nanoid(64);
+      await this.ResetTokenModel.create({
+        token: resetToken,
+        userId: user._id,
+        expiryDate,
+      });
+      //Send the link to the user by email
+      this.mailService.sendPasswordResetEmail(email, resetToken);
+    }
+
+    return { message: 'If this user exists, they will receive an email' };
+  }
+
+  async resetPassword(newPassword: string, resetToken: string) {
+    //Find a valid reset token document
+    const token = await this.ResetTokenModel.findOneAndDelete({
+      token: resetToken,
+      expiryDate: { $gte: new Date() },
+    });
+
+    if (!token) {
+      throw new UnauthorizedException('Invalid link');
+    }
+
+    //Change user password (MAKE SURE TO HASH!!)
+    const user = await this.UserModel.findById(token.userId);
+    if (!user) {
+      throw new InternalServerErrorException();
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+  }
+
+  async refreshTokens(refreshToken: string) {
+    const token = await this.RefreshTokenModel.findOne({
+      token: refreshToken,
+      expiryDate: { $gte: new Date() },
+    });
+
+    if (!token) {
+      throw new UnauthorizedException('Refresh Token is invalid');
+    }
+    return this.generateUserTokens(token.userId);
+  }
+
+  async generateUserTokens(userId) {
+    const user = await this.UserModel.findById(userId);
+    const payload = {
+      userId,
+      userType: user.userType,
+      email: user.email,
     };
+
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '10h' });
+    const refreshToken = uuidv4();
+
+    await this.storeRefreshToken(refreshToken, userId);
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async storeRefreshToken(token: string, userId: string) {
+    // Calculate expiry date 3 days from now
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 3);
+
+    await this.RefreshTokenModel.updateOne(
+      { userId },
+      { $set: { expiryDate, token } },
+      {
+        upsert: true,
+      },
+    );
+  }
+
+  async getUserPermissions(userId: string) {
+    const user = await this.UserModel.findById(userId);
+
+    if (!user) throw new BadRequestException();
+
+    const role = await this.rolesService.getRoleById(user.roleId.toString());
+    return role.permissions;
+  }
+
+  async getUserProfile(userId: string) {
+    const user = await this.UserModel.findById(userId).select('-password');
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }

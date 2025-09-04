@@ -1,21 +1,29 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { SimpleAuthGuard } from './simple-auth.guard';
-import { User, UserSchema } from '../users/user.schema';
+import { AuthController } from './auth.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from './schemas/user.schema';
+import {
+  RefreshToken,
+  RefreshTokenSchema,
+} from './schemas/refresh-token.schema';
+import { ResetToken, ResetTokenSchema } from './schemas/reset-token.schema';
+import { MailService } from 'src/services/mail.service';
+import { RolesModule } from 'src/roles/roles.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'your-secret-key',
-      signOptions: { expiresIn: '24h' },
-    }),
+    RolesModule,
+    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: 'RefreshToken', schema: RefreshTokenSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: 'ResetToken', schema: ResetTokenSchema },
+    ]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, SimpleAuthGuard],
-  exports: [AuthService, SimpleAuthGuard],
+  providers: [AuthService, MailService],
+  exports: [AuthService],
 })
 export class AuthModule {}

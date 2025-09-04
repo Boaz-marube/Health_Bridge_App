@@ -1,123 +1,120 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthService } from './auth.service';
 import { getModelToken } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { AuthService } from './auth.service';
-import { User } from '../users/user.schema';
-import * as bcrypt from 'bcryptjs';
-
-jest.mock('bcryptjs');
+import { UserType } from './enums/user-type.enum';
+import { MailService } from '../services/mail.service';
+import { RolesService } from '../roles/roles.service';
 
 describe('AuthService', () => {
   let service: AuthService;
-  let mockUserModel: jest.Mock;
-  let mockJwtService: { sign: jest.Mock };
-
-  const mockUser = {
-    _id: '123',
-    email: 'test@example.com',
-    password: 'hashedPassword',
-    firstName: 'John',
-    lastName: 'Doe',
-    role: 'patient',
-    save: jest.fn(),
-  };
+  let mockUserModel: any;
+  let mockJwtService: any;
+  let mockMailService: any;
+  let mockRolesService: any;
 
   beforeEach(async () => {
-    mockUserModel = jest.fn().mockImplementation(() => mockUser);
-    (mockUserModel as any).findOne = jest.fn();
+    mockUserModel = {
+      findOne: jest.fn(),
+      create: jest.fn(),
+      findById: jest.fn(),
+    };
 
     mockJwtService = {
-      sign: jest.fn().mockReturnValue('jwt-token'),
+      sign: jest.fn().mockReturnValue('mock-token'),
+    };
+
+    mockMailService = {
+      sendPasswordResetEmail: jest.fn(),
+    };
+
+    mockRolesService = {
+      getRoleById: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        { provide: getModelToken(User.name), useValue: mockUserModel },
+        { provide: getModelToken('User'), useValue: mockUserModel },
+        { provide: getModelToken('RefreshToken'), useValue: {} },
+        { provide: getModelToken('ResetToken'), useValue: {} },
         { provide: JwtService, useValue: mockJwtService },
+        { provide: MailService, useValue: mockMailService },
+        { provide: RolesService, useValue: mockRolesService },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
   });
 
-  describe('register', () => {
-    it('should register a new user', async () => {
-      const registerDto = {
-        email: 'test@example.com',
+  describe('doctorSignup', () => {
+    it('should create a doctor successfully', async () => {
+      mockUserModel.findOne.mockResolvedValue(null);
+      mockUserModel.create.mockResolvedValue({});
+
+      const doctorData = {
+        name: 'Dr. Smith',
+        email: 'doctor@test.com',
         password: 'password123',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'patient',
+        specialization: 'Cardiology',
+        licenseNumber: 'MD123',
+        phoneNumber: '+1234567890',
       };
 
-      (mockUserModel as any).findOne.mockResolvedValue(null);
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
-      mockUser.save.mockResolvedValue(mockUser);
+      await service.doctorSignup(doctorData);
 
-      const result = await service.register(registerDto);
-
-      expect((mockUserModel as any).findOne).toHaveBeenCalledWith({
-        email: registerDto.email,
+      expect(mockUserModel.create).toHaveBeenCalledWith({
+        name: 'Dr. Smith',
+        email: 'doctor@test.com',
+        password: expect.any(String),
+        userType: UserType.DOCTOR,
+        specialization: 'Cardiology',
+        licenseNumber: 'MD123',
+        phoneNumber: '+1234567890',
       });
-      expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
-      expect(mockJwtService.sign).toHaveBeenCalled();
-      expect(result).toHaveProperty('access_token');
-      expect(result).toHaveProperty('user');
     });
 
-    it('should throw error if user already exists', async () => {
-      const registerDto = {
-        email: 'test@example.com',
-        password: 'password123',
-        firstName: 'John',
-        lastName: 'Doe',
-      };
+    it('should throw error if email exists', async () => {
+      mockUserModel.findOne.mockResolvedValue({ email: 'doctor@test.com' });
 
-      (mockUserModel as any).findOne.mockResolvedValue(mockUser);
-
-      await expect(service.register(registerDto)).rejects.toThrow(
-        'User already exists',
-      );
+      await expect(
+        service.doctorSignup({
+          name: 'Dr. Smith',
+          email: 'doctor@test.com',
+          password: 'password123',
+          specialization: 'Cardiology',
+          licenseNumber: 'MD123',
+          phoneNumber: '+1234567890',
+        }),
+      ).rejects.toThrow('Email already in use');
     });
   });
 
-  describe('login', () => {
-    it('should login user with valid credentials', async () => {
-      const loginDto = {
-        email: 'test@example.com',
+  describe('patientSignup', () => {
+    it('should create a patient successfully', async () => {
+      mockUserModel.findOne.mockResolvedValue(null);
+      mockUserModel.create.mockResolvedValue({});
+
+      const patientData = {
+        name: 'Jane Doe',
+        email: 'patient@test.com',
         password: 'password123',
+        phoneNumber: '+1234567890',
+        dateOfBirth: '1990-01-01',
+        address: '123 Main St',
       };
 
-      (mockUserModel as any).findOne.mockResolvedValue(mockUser);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      await service.patientSignup(patientData);
 
-      const result = await service.login(loginDto);
-
-      expect((mockUserModel as any).findOne).toHaveBeenCalledWith({
-        email: loginDto.email,
+      expect(mockUserModel.create).toHaveBeenCalledWith({
+        name: 'Jane Doe',
+        email: 'patient@test.com',
+        password: expect.any(String),
+        userType: UserType.PATIENT,
+        phoneNumber: '+1234567890',
+        dateOfBirth: new Date('1990-01-01'),
+        address: '123 Main St',
       });
-      expect(bcrypt.compare).toHaveBeenCalledWith(
-        loginDto.password,
-        mockUser.password,
-      );
-      expect(result).toHaveProperty('access_token');
-      expect(result).toHaveProperty('user');
-    });
-
-    it('should throw error for invalid credentials', async () => {
-      const loginDto = {
-        email: 'test@example.com',
-        password: 'wrongpassword',
-      };
-
-      (mockUserModel as any).findOne.mockResolvedValue(null);
-
-      await expect(service.login(loginDto)).rejects.toThrow(
-        'Invalid credentials',
-      );
     });
   });
 });
