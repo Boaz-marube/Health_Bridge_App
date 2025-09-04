@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
@@ -9,8 +11,8 @@ jest.mock('bcryptjs');
 
 describe('AuthService', () => {
   let service: AuthService;
-  let mockUserModel: any;
-  let mockJwtService: any;
+  let mockUserModel: jest.Mock;
+  let mockJwtService: { sign: jest.Mock };
 
   const mockUser = {
     _id: '123',
@@ -24,7 +26,7 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     mockUserModel = jest.fn().mockImplementation(() => mockUser);
-    mockUserModel.findOne = jest.fn();
+    (mockUserModel as any).findOne = jest.fn();
 
     mockJwtService = {
       sign: jest.fn().mockReturnValue('jwt-token'),
@@ -51,13 +53,15 @@ describe('AuthService', () => {
         role: 'patient',
       };
 
-      mockUserModel.findOne.mockResolvedValue(null);
+      (mockUserModel as any).findOne.mockResolvedValue(null);
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
       mockUser.save.mockResolvedValue(mockUser);
 
       const result = await service.register(registerDto);
 
-      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: registerDto.email });
+      expect((mockUserModel as any).findOne).toHaveBeenCalledWith({
+        email: registerDto.email,
+      });
       expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
       expect(mockJwtService.sign).toHaveBeenCalled();
       expect(result).toHaveProperty('access_token');
@@ -72,9 +76,11 @@ describe('AuthService', () => {
         lastName: 'Doe',
       };
 
-      mockUserModel.findOne.mockResolvedValue(mockUser);
+      (mockUserModel as any).findOne.mockResolvedValue(mockUser);
 
-      await expect(service.register(registerDto)).rejects.toThrow('User already exists');
+      await expect(service.register(registerDto)).rejects.toThrow(
+        'User already exists',
+      );
     });
   });
 
@@ -85,13 +91,18 @@ describe('AuthService', () => {
         password: 'password123',
       };
 
-      mockUserModel.findOne.mockResolvedValue(mockUser);
+      (mockUserModel as any).findOne.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
       const result = await service.login(loginDto);
 
-      expect(mockUserModel.findOne).toHaveBeenCalledWith({ email: loginDto.email });
-      expect(bcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
+      expect((mockUserModel as any).findOne).toHaveBeenCalledWith({
+        email: loginDto.email,
+      });
+      expect(bcrypt.compare).toHaveBeenCalledWith(
+        loginDto.password,
+        mockUser.password,
+      );
       expect(result).toHaveProperty('access_token');
       expect(result).toHaveProperty('user');
     });
@@ -102,9 +113,11 @@ describe('AuthService', () => {
         password: 'wrongpassword',
       };
 
-      mockUserModel.findOne.mockResolvedValue(null);
+      (mockUserModel as any).findOne.mockResolvedValue(null);
 
-      await expect(service.login(loginDto)).rejects.toThrow('Invalid credentials');
+      await expect(service.login(loginDto)).rejects.toThrow(
+        'Invalid credentials',
+      );
     });
   });
 });

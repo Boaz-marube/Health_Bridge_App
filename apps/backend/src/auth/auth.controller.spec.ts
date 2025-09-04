@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/await-thenable */
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
@@ -6,7 +8,6 @@ import { AuthService } from './auth.service';
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
-  let jwtService: JwtService;
 
   const mockAuthService = {
     register: jest.fn(),
@@ -29,7 +30,6 @@ describe('AuthController', () => {
 
     controller = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
-    jwtService = module.get<JwtService>(JwtService);
   });
 
   describe('register', () => {
@@ -57,7 +57,7 @@ describe('AuthController', () => {
 
       const result = await controller.register(registerDto);
 
-      expect(authService.register).toHaveBeenCalledWith(registerDto);
+      expect(mockAuthService.register).toHaveBeenCalledWith(registerDto);
       expect(result).toEqual(expectedResult);
     });
   });
@@ -84,7 +84,7 @@ describe('AuthController', () => {
 
       const result = await controller.login(loginDto);
 
-      expect(authService.login).toHaveBeenCalledWith(loginDto);
+      expect(mockAuthService.login).toHaveBeenCalledWith(loginDto);
       expect(result).toEqual(expectedResult);
     });
   });
