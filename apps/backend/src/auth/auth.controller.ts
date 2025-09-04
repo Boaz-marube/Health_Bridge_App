@@ -1,43 +1,75 @@
 import {
+  Body,
   Controller,
   Post,
-  Body,
-  Get,
+  Put,
+  Req,
   UseGuards,
-  Request,
-  HttpCode,
-  HttpStatus,
+  Get,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
-import { SimpleAuthGuard } from './simple-auth.guard';
+import { DoctorSignupDto } from './dtos/doctor-signup.dto';
+import { PatientSignupDto } from './dtos/patient-signup.dto';
+import { LoginDto } from './dtos/login.dto';
+import { RefreshTokenDto } from './dtos/refresh-tokens.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import { AuthenticationGuard } from '../guards/authentication.guard';
+import { ForgotPasswordDto } from './dtos/forgot-password.dto';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  @HttpCode(HttpStatus.CREATED) // 201 - appropriate for creating new user
-  async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+  @Post('doctor-signup')
+  async doctorSignUp(@Body() signupData: DoctorSignupDto) {
+    return this.authService.doctorSignup(signupData);
+  }
+
+  @Post('patient-signup')
+  async patientSignUp(@Body() signupData: PatientSignupDto) {
+    return this.authService.patientSignup(signupData);
   }
 
   @Post('login')
-  @HttpCode(HttpStatus.OK) // 200 - appropriate for login
-  async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+  async login(@Body() credentials: LoginDto) {
+    return this.authService.login(credentials);
   }
 
-  @UseGuards(SimpleAuthGuard)
+  @Post('refresh')
+  async refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshTokens(refreshTokenDto.refreshToken);
+  }
+
+  @UseGuards(AuthenticationGuard)
+  @Put('change-password')
+  async changePassword(
+    @Body() changePasswordDto: ChangePasswordDto,
+    @Req() req,
+  ) {
+    return this.authService.changePassword(
+      req.userId,
+      changePasswordDto.oldPassword,
+      changePasswordDto.newPassword,
+    );
+  }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto.email);
+  }
+
+  @Put('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(
+      resetPasswordDto.newPassword,
+      resetPasswordDto.resetToken,
+    );
+  }
+
+  @UseGuards(AuthenticationGuard)
   @Get('profile')
-  getProfile(@Request() req: { user: unknown }) {
-    return {
-      user: req.user,
-    };
+  async getProfile(@Req() req) {
+    return this.authService.getUserProfile(req.userId);
   }
 }
