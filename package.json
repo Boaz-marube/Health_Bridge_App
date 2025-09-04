@@ -10,10 +10,10 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:frontend": "turbo run dev --filter=frontend",
-    "dev:backend": "turbo run dev --filter=backend",
+    "dev:backend": "turbo run dev --filter=auth-backend",
     "build": "turbo run build",
     "build:frontend": "turbo run build --filter=frontend",
-    "build:backend": "turbo run build --filter=backend",
+    "build:backend": "turbo run build --filter=auth-backend",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --passWithNoTests",
@@ -42,5 +42,5 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "npm@10.2.4"
+  "packageManager": "npm@10.9.2"
 }
