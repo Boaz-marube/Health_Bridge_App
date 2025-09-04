@@ -11,7 +11,6 @@ module.exports = {
     '/dist/',
     '/.next/',
     '/coverage/',
-    'apps/backend/src/app.controller.spec.ts',
     'tests/e2e/'
   ],
   collectCoverageFrom: [
@@ -21,5 +20,15 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
-  passWithNoTests: true
+  passWithNoTests: true,
+  transform: {
+    '^.+\\.(t|j)s$': ['ts-jest', {
+      tsconfig: {
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+        useDefineForClassFields: false,
+        esModuleInterop: true
+      }
+    }]
+  }
 };
