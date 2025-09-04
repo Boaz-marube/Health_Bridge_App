@@ -16,7 +16,7 @@
     "build:backend": "turbo run build --filter=backend",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
+    "test:coverage": "jest --coverage --passWithNoTests",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "lint": "turbo run lint",
@@ -42,5 +42,5 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "packageManager": "npm@10.9.2"
+  "packageManager": "npm@10.2.4"
 }

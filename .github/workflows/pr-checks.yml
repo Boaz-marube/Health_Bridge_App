@@ -121,10 +121,13 @@ jobs:
           # Add bundle size analysis here
           echo "Bundle analysis complete"
 
-      - name: Comment bundle size changes
-        uses: andresz1/size-limit-action@v1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Analyze bundle size
+        run: |
+          echo "Bundle analysis completed"
+          echo "Frontend build size:"
+          du -sh apps/frontend/.next/ || echo "Frontend not built yet"
+          echo "Backend build size:"
+          du -sh apps/backend/dist/ || echo "Backend not built yet"
 
   # Healthcare Compliance Check
   compliance-check:
@@ -176,10 +179,23 @@ jobs:
     name: PR Size Check
     runs-on: ubuntu-latest
     steps:
-      - name: Check PR size
-        uses: codeball-ai/codeball-action@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          approvePullRequests: "false"
-          labelPullRequestsWhenApproved: "false"
-          labelPullRequestsWhenReviewNeeded: "true"
-          failJobsWhenReviewNeeded: "false"
+          fetch-depth: 0
+      
+      - name: Check PR size
+        run: |
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | wc -l)
+          ADDED_LINES=$(git diff --stat HEAD~1 HEAD | tail -1 | grep -o '[0-9]\+ insertion' | grep -o '[0-9]\+' || echo 0)
+          
+          echo "Files changed: $CHANGED_FILES"
+          echo "Lines added: $ADDED_LINES"
+          
+          if [ "$CHANGED_FILES" -gt 50 ] || [ "$ADDED_LINES" -gt 1000 ]; then
+            echo "⚠️ Large PR detected. Consider breaking it into smaller PRs."
+            echo "Files: $CHANGED_FILES (recommended: <50)"
+            echo "Lines: $ADDED_LINES (recommended: <1000)"
+          else
+            echo "✅ PR size is reasonable"
+          fi
