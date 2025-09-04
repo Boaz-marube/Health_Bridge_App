@@ -17,8 +17,8 @@ import { RefreshToken } from './schemas/refresh-token.schema';
 import { v4 as uuidv4 } from 'uuid';
 import { nanoid } from 'nanoid';
 import { ResetToken } from './schemas/reset-token.schema';
-import { MailService } from 'src/services/mail.service';
-import { RolesService } from 'src/roles/roles.service';
+import { MailService } from '../services/mail.service';
+import { RolesService } from '../roles/roles.service';
 import { UserType } from './enums/user-type.enum';
 
 @Injectable()
