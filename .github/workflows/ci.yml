@@ -1,10 +1,11 @@
 name: Health Bridge CI (Minimal)
 
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+# Temporarily disabled
+# on:
+#   push:
+#     branches: [main, develop]
+#   pull_request:
+#     branches: [main, develop]
 
 jobs:
   # Essential checks only
