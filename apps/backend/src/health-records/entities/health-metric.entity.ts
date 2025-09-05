@@ -1,12 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
+
+export type HealthMetricDocument = HydratedDocument<HealthMetric>;
 
 @Schema({ timestamps: true })
-export class HealthMetric extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'Patient', required: true })
-  patientId: Types.ObjectId;
+export class HealthMetric {
+  @Prop({ required: true })
+  patientId: string;
 
-  @Prop({ required: true, enum: ['blood_pressure', 'weight', 'temperature', 'heart_rate', 'glucose'] })
+  @Prop({ required: true })
   type: string;
 
   @Prop({ required: true })

@@ -1,15 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { HydratedDocument } from 'mongoose';
+
+export type PatientDocument = HydratedDocument<Patient>;
 
 @Schema({ timestamps: true })
-export class Patient extends Document {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  userId: Types.ObjectId;
+export class Patient {
+  @Prop({ required: true })
+  userId: string;
 
   @Prop({ required: true })
   dateOfBirth: Date;
 
-  @Prop({ required: true, enum: ['male', 'female', 'other'] })
+  @Prop({ required: true })
   gender: string;
 
   @Prop({ required: true })
@@ -21,8 +23,8 @@ export class Patient extends Document {
   @Prop({ required: true })
   emergencyContact: string;
 
-  @Prop({ enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] })
-  bloodType: string;
+  @Prop()
+  bloodType?: string;
 
   @Prop({ type: [String], default: [] })
   allergies: string[];

@@ -1,58 +1,45 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Patient } from './entities/patient.entity';
+import { Model } from 'mongoose';
+import { Patient, PatientDocument } from './entities/patient.entity';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
 
 @Injectable()
 export class PatientsService {
   constructor(
-    @InjectModel(Patient.name) private patientModel: Model<Patient>,
+    @InjectModel(Patient.name) private patientModel: Model<PatientDocument>,
   ) {}
 
-  async create(createPatientDto: CreatePatientDto): Promise<Patient> {
-    const patient = new this.patientModel({
-      ...createPatientDto,
-      userId: new Types.ObjectId(createPatientDto.userId),
-    });
-    return patient.save();
+  async create(createPatientDto: CreatePatientDto) {
+    const createdPatient = new this.patientModel(createPatientDto);
+    return createdPatient.save();
   }
 
-  async findAll(): Promise<Patient[]> {
-    return this.patientModel.find().populate('userId', 'firstName lastName email').exec();
+  async findAll() {
+    return this.patientModel.find().exec();
   }
 
-  async findOne(id: string): Promise<Patient> {
-    const patient = await this.patientModel
-      .findById(id)
-      .populate('userId', 'firstName lastName email')
-      .exec();
-    
+  async findOne(id: string) {
+    const patient = await this.patientModel.findById(id).exec();
     if (!patient) {
       throw new NotFoundException(`Patient with ID ${id} not found`);
     }
     return patient;
   }
 
-  async findByUserId(userId: string): Promise<Patient> {
-    const patient = await this.patientModel
-      .findOne({ userId: new Types.ObjectId(userId) })
-      .populate('userId', 'firstName lastName email')
-      .exec();
-    
+  async findByUserId(userId: string) {
+    const patient = await this.patientModel.findOne({ userId }).exec();
     if (!patient) {
       throw new NotFoundException(`Patient with user ID ${userId} not found`);
     }
     return patient;
   }
 
-  async update(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient> {
+  async update(id: string, updatePatientDto: UpdatePatientDto) {
     const patient = await this.patientModel
       .findByIdAndUpdate(id, updatePatientDto, { new: true })
-      .populate('userId', 'firstName lastName email')
       .exec();
-    
     if (!patient) {
       throw new NotFoundException(`Patient with ID ${id} not found`);
     }
