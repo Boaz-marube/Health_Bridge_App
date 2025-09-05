@@ -9,6 +9,12 @@ import { RolesModule } from './roles/roles.module';
 import { DoctorsModule } from './doctors/doctors.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import config from './config/config';
+import { PatientsModule } from './patients/patients.module';
+import { HealthRecordsModule } from './health-records/health-records.module';
+import * as dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 @Module({
   imports: [
@@ -36,6 +42,8 @@ import config from './config/config';
     RolesModule,
     DoctorsModule,
     AppointmentsModule,
+    PatientsModule,
+    HealthRecordsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
