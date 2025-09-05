@@ -1,0 +1,11 @@
+[project]
+name = "ai-agents-project"
+version = "0.1.0"
+description = "Multi-agent AI system with CrewAI"
+authors = [{ name = "Team 1", email = "senakebede16@email.com" }]
+requires-python = ">=3.10"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+crewai = "*"
+crewai-tools = "*"

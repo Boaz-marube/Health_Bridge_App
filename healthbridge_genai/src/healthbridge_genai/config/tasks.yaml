@@ -1,0 +1,43 @@
+# src/healthbridge/config/tasks.yaml
+
+symptom_check_task:
+  description: >
+    Analyze patient’s reported symptoms and suggest possible conditions.
+  expected_output: >
+    A short list of possible conditions with urgency recommendations.
+  agent: symptom_checker_agent
+
+medical_history_task:
+  description: >
+    Retrieve patient medical history using RAG (Llama 3 + Chroma)
+  expected_output: >
+    Concise, readable answer for patient queries
+  agent: medical_history_agent
+
+appointment_booking_task:
+  description: >
+    Schedule/reschedule patient appointments automatically.
+  expected_output: >
+    Confirmation of scheduled/rescheduled appointments.
+  agent: appointment_scheduler_agent
+
+treatment_guideline_task:
+  description: >
+    Suggest treatment guidelines based on patient history and symptoms.
+  expected_output: >
+    Step-by-step treatment recommendations.
+  agent: treatment_guideline_agent
+
+queue_monitoring_task:
+  description: >
+    Monitor patient queue and generate alerts for priority patients.
+  expected_output: >
+    Real-time queue status report.
+  agent: queue_monitoring_agent
+
+analytics_task:
+  description: >
+    Generate hospital analytics including patient flow, most common conditions, KPIs.
+  expected_output: >
+    Dashboard-ready report for admin review.
+  agent: analytics_agent
