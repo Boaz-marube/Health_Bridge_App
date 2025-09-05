@@ -1,8 +1,8 @@
 export enum Resource {
-  patients = 'patients',
-  appointments = 'appointments',
-  health_records = 'health_records',
-  prescriptions = 'prescriptions',
-  notifications = 'notifications',
-  doctors = 'doctors',
+  PATIENTS = 'patients',
+  APPOINTMENTS = 'appointments',
+  HEALTH_RECORDS = 'health_records',
+  PRESCRIPTIONS = 'prescriptions',
+  NOTIFICATIONS = 'notifications',
+  DOCTORS = 'doctors',
 }

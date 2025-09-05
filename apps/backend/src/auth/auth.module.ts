@@ -8,8 +8,8 @@ import {
   RefreshTokenSchema,
 } from './schemas/refresh-token.schema';
 import { ResetToken, ResetTokenSchema } from './schemas/reset-token.schema';
-import { MailService } from 'src/services/mail.service';
-import { RolesModule } from 'src/roles/roles.module';
+import { MailService } from '../services/mail.service';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
