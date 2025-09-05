@@ -44,11 +44,25 @@ const LoginPage: React.FC = () => {
       });
 
       const data = await response.json();
+      console.log('Login response:', data); // Debug log
 
       if (response.ok) {
-        // Store token and user data
+        // Store token
         localStorage.setItem('token', data.accessToken);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Decode user info from JWT token
+        const tokenPayload = JSON.parse(atob(data.accessToken.split('.')[1]));
+        const user = {
+          id: data.userId,
+          name: tokenPayload.email.split('@')[0], // Use email prefix as name for now
+          email: tokenPayload.email,
+          userType: tokenPayload.userType
+        };
+        
+        localStorage.setItem('user', JSON.stringify(user));
+        
+        console.log('Stored user:', user); // Debug log
+        console.log('Redirecting to dashboard...'); // Debug log
         
         // Redirect to dashboard
         router.push('/dashboard');
