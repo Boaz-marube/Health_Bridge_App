@@ -11,6 +11,9 @@ import { AppointmentsModule } from './appointments/appointments.module';
 import config from './config/config';
 import { PatientsModule } from './patients/patients.module';
 import { HealthRecordsModule } from './health-records/health-records.module';
+import { StaffModule } from './staff/staff.module';
+import { QueueModule } from './queue/queue.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import * as dotenv from 'dotenv';
 
 // Load environment variables
@@ -44,6 +47,9 @@ dotenv.config();
     AppointmentsModule,
     PatientsModule,
     HealthRecordsModule,
+    StaffModule,
+    QueueModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
