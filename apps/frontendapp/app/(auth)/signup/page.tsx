@@ -48,34 +48,65 @@ const SignupPage: React.FC = () => {
         ? 'http://localhost:5002/auth/doctor-signup'
         : 'http://localhost:5002/auth/patient-signup';
 
+      const requestBody = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phoneNumber: formData.phoneNumber,
+        dateOfBirth: formData.dateOfBirth,
+        address: formData.address,
+        ...(formData.userType === 'doctor' && {
+          specialization: 'General Practice', // Default value
+          licenseNumber: 'TBD' // To be updated later
+        })
+      };
+
+      console.log('Signup endpoint:', endpoint); // Debug log
+      console.log('Signup request body:', requestBody); // Debug log
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phoneNumber: formData.phoneNumber,
-          dateOfBirth: formData.dateOfBirth,
-          address: formData.address,
-          ...(formData.userType === 'doctor' && {
-            specialization: 'General Practice', // Default value
-            licenseNumber: 'TBD' // To be updated later
-          })
-        })
+        body: JSON.stringify(requestBody)
       });
 
-      const data = await response.json();
-
+      console.log('Signup response status:', response.status); // Debug log
+      console.log('Signup response headers:', response.headers.get('content-type')); // Debug log
+      
+      const responseText = await response.text();
+      console.log('Signup raw response:', responseText); // Debug log
+      
       if (response.ok) {
+        // Success! Handle empty response or JSON
+        let data = {};
+        if (responseText.trim()) {
+          try {
+            data = JSON.parse(responseText);
+          } catch (parseError) {
+            console.log('Response not JSON, but signup successful');
+          }
+        }
+        
+        console.log('Signup successful!'); // Debug log
         // Redirect to login with success message
         router.push('/login?message=Account created successfully! Please login.');
       } else {
-        setError(data.message || 'Signup failed. Please try again.');
+        // Handle error response
+        let errorMessage = 'Signup failed. Please try again.';
+        if (responseText.trim()) {
+          try {
+            const data = JSON.parse(responseText);
+            errorMessage = data.message || errorMessage;
+          } catch (parseError) {
+            errorMessage = responseText || errorMessage;
+          }
+        }
+        setError(errorMessage);
       }
     } catch (error) {
+      console.log('Signup error:', error); // Debug log
       setError('Network error. Please check your connection.');
     } finally {
       setLoading(false);
