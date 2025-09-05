@@ -1,0 +1,50 @@
+import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req, Query } from '@nestjs/common';
+import { AppointmentsService } from './appointments.service';
+import { CreateAppointmentDto } from './dtos/create-appointment.dto';
+import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
+import { AuthenticationGuard } from '../guards/authentication.guard';
+
+@Controller('appointments')
+@UseGuards(AuthenticationGuard)
+export class AppointmentsController {
+  constructor(private readonly appointmentsService: AppointmentsService) {}
+
+  @Post()
+  async createAppointment(
+    @Body() createAppointmentDto: CreateAppointmentDto,
+    @Req() req,
+  ) {
+    return this.appointmentsService.create(req.userId, createAppointmentDto);
+  }
+
+  @Get()
+  async getUserAppointments(@Req() req) {
+    return this.appointmentsService.findUserAppointments(req.userId, req.userType);
+  }
+
+  @Get('available-slots/:doctorId')
+  async getAvailableSlots(
+    @Param('doctorId') doctorId: string,
+    @Query('date') date: string,
+  ) {
+    return this.appointmentsService.getAvailableSlots(doctorId, date);
+  }
+
+  @Get(':id')
+  async getAppointmentById(@Param('id') id: string) {
+    return this.appointmentsService.findById(id);
+  }
+
+  @Put(':id')
+  async updateAppointment(
+    @Param('id') id: string,
+    @Body() updateAppointmentDto: UpdateAppointmentDto,
+  ) {
+    return this.appointmentsService.update(id, updateAppointmentDto);
+  }
+
+  @Delete(':id')
+  async cancelAppointment(@Param('id') id: string) {
+    return this.appointmentsService.cancel(id);
+  }
+}
