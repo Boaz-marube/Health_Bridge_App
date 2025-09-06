@@ -129,8 +129,19 @@ export default function StaffAppointmentsPage() {
     }
   }
 
+  const handleConfirmAppointment = async (appointmentId: string) => {
+    try {
+      await staffService.confirmAppointment(appointmentId)
+      await fetchData()
+    } catch (error) {
+      console.error('Failed to confirm appointment:', error)
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'confirmed': return 'bg-blue-100 text-blue-800'
       case 'scheduled': return 'bg-blue-100 text-blue-800'
       case 'completed': return 'bg-green-100 text-green-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
@@ -202,6 +213,8 @@ export default function StaffAppointmentsPage() {
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             <option value="all">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
             <option value="scheduled">Scheduled</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
@@ -254,8 +267,25 @@ export default function StaffAppointmentsPage() {
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  {appointment.status !== 'cancelled' ? (
+                  {appointment.status === 'cancelled' ? (
+                    <button 
+                      onClick={() => handleDeleteAppointment(appointment._id)}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      <span>Delete</span>
+                    </button>
+                  ) : (
                     <>
+                      {appointment.status === 'pending' && (
+                        <button 
+                          onClick={() => handleConfirmAppointment(appointment._id)}
+                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                        >
+                          <span>✓</span>
+                          <span>Confirm</span>
+                        </button>
+                      )}
                       <button 
                         onClick={() => handleEditAppointment(appointment)}
                         className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
@@ -271,14 +301,6 @@ export default function StaffAppointmentsPage() {
                         <span>Cancel</span>
                       </button>
                     </>
-                  ) : (
-                    <button 
-                      onClick={() => handleDeleteAppointment(appointment._id)}
-                      className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                      <span>Delete</span>
-                    </button>
                   )}
                 </div>
               </div>

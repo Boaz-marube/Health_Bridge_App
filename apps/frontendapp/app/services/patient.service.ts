@@ -70,7 +70,7 @@ export class PatientService {
 
   async getAppointments(patientId: string) {
     try {
-      return await apiService.get(`/appointments/patient/${patientId}`);
+      return await apiService.get('/appointments');
     } catch (error) {
       return [];
     }
@@ -86,6 +86,14 @@ export class PatientService {
 
   async bookAppointment(appointmentData: any) {
     return apiService.post('/appointments', appointmentData);
+  }
+
+  async rescheduleAppointment(appointmentId: string, rescheduleData: { appointmentDate: string; appointmentTime: string }) {
+    return apiService.put(`/appointments/${appointmentId}/reschedule`, rescheduleData);
+  }
+
+  async cancelAppointment(appointmentId: string) {
+    return apiService.delete(`/appointments/${appointmentId}`);
   }
 
   async getQueueStatus(patientId: string) {

@@ -17,6 +17,7 @@ export class AppointmentsService {
   async create(userId: string, createAppointmentDto: CreateAppointmentDto) {
     // Use patientId from DTO if provided (for staff bookings), otherwise use userId (for patient bookings)
     const patientId = createAppointmentDto.patientId || userId;
+    const isStaffBooking = !!createAppointmentDto.patientId;
     
     // Check for conflicts
     const existingAppointment = await this.appointmentModel.findOne({
@@ -30,6 +31,9 @@ export class AppointmentsService {
       throw new BadRequestException('Time slot already booked');
     }
 
+    // Set status based on who is booking
+    const defaultStatus = isStaffBooking ? AppointmentStatus.CONFIRMED : AppointmentStatus.PENDING;
+
     const appointment = new this.appointmentModel({
       patientId,
       doctorId: createAppointmentDto.doctorId,
@@ -37,7 +41,7 @@ export class AppointmentsService {
       appointmentTime: createAppointmentDto.appointmentTime,
       appointmentType: createAppointmentDto.appointmentType,
       notes: createAppointmentDto.notes,
-      status: createAppointmentDto.status || AppointmentStatus.SCHEDULED,
+      status: createAppointmentDto.status || defaultStatus,
     });
 
     return appointment.save();
@@ -85,6 +89,26 @@ export class AppointmentsService {
 
   async delete(id: string) {
     return this.appointmentModel.findByIdAndDelete(id);
+  }
+
+  async confirm(id: string) {
+    return this.appointmentModel.findByIdAndUpdate(
+      id,
+      { status: AppointmentStatus.CONFIRMED },
+      { new: true }
+    );
+  }
+
+  async reschedule(id: string, newDate: string, newTime: string) {
+    return this.appointmentModel.findByIdAndUpdate(
+      id,
+      { 
+        appointmentDate: new Date(newDate),
+        appointmentTime: newTime,
+        status: AppointmentStatus.PENDING 
+      },
+      { new: true }
+    );
   }
 
   async getAvailableSlots(doctorId: string, date: string) {

@@ -52,4 +52,17 @@ export class AppointmentsController {
   async deleteAppointment(@Param('id') id: string) {
     return this.appointmentsService.delete(id);
   }
+
+  @Put(':id/confirm')
+  async confirmAppointment(@Param('id') id: string) {
+    return this.appointmentsService.confirm(id);
+  }
+
+  @Put(':id/reschedule')
+  async rescheduleAppointment(
+    @Param('id') id: string,
+    @Body() rescheduleData: { appointmentDate: string; appointmentTime: string }
+  ) {
+    return this.appointmentsService.reschedule(id, rescheduleData.appointmentDate, rescheduleData.appointmentTime);
+  }
 }
