@@ -14,16 +14,13 @@ export class Appointment extends Document {
   appointmentDate: Date;
 
   @Prop({ required: true })
-  startTime: string;
-
-  @Prop({ required: true })
-  endTime: string;
+  appointmentTime: string;
 
   @Prop({ required: true, enum: AppointmentStatus, default: AppointmentStatus.SCHEDULED })
   status: AppointmentStatus;
 
   @Prop({ required: true })
-  reason: string;
+  appointmentType: string;
 
   @Prop()
   notes: string;

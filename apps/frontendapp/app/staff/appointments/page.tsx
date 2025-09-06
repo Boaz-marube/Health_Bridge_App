@@ -39,6 +39,10 @@ export default function StaffAppointmentsPage() {
     type: 'consultation',
     notes: ''
   })
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
+  const [showEdit, setShowEdit] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const appointmentsPerPage = 7
 
   useEffect(() => {
     fetchData()
@@ -60,20 +64,68 @@ export default function StaffAppointmentsPage() {
     if (!bookingData.patientId || !bookingData.doctorId || !bookingData.date || !bookingData.time) return
 
     try {
-      await staffService.bookAppointment({
-        patientId: bookingData.patientId,
-        doctorId: bookingData.doctorId,
-        appointmentDate: bookingData.date,
-        appointmentTime: bookingData.time,
-        appointmentType: bookingData.type,
-        notes: bookingData.notes
-      })
+      if (editingAppointment) {
+        await staffService.updateAppointment(editingAppointment._id, {
+          patientId: bookingData.patientId,
+          doctorId: bookingData.doctorId,
+          appointmentDate: bookingData.date,
+          appointmentTime: bookingData.time,
+          appointmentType: bookingData.type,
+          notes: bookingData.notes
+        })
+      } else {
+        await staffService.bookAppointment({
+          patientId: bookingData.patientId,
+          doctorId: bookingData.doctorId,
+          appointmentDate: bookingData.date,
+          appointmentTime: bookingData.time,
+          appointmentType: bookingData.type,
+          notes: bookingData.notes
+        })
+      }
       
       await fetchData()
       setShowBooking(false)
+      setShowEdit(false)
+      setEditingAppointment(null)
       setBookingData({ patientId: '', doctorId: '', date: '', time: '', type: 'consultation', notes: '' })
     } catch (error) {
-      console.error('Failed to book appointment:', error)
+      console.error('Failed to save appointment:', error)
+    }
+  }
+
+  const handleEditAppointment = (appointment: Appointment) => {
+    setEditingAppointment(appointment)
+    setBookingData({
+      patientId: appointment.patientId._id,
+      doctorId: appointment.doctorId._id,
+      date: new Date(appointment.appointmentDate).toISOString().split('T')[0],
+      time: appointment.appointmentTime,
+      type: appointment.appointmentType,
+      notes: appointment.notes || ''
+    })
+    setShowEdit(true)
+  }
+
+  const handleCancelAppointment = async (appointmentId: string) => {
+    if (!confirm('Are you sure you want to cancel this appointment?')) return
+    
+    try {
+      await staffService.cancelAppointment(appointmentId)
+      await fetchData()
+    } catch (error) {
+      console.error('Failed to cancel appointment:', error)
+    }
+  }
+
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    if (!confirm('Are you sure you want to permanently delete this appointment?')) return
+    
+    try {
+      await staffService.deleteAppointment(appointmentId)
+      await fetchData()
+    } catch (error) {
+      console.error('Failed to delete appointment:', error)
     }
   }
 
@@ -93,6 +145,11 @@ export default function StaffAppointmentsPage() {
     const matchesStatus = filterStatus === 'all' || appointment.status === filterStatus
     return matchesSearch && matchesStatus
   })
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAppointments.length / appointmentsPerPage)
+  const startIndex = (currentPage - 1) * appointmentsPerPage
+  const paginatedAppointments = filteredAppointments.slice(startIndex, startIndex + appointmentsPerPage)
 
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -162,7 +219,7 @@ export default function StaffAppointmentsPage() {
             <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filters</p>
           </div>
         ) : (
-          filteredAppointments.map((appointment) => (
+          paginatedAppointments.map((appointment) => (
             <div key={appointment._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-2">
@@ -187,11 +244,7 @@ export default function StaffAppointmentsPage() {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-4 w-4" />
-                      <span>{new Date(appointment.appointmentTime).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })}</span>
+                      <span>{appointment.appointmentTime}</span>
                     </div>
                   </div>
                   {appointment.notes && (
@@ -201,14 +254,32 @@ export default function StaffAppointmentsPage() {
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1">
-                    <Edit className="h-3 w-3" />
-                    <span>Edit</span>
-                  </button>
-                  <button className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1">
-                    <Trash2 className="h-3 w-3" />
-                    <span>Cancel</span>
-                  </button>
+                  {appointment.status !== 'cancelled' ? (
+                    <>
+                      <button 
+                        onClick={() => handleEditAppointment(appointment)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                      >
+                        <Edit className="h-3 w-3" />
+                        <span>Edit</span>
+                      </button>
+                      <button 
+                        onClick={() => handleCancelAppointment(appointment._id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        <span>Cancel</span>
+                      </button>
+                    </>
+                  ) : (
+                    <button 
+                      onClick={() => handleDeleteAppointment(appointment._id)}
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      <span>Delete</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -216,12 +287,42 @@ export default function StaffAppointmentsPage() {
         )}
       </div>
 
-      {/* Booking Modal */}
-      {showBooking && (
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
+            Showing {startIndex + 1} to {Math.min(startIndex + appointmentsPerPage, filteredAppointments.length)} of {filteredAppointments.length} appointments
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Previous
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Booking/Edit Modal */}
+      {(showBooking || showEdit) && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Book New Appointment</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {editingAppointment ? 'Edit Appointment' : 'Book New Appointment'}
+              </h2>
             </div>
             
             <div className="p-6 space-y-4">
@@ -333,7 +434,12 @@ export default function StaffAppointmentsPage() {
 
             <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex space-x-3">
               <button
-                onClick={() => setShowBooking(false)}
+                onClick={() => {
+                  setShowBooking(false)
+                  setShowEdit(false)
+                  setEditingAppointment(null)
+                  setBookingData({ patientId: '', doctorId: '', date: '', time: '', type: 'consultation', notes: '' })
+                }}
                 className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 Cancel
@@ -343,7 +449,7 @@ export default function StaffAppointmentsPage() {
                 disabled={!bookingData.patientId || !bookingData.doctorId || !bookingData.date || !bookingData.time}
                 className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white py-2 rounded-lg"
               >
-                Book Appointment
+                {editingAppointment ? 'Update Appointment' : 'Book Appointment'}
               </button>
             </div>
           </div>

@@ -3,19 +3,19 @@ import { AppointmentStatus } from '../enums/appointment-status.enum';
 
 export class CreateAppointmentDto {
   @IsString()
+  patientId: string;
+
+  @IsString()
   doctorId: string;
 
   @IsDateString()
   appointmentDate: string;
 
   @IsString()
-  startTime: string;
+  appointmentTime: string;
 
   @IsString()
-  endTime: string;
-
-  @IsString()
-  reason: string;
+  appointmentType: string;
 
   @IsOptional()
   @IsString()

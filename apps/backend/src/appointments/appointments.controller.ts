@@ -47,4 +47,9 @@ export class AppointmentsController {
   async cancelAppointment(@Param('id') id: string) {
     return this.appointmentsService.cancel(id);
   }
+
+  @Delete(':id/permanent')
+  async deleteAppointment(@Param('id') id: string) {
+    return this.appointmentsService.delete(id);
+  }
 }

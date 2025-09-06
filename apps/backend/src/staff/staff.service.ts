@@ -3,11 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Staff, StaffDocument } from './entities/staff.entity';
 import { CreateStaffDto, UpdateStaffDto } from './dto/create-staff.dto';
+import { AppointmentsService } from '../appointments/appointments.service';
 
 @Injectable()
 export class StaffService {
   constructor(
     @InjectModel(Staff.name) private staffModel: Model<StaffDocument>,
+    private appointmentsService: AppointmentsService,
   ) {}
 
   async create(createStaffDto: CreateStaffDto) {
@@ -66,15 +68,15 @@ export class StaffService {
   // Dashboard data for staff
   async getDashboardData(staffId: string) {
     const staff = await this.findOne(staffId);
+    const todayAppointmentsCount = await this.appointmentsService.getTodaysAppointmentsCount();
     
-    // This would integrate with other modules
     return {
       staff,
-      todayAppointments: [], // From appointments module
-      queueStatus: [], // From queue service
-      notifications: [], // From notifications service
+      todayAppointments: todayAppointmentsCount,
+      queueStatus: [],
+      notifications: [],
       stats: {
-        totalAppointments: 0,
+        totalAppointments: todayAppointmentsCount,
         waitingPatients: 0,
         completedToday: 0,
         pendingNotifications: 0,
