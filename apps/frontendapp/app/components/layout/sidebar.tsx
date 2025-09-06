@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
+import Link from "next/link"
 import { doctorService } from '@/app/services/doctor.service'
+import { patientService } from '@/app/services/patient.service'
+import { formatPatientName, formatDoctorName } from '@/app/lib/name-utils'
 import {
   Calendar,
   Users,
@@ -36,6 +39,7 @@ interface SidebarProps {
 export function Sidebar({ userType }: SidebarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [doctorProfile, setDoctorProfile] = useState<any>(null)
+  const [patientProfile, setPatientProfile] = useState<any>(null)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -46,9 +50,11 @@ export function Sidebar({ userType }: SidebarProps) {
         const parsedUser = JSON.parse(userData)
         setUser(parsedUser)
         
-        // Fetch doctor profile if user is a doctor
+        // Fetch profile based on user type
         if (parsedUser.userType === 'doctor') {
           fetchDoctorProfile(parsedUser.id)
+        } else if (parsedUser.userType === 'patient') {
+          fetchPatientProfile(parsedUser.id)
         }
       } catch (error) {
         console.error('Failed to parse user data:', error)
@@ -63,25 +69,32 @@ export function Sidebar({ userType }: SidebarProps) {
     }
   }
 
+  const fetchPatientProfile = async (patientId: string) => {
+    const profile = await patientService.getProfile(patientId)
+    if (profile) {
+      setPatientProfile(profile)
+    }
+  }
+
   const getMenuItems = () => {
     switch (userType) {
       case "patient":
         return [
-          { id: "dashboard", label: "Dashboard", icon: Home, path: "/dashboard" },
-          { id: "appointments", label: "Appointments", icon: Calendar, path: "/appointments" },
-          { id: "queue", label: "Queue Status", icon: Users, path: "/queue" },
-          { id: "medical-records", label: "Medical Records", icon: FileText, path: "/health-records" },
-          { id: "medications", label: "Medications", icon: Pill, path: "/medications" },
-          { id: "wellness", label: "Wellness Tips", icon: Heart, path: "/wellness" },
+          { id: "dashboard", label: "Dashboard", icon: Home, path: "/patient/dashboard" },
+          { id: "appointments", label: "Appointments", icon: Calendar, path: "/patient/appointments" },
+          { id: "queue", label: "Queue Status", icon: Users, path: "/patient/queue" },
+          { id: "medical-records", label: "Medical History", icon: FileText, path: "/patient/medical-history" },
+          { id: "medications", label: "Medications", icon: Pill, path: "/patient/medications" },
+          { id: "wellness", label: "Wellness Tips", icon: Heart, path: "/patient/wellness" },
         ]
       case "doctor":
         return [
-          { id: "dashboard", label: "Dashboard", icon: Home, path: "/dashboard" },
-          { id: "patients", label: "Patients", icon: User, path: "/dashboard/patients" },
-          { id: "queue", label: "Queue", icon: Users, path: "/dashboard/queue" },
-          { id: "appointments", label: "Appointments", icon: Calendar, path: "/dashboard/appointments" },
-          { id: "records", label: "Medical Records", icon: FileText, path: "/dashboard/records" },
-          { id: "prescriptions", label: "Prescriptions", icon: Pill, path: "/dashboard/prescriptions" },
+          { id: "dashboard", label: "Dashboard", icon: Home, path: "/doctor/dashboard" },
+          { id: "patients", label: "Patients", icon: User, path: "/doctor/patients" },
+          { id: "queue", label: "Queue", icon: Users, path: "/doctor/queue" },
+          { id: "appointments", label: "Appointments", icon: Calendar, path: "/doctor/appointments" },
+          { id: "records", label: "Medical Records", icon: FileText, path: "/doctor/records" },
+          { id: "prescriptions", label: "Prescriptions", icon: Pill, path: "/doctor/prescriptions" },
         ]
       case "staff":
         return [
@@ -99,11 +112,7 @@ export function Sidebar({ userType }: SidebarProps) {
 
   const menuItems = getMenuItems()
 
-  const handleNavigation = (item: any) => {
-    if (item.path) {
-      router.push(item.path)
-    }
-  }
+
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -114,21 +123,17 @@ export function Sidebar({ userType }: SidebarProps) {
   const getUserInfo = () => {
     switch (userType) {
       case "patient":
-        return { name: user?.name || 'Loading...', icon: User }
+        const patientName = patientProfile?.name || user?.name || 'Loading...'
+        if (patientName === 'Loading...') {
+          return { name: patientName, icon: User }
+        }
+        return { name: formatPatientName(patientName), icon: User }
       case "doctor":
         const doctorName = doctorProfile?.name || user?.name || 'Loading...'
         if (doctorName === 'Loading...') {
           return { name: doctorName, icon: Stethoscope }
         }
-        // If name already starts with Dr., return as is
-        if (doctorName.startsWith('Dr.')) {
-          return { name: doctorName, icon: Stethoscope }
-        }
-        // Otherwise, extract first name and add Dr. prefix
-        const firstName = doctorName.split(/[0-9@._-]/)[0]
-        const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
-        const displayName = `Dr. ${capitalizedName}`
-        return { name: displayName, icon: Stethoscope }
+        return { name: formatDoctorName(doctorName), icon: Stethoscope }
       case "staff":
         return { name: user?.name || 'Loading...', icon: ClipboardList }
       default:
@@ -162,18 +167,18 @@ export function Sidebar({ userType }: SidebarProps) {
           const Icon = item.icon
           const isActive = pathname === item.path
           return (
-            <button
+            <Link
               key={item.id}
+              href={item.path}
               className={`w-full flex items-center justify-start px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-blue-500 text-white"
                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               }`}
-              onClick={() => handleNavigation(item)}
             >
               <Icon className="h-4 w-4 mr-3" />
               {item.label}
-            </button>
+            </Link>
           )
         })}
       </nav>
