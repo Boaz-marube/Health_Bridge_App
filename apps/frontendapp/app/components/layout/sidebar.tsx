@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { doctorService } from '@/app/services/doctor.service'
 import { patientService } from '@/app/services/patient.service'
+import { staffService } from '@/app/services/staff.service'
 import { formatPatientName, formatDoctorName } from '@/app/lib/name-utils'
 import {
   Calendar,
@@ -40,6 +41,7 @@ export function Sidebar({ userType }: SidebarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [doctorProfile, setDoctorProfile] = useState<any>(null)
   const [patientProfile, setPatientProfile] = useState<any>(null)
+  const [staffProfile, setStaffProfile] = useState<any>(null)
   const router = useRouter()
   const pathname = usePathname()
 
@@ -55,6 +57,8 @@ export function Sidebar({ userType }: SidebarProps) {
           fetchDoctorProfile(parsedUser.id)
         } else if (parsedUser.userType === 'patient') {
           fetchPatientProfile(parsedUser.id)
+        } else if (parsedUser.userType === 'staff') {
+          fetchStaffProfile(parsedUser.id)
         }
       } catch (error) {
         console.error('Failed to parse user data:', error)
@@ -73,6 +77,13 @@ export function Sidebar({ userType }: SidebarProps) {
     const profile = await patientService.getProfile(patientId)
     if (profile) {
       setPatientProfile(profile)
+    }
+  }
+
+  const fetchStaffProfile = async (staffId: string) => {
+    const profile = await staffService.getProfile(staffId)
+    if (profile) {
+      setStaffProfile(profile)
     }
   }
 
@@ -98,12 +109,12 @@ export function Sidebar({ userType }: SidebarProps) {
         ]
       case "staff":
         return [
-          { id: "dashboard", label: "Dashboard", icon: Home, path: "/dashboard" },
-          { id: "queue-management", label: "Queue Management", icon: Users, path: "/admin/queue" },
-          { id: "appointments", label: "Appointments", icon: Calendar, path: "/admin/appointments" },
-          { id: "patients", label: "Patient Check-in", icon: UserCheck, path: "/admin/patients" },
-          { id: "notifications", label: "Notifications", icon: Bell, path: "/admin/notifications" },
-          { id: "analytics", label: "Analytics", icon: BarChart3, path: "/admin/analytics" },
+          { id: "dashboard", label: "Dashboard", icon: Home, path: "/staff/dashboard" },
+          { id: "appointments", label: "Appointments", icon: Calendar, path: "/staff/appointments" },
+          { id: "queue", label: "Queue Management", icon: Users, path: "/staff/queue" },
+          { id: "notifications", label: "Notifications", icon: Bell, path: "/staff/notifications" },
+          { id: "messages", label: "Patient Messages", icon: MessageCircle, path: "/staff/messages" },
+          { id: "analytics", label: "Analytics", icon: BarChart3, path: "/staff/analytics" },
         ]
       default:
         return []
@@ -135,7 +146,11 @@ export function Sidebar({ userType }: SidebarProps) {
         }
         return { name: formatDoctorName(doctorName), icon: Stethoscope }
       case "staff":
-        return { name: user?.name || 'Loading...', icon: ClipboardList }
+        const staffName = staffProfile?.name || user?.name || 'Loading...'
+        if (staffName === 'Loading...') {
+          return { name: staffName, icon: ClipboardList }
+        }
+        return { name: formatPatientName(staffName), icon: ClipboardList }
       default:
         return { name: user?.name || 'Loading...', icon: User }
     }

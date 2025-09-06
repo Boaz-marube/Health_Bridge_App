@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
 
 class ApiService {
   private async request(endpoint: string, options: RequestInit = {}) {
@@ -50,6 +50,13 @@ class ApiService {
   async patch(endpoint: string, data?: any) {
     return this.request(endpoint, {
       method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async put(endpoint: string, data?: any) {
+    return this.request(endpoint, {
+      method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
     });
   }
