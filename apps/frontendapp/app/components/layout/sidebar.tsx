@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
+import { doctorService } from '@/app/services/doctor.service'
 import {
   Calendar,
   Users,
@@ -21,14 +22,46 @@ import {
   Activity,
 } from "lucide-react"
 
+interface User {
+  id: string
+  name: string
+  email: string
+  userType: 'patient' | 'doctor' | 'staff'
+}
+
 interface SidebarProps {
   userType: 'patient' | 'doctor' | 'staff'
 }
 
 export function Sidebar({ userType }: SidebarProps) {
-  const [activeSection, setActiveSection] = useState("dashboard")
+  const [user, setUser] = useState<User | null>(null)
+  const [doctorProfile, setDoctorProfile] = useState<any>(null)
   const router = useRouter()
   const pathname = usePathname()
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData)
+        setUser(parsedUser)
+        
+        // Fetch doctor profile if user is a doctor
+        if (parsedUser.userType === 'doctor') {
+          fetchDoctorProfile(parsedUser.id)
+        }
+      } catch (error) {
+        console.error('Failed to parse user data:', error)
+      }
+    }
+  }, [])
+
+  const fetchDoctorProfile = async (doctorId: string) => {
+    const profile = await doctorService.getProfile(doctorId)
+    if (profile) {
+      setDoctorProfile(profile)
+    }
+  }
 
   const getMenuItems = () => {
     switch (userType) {
@@ -44,11 +77,11 @@ export function Sidebar({ userType }: SidebarProps) {
       case "doctor":
         return [
           { id: "dashboard", label: "Dashboard", icon: Home, path: "/dashboard" },
-          { id: "patients", label: "Patients", icon: User, path: "/patients" },
-          { id: "queue", label: "Queue", icon: Users, path: "/queue" },
-          { id: "appointments", label: "Appointments", icon: Calendar, path: "/appointments" },
-          { id: "records", label: "Medical Records", icon: FileText, path: "/records" },
-          { id: "prescriptions", label: "Prescriptions", icon: Pill, path: "/prescriptions" },
+          { id: "patients", label: "Patients", icon: User, path: "/dashboard/patients" },
+          { id: "queue", label: "Queue", icon: Users, path: "/dashboard/queue" },
+          { id: "appointments", label: "Appointments", icon: Calendar, path: "/dashboard/appointments" },
+          { id: "records", label: "Medical Records", icon: FileText, path: "/dashboard/records" },
+          { id: "prescriptions", label: "Prescriptions", icon: Pill, path: "/dashboard/prescriptions" },
         ]
       case "staff":
         return [
@@ -70,7 +103,6 @@ export function Sidebar({ userType }: SidebarProps) {
     if (item.path) {
       router.push(item.path)
     }
-    setActiveSection(item.id)
   }
 
   const handleLogout = () => {
@@ -82,13 +114,25 @@ export function Sidebar({ userType }: SidebarProps) {
   const getUserInfo = () => {
     switch (userType) {
       case "patient":
-        return { name: "John Smith", icon: User }
+        return { name: user?.name || 'Loading...', icon: User }
       case "doctor":
-        return { name: "Dr. Sarah Wilson", icon: Stethoscope }
+        const doctorName = doctorProfile?.name || user?.name || 'Loading...'
+        if (doctorName === 'Loading...') {
+          return { name: doctorName, icon: Stethoscope }
+        }
+        // If name already starts with Dr., return as is
+        if (doctorName.startsWith('Dr.')) {
+          return { name: doctorName, icon: Stethoscope }
+        }
+        // Otherwise, extract first name and add Dr. prefix
+        const firstName = doctorName.split(/[0-9@._-]/)[0]
+        const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
+        const displayName = `Dr. ${capitalizedName}`
+        return { name: displayName, icon: Stethoscope }
       case "staff":
-        return { name: "Admin Staff", icon: ClipboardList }
+        return { name: user?.name || 'Loading...', icon: ClipboardList }
       default:
-        return { name: "User", icon: User }
+        return { name: user?.name || 'Loading...', icon: User }
     }
   }
 
@@ -116,7 +160,7 @@ export function Sidebar({ userType }: SidebarProps) {
       <nav className="flex-1 p-4 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon
-          const isActive = pathname === item.path || activeSection === item.id
+          const isActive = pathname === item.path
           return (
             <button
               key={item.id}
