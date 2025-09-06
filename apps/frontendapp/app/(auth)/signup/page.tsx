@@ -46,10 +46,12 @@ const SignupPage: React.FC = () => {
     }
 
     try {
-      const endpoint =
-        formData.userType === "doctor"
-          ? "http://localhost:5002/auth/doctor-signup"
-          : "http://localhost:5002/auth/patient-signup";
+      let endpoint = "http://localhost:5002/auth/patient-signup";
+      if (formData.userType === "doctor") {
+        endpoint = "http://localhost:5002/auth/doctor-signup";
+      } else if (formData.userType === "staff") {
+        endpoint = "http://localhost:5002/auth/staff-signup";
+      }
 
       const requestBody = {
         name: formData.name,
@@ -61,6 +63,10 @@ const SignupPage: React.FC = () => {
         ...(formData.userType === "doctor" && {
           specialization: "General Practice", // Default value
           licenseNumber: "TBD", // To be updated later
+        }),
+        ...(formData.userType === "staff" && {
+          role: "General Staff", // Default value
+          department: "General", // Default value
         }),
       };
 
@@ -186,6 +192,7 @@ const SignupPage: React.FC = () => {
               >
                 <option value="patient">Patient</option>
                 <option value="doctor">Doctor</option>
+                <option value="staff">Staff</option>
               </select>
             </div>
 

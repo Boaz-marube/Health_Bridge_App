@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { DoctorSignupDto } from './dtos/doctor-signup.dto';
 import { PatientSignupDto } from './dtos/patient-signup.dto';
+import { StaffSignupDto } from './dtos/staff-signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import mongoose, { Model } from 'mongoose';
@@ -81,6 +82,30 @@ export class AuthService {
       phoneNumber,
       dateOfBirth: new Date(dateOfBirth),
       address,
+    });
+  }
+
+  async staffSignup(signupData: StaffSignupDto) {
+    const { email, password, name, phoneNumber, dateOfBirth, address, role, department } =
+      signupData;
+
+    const emailInUse = await this.UserModel.findOne({ email });
+    if (emailInUse) {
+      throw new BadRequestException('Email already in use');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await this.UserModel.create({
+      name,
+      email,
+      password: hashedPassword,
+      userType: UserType.STAFF,
+      phoneNumber,
+      dateOfBirth: new Date(dateOfBirth),
+      address,
+      role,
+      department,
     });
   }
 
