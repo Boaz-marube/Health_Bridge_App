@@ -15,6 +15,7 @@ import { LoginDto } from './dtos/login.dto';
 import { RefreshTokenDto } from './dtos/refresh-tokens.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { AuthenticationGuard } from '../guards/authentication.guard';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 
@@ -77,5 +78,20 @@ export class AuthController {
   @Get('profile')
   async getProfile(@Req() req) {
     return this.authService.getUserProfile(req.userId);
+  }
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth(@Req() req) {
+    // Guard redirects to Google
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(@Req() req) {
+    const result = req.user;
+    // Redirect to patient dashboard with authentication data
+    const redirectUrl = `http://localhost:3000/auth/google/success?token=${result.accessToken}&refreshToken=${result.refreshToken}&userId=${result.userId}`;
+    return `<script>window.location.href='${redirectUrl}'</script>`;
   }
 }

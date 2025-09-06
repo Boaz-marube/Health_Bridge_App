@@ -253,4 +253,38 @@ export class AuthService {
     }
     return user;
   }
+
+  async googleLogin(googleUser: any) {
+    const { email, firstName, lastName, picture } = googleUser;
+    
+    // Check if user exists
+    let user = await this.UserModel.findOne({ email });
+    
+    if (!user) {
+      // Create new user if doesn't exist
+      const hashedPassword = await bcrypt.hash(Math.random().toString(36), 10);
+      user = await this.UserModel.create({
+        name: `${firstName} ${lastName}`,
+        email,
+        password: hashedPassword,
+        userType: UserType.PATIENT, // Default to patient
+        phoneNumber: '', // Will be updated later
+        picture,
+        isGoogleUser: true,
+      });
+    }
+    
+    // Generate tokens
+    const tokens = await this.generateUserTokens(user._id);
+    return {
+      ...tokens,
+      userId: user._id,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        userType: user.userType,
+      },
+    };
+  }
 }
