@@ -31,7 +31,25 @@ export interface StaffProfile {
 export class StaffService {
   async getDashboard(staffId: string): Promise<StaffDashboardData> {
     try {
-      return await apiService.get(`/staff/dashboard/${staffId}`);
+      const data = await apiService.get(`/staff/dashboard/${staffId}`);
+      return {
+        doctorAvailability: [],
+        scheduledAppointments: [],
+        queueStatus: {
+          totalPatients: 0,
+          waitingPatients: data.stats?.waitingPatients || 0,
+          inProgressPatients: 0,
+          completedToday: data.stats?.completedToday || 0
+        },
+        recentNotifications: data.notifications || [],
+        pendingMessages: [],
+        stats: {
+          totalAppointments: data.todayAppointments || 0,
+          completedAppointments: data.stats?.completedToday || 0,
+          cancelledAppointments: 0,
+          queueLength: 0
+        }
+      };
     } catch (error) {
       return {
         doctorAvailability: [],
@@ -76,6 +94,14 @@ export class StaffService {
 
   async updateAppointment(appointmentId: string, updateData: any) {
     return apiService.put(`/appointments/${appointmentId}`, updateData);
+  }
+
+  async cancelAppointment(appointmentId: string) {
+    return apiService.delete(`/appointments/${appointmentId}`);
+  }
+
+  async deleteAppointment(appointmentId: string) {
+    return apiService.delete(`/appointments/${appointmentId}/permanent`);
   }
 
   async getQueueManagement() {

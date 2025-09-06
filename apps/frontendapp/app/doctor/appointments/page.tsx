@@ -103,11 +103,7 @@ export default function AppointmentsPage() {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-4 w-4" />
-                      <span>{new Date(appointment.appointmentTime).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })}</span>
+                      <span>{appointment.appointmentTime}</span>
                     </div>
                   </div>
                   {appointment.notes && (

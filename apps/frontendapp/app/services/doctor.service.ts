@@ -90,7 +90,7 @@ export class DoctorService {
 
   async getAppointments(doctorId: string) {
     try {
-      return await apiService.get(`/appointments/doctor/${doctorId}`);
+      return await apiService.get('/appointments');
     } catch (error) {
       return [];
     }

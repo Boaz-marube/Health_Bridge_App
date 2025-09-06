@@ -214,11 +214,7 @@ export default function DoctorDashboardPage() {
                     </p>
                   </div>
                   <span className="text-sm text-blue-600 dark:text-blue-400">
-                    {new Date(appointment.appointmentTime).toLocaleTimeString('en-US', {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true
-                    })}
+                    {appointment.appointmentTime}
                   </span>
                 </div>
               ))

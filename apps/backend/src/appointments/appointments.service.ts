@@ -14,12 +14,15 @@ export class AppointmentsService {
     @InjectModel('DoctorSchedule') private scheduleModel: Model<DoctorSchedule>,
   ) {}
 
-  async create(patientId: string, createAppointmentDto: CreateAppointmentDto) {
+  async create(userId: string, createAppointmentDto: CreateAppointmentDto) {
+    // Use patientId from DTO if provided (for staff bookings), otherwise use userId (for patient bookings)
+    const patientId = createAppointmentDto.patientId || userId;
+    
     // Check for conflicts
     const existingAppointment = await this.appointmentModel.findOne({
       doctorId: createAppointmentDto.doctorId,
       appointmentDate: new Date(createAppointmentDto.appointmentDate),
-      startTime: createAppointmentDto.startTime,
+      appointmentTime: createAppointmentDto.appointmentTime,
       status: { $ne: AppointmentStatus.CANCELLED },
     });
 
@@ -29,23 +32,32 @@ export class AppointmentsService {
 
     const appointment = new this.appointmentModel({
       patientId,
-      ...createAppointmentDto,
+      doctorId: createAppointmentDto.doctorId,
       appointmentDate: new Date(createAppointmentDto.appointmentDate),
+      appointmentTime: createAppointmentDto.appointmentTime,
+      appointmentType: createAppointmentDto.appointmentType,
+      notes: createAppointmentDto.notes,
+      status: createAppointmentDto.status || AppointmentStatus.SCHEDULED,
     });
 
     return appointment.save();
   }
 
   async findUserAppointments(userId: string, userType: string) {
-    const filter = userType === 'doctor' 
-      ? { doctorId: userId }
-      : { patientId: userId };
+    let filter = {};
+    
+    if (userType === 'doctor') {
+      filter = { doctorId: userId };
+    } else if (userType === 'patient') {
+      filter = { patientId: userId };
+    }
+    // For staff, return all appointments (no filter)
 
     return this.appointmentModel
       .find(filter)
       .populate('patientId', 'name email')
       .populate('doctorId', 'name email specialization')
-      .sort({ appointmentDate: 1, startTime: 1 });
+      .sort({ appointmentDate: 1, appointmentTime: 1 });
   }
 
   async findById(id: string) {
@@ -71,6 +83,10 @@ export class AppointmentsService {
     );
   }
 
+  async delete(id: string) {
+    return this.appointmentModel.findByIdAndDelete(id);
+  }
+
   async getAvailableSlots(doctorId: string, date: string) {
     const appointmentDate = new Date(date);
     const dayOfWeek = appointmentDate.getDay();
@@ -91,7 +107,7 @@ export class AppointmentsService {
       doctorId,
       appointmentDate,
       status: { $ne: AppointmentStatus.CANCELLED },
-    }).select('startTime endTime');
+    }).select('appointmentTime');
     
     // Generate time slots (1-hour intervals)
     const slots = [];
@@ -100,7 +116,7 @@ export class AppointmentsService {
     
     for (let hour = startHour; hour < endHour; hour++) {
       const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
-      const isBooked = bookedSlots.some(slot => slot.startTime === timeSlot);
+      const isBooked = bookedSlots.some(slot => slot.appointmentTime === timeSlot);
       
       if (!isBooked) {
         slots.push({
@@ -112,5 +128,20 @@ export class AppointmentsService {
     }
     
     return { availableSlots: slots, bookedSlots };
+  }
+
+  async getTodaysAppointmentsCount() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    return this.appointmentModel.countDocuments({
+      appointmentDate: {
+        $gte: today,
+        $lt: tomorrow
+      },
+      status: { $ne: AppointmentStatus.CANCELLED }
+    });
   }
 }
