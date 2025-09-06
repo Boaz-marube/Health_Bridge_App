@@ -24,6 +24,9 @@ describe('DoctorsService', () => {
         DoctorsService,
         { provide: getModelToken('User'), useValue: mockUserModel },
         { provide: getModelToken('DoctorSchedule'), useValue: mockScheduleModel },
+        { provide: getModelToken('Appointment'), useValue: {} },
+        { provide: getModelToken('Queue'), useValue: {} },
+        { provide: getModelToken('Patient'), useValue: {} },
       ],
     }).compile();
 
