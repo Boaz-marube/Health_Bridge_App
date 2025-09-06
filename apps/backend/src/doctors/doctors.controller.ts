@@ -36,4 +36,9 @@ export class DoctorsController {
     }
     return this.doctorsService.updateSchedule(id, schedules);
   }
+
+  @Get(':id/dashboard')
+  async getDoctorDashboard(@Param('id') id: string) {
+    return this.doctorsService.getDashboardData(id);
+  }
 }

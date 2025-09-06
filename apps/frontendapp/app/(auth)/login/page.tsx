@@ -1,76 +1,76 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { FcGoogle } from 'react-icons/fc';
-import { FaGithub, FaArrowLeft } from 'react-icons/fa';
+import React, { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { FcGoogle } from "react-icons/fc";
+import { FaGithub, FaArrowLeft } from "react-icons/fa";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    rememberMe: false
+    email: "",
+    password: "",
+    rememberMe: false,
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
     // Clear error when user starts typing
-    if (error) setError('');
+    if (error) setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('http://localhost:5002/auth/login', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5002/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           email: formData.email,
-          password: formData.password
-        })
+          password: formData.password,
+        }),
       });
 
       const data = await response.json();
-      console.log('Login response:', data); // Debug log
+      console.log("Login response:", data); // Debug log
 
       if (response.ok) {
         // Store token
-        localStorage.setItem('token', data.accessToken);
-        
+        localStorage.setItem("token", data.accessToken);
+
         // Decode user info from JWT token
-        const tokenPayload = JSON.parse(atob(data.accessToken.split('.')[1]));
+        const tokenPayload = JSON.parse(atob(data.accessToken.split(".")[1]));
         const user = {
           id: data.userId,
-          name: tokenPayload.email.split('@')[0], // Use email prefix as name for now
+          name: tokenPayload.email.split("@")[0], // Use email prefix as name for now
           email: tokenPayload.email,
-          userType: tokenPayload.userType
+          userType: tokenPayload.userType,
         };
-        
-        localStorage.setItem('user', JSON.stringify(user));
-        
-        console.log('Stored user:', user); // Debug log
-        console.log('Redirecting to dashboard...'); // Debug log
-        
+
+        localStorage.setItem("user", JSON.stringify(user));
+
+        console.log("Stored user:", user); // Debug log
+        console.log("Redirecting to dashboard..."); // Debug log
+
         // Redirect to dashboard
-        router.push('/dashboard');
+        router.push("/dashboard");
       } else {
-        setError(data.message || 'Login failed. Please try again.');
+        setError(data.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      setError('Network error. Please check your connection.');
+      setError("Network error. Please check your connection.");
     } finally {
       setLoading(false);
     }
@@ -78,30 +78,34 @@ const LoginPage: React.FC = () => {
 
   const handleGoogleLogin = () => {
     // TODO: Implement Google OAuth
-    console.log('Google login - Coming soon');
+    console.log("Google login - Coming soon");
   };
 
   const handleGithubLogin = () => {
     // TODO: Implement GitHub OAuth
-    console.log('GitHub login - Coming soon');
+    console.log("GitHub login - Coming soon");
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow-sm px-4 py-3 flex items-center">
-        <Link href="/" className="text-blue-500 mr-4">
+      <div className="flex items-center px-4 py-3 bg-white shadow-sm dark:bg-gray-800">
+        <Link href="/" className="mr-4 text-blue-500">
           <FaArrowLeft size={20} />
         </Link>
         <div className="flex items-center">
-          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3">
-            <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+          <div className="flex items-center justify-center w-10 h-10 mr-3 bg-blue-100 rounded-full dark:bg-blue-900">
+            <div className="flex items-center justify-center w-6 h-6 bg-blue-500 rounded-full">
               <div className="w-3 h-3 bg-white rounded-full"></div>
             </div>
           </div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Health</h1>
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white -mt-1">Bridge</h1>
+            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Health
+            </h1>
+            <h1 className="-mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+              Bridge
+            </h1>
           </div>
         </div>
       </div>
@@ -109,14 +113,16 @@ const LoginPage: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 px-6 py-8">
         <div className="max-w-md mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-blue-500 mb-2">Login</h2>
-            <p className="text-gray-600 dark:text-gray-300">Welcome back to Health bridge</p>
+          <div className="mb-8 text-center">
+            <h2 className="mb-2 text-2xl font-bold text-blue-500">Login</h2>
+            <p className="text-gray-600 dark:text-gray-300">
+              Welcome back to Health bridge
+            </p>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 text-red-700 dark:text-red-300 rounded-lg text-sm">
+            <div className="p-3 mb-4 text-sm text-red-700 bg-red-100 border border-red-400 rounded-lg dark:bg-red-900 dark:border-red-600 dark:text-red-300">
               {error}
             </div>
           )}
@@ -124,7 +130,7 @@ const LoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Address */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Email Address
               </label>
               <input
@@ -133,7 +139,7 @@ const LoginPage: React.FC = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 placeholder="Enter Your Email"
-                className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-700 border-0 rounded-lg text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 text-gray-700 placeholder-gray-400 border-0 rounded-lg bg-blue-50 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
                 disabled={loading}
               />
@@ -141,7 +147,7 @@ const LoginPage: React.FC = () => {
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
               </label>
               <input
@@ -150,12 +156,15 @@ const LoginPage: React.FC = () => {
                 value={formData.password}
                 onChange={handleInputChange}
                 placeholder="Enter Password"
-                className="w-full px-4 py-3 bg-blue-50 dark:bg-gray-700 border-0 rounded-lg text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 text-gray-700 placeholder-gray-400 border-0 rounded-lg bg-blue-50 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
                 disabled={loading}
               />
-              <div className="text-right mt-2">
-                <Link href="/forgot-password" className="text-sm text-blue-500 hover:underline">
+              <div className="mt-2 text-right">
+                <Link
+                  href="/forgot-password"
+                  className="text-sm text-blue-500 hover:underline"
+                >
                   Forgot Password?
                 </Link>
               </div>
@@ -172,7 +181,10 @@ const LoginPage: React.FC = () => {
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
                 disabled={loading}
               />
-              <label htmlFor="rememberMe" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+              <label
+                htmlFor="rememberMe"
+                className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+              >
                 Remember me
               </label>
             </div>
@@ -181,18 +193,34 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center"
+              className="flex items-center justify-center w-full py-3 font-medium text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="w-5 h-5 mr-3 -ml-1 text-white animate-spin"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Logging in...
                 </>
               ) : (
-                'Login'
+                "Login"
               )}
             </button>
           </form>
@@ -200,7 +228,9 @@ const LoginPage: React.FC = () => {
           {/* Divider */}
           <div className="flex items-center my-6">
             <div className="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
-            <span className="px-4 text-gray-500 dark:text-gray-400 text-sm">OR</span>
+            <span className="px-4 text-sm text-gray-500 dark:text-gray-400">
+              OR
+            </span>
             <div className="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
           </div>
 
@@ -209,25 +239,29 @@ const LoginPage: React.FC = () => {
             <button
               onClick={handleGoogleLogin}
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="flex items-center justify-center w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
             >
               <FcGoogle className="mr-3" size={20} />
-              <span className="text-gray-700 dark:text-gray-300">Login with Google</span>
+              <span className="text-gray-700 dark:text-gray-300">
+                Login with Google
+              </span>
             </button>
 
             <button
               onClick={handleGithubLogin}
               disabled={loading}
-              className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+              className="flex items-center justify-center w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
             >
               <FaGithub className="mr-3" size={20} />
-              <span className="text-gray-700 dark:text-gray-300">Login with Github</span>
+              <span className="text-gray-700 dark:text-gray-300">
+                Login with Github
+              </span>
             </button>
           </div>
 
           {/* Signup Link */}
-          <p className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?{' '}
+          <p className="mt-6 text-sm text-center text-gray-600 dark:text-gray-400">
+            Don't have an account?{" "}
             <Link href="/signup" className="text-blue-500 hover:underline">
               Signup →
             </Link>
