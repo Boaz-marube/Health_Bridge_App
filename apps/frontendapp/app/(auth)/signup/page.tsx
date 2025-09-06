@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
+import { FaArrowLeft, FaCalendarAlt } from "react-icons/fa";
 
 const SignupPage: React.FC = () => {
   const router = useRouter();
@@ -128,12 +128,10 @@ const SignupPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
-    console.log("Google signup - Coming soon");
+    window.location.href = 'http://localhost:5002/auth/google';
   };
 
-  const handleGithubSignup = () => {
-    console.log("GitHub signup - Coming soon");
-  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -374,16 +372,7 @@ const SignupPage: React.FC = () => {
               </span>
             </button>
 
-            <button
-              onClick={handleGithubSignup}
-              disabled={loading}
-              className="flex items-center justify-center w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-            >
-              <FaGithub className="mr-3" size={20} />
-              <span className="text-gray-700 dark:text-gray-300">
-                Sign up with Github
-              </span>
-            </button>
+
           </div>
 
           {/* Login Link */}

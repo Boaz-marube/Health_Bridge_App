@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaArrowLeft } from "react-icons/fa";
+import { FaArrowLeft } from "react-icons/fa";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
@@ -77,14 +77,10 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    console.log("Google login - Coming soon");
+    window.location.href = 'http://localhost:5002/auth/google';
   };
 
-  const handleGithubLogin = () => {
-    // TODO: Implement GitHub OAuth
-    console.log("GitHub login - Coming soon");
-  };
+
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -247,16 +243,7 @@ const LoginPage: React.FC = () => {
               </span>
             </button>
 
-            <button
-              onClick={handleGithubLogin}
-              disabled={loading}
-              className="flex items-center justify-center w-full px-4 py-3 transition-colors border border-gray-300 rounded-lg dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50"
-            >
-              <FaGithub className="mr-3" size={20} />
-              <span className="text-gray-700 dark:text-gray-300">
-                Login with Github
-              </span>
-            </button>
+
           </div>
 
           {/* Signup Link */}
