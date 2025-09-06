@@ -21,3 +21,13 @@ export const formatDoctorName = (name: string): string => {
   const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
   return `Dr. ${capitalizedName}`
 }
+
+export const formatName = (name: string): string => {
+  if (!name) return 'User'
+  
+  // Extract clean name (remove numbers, special characters)
+  const cleanName = name.split(/[0-9@._-]/)[0]
+  
+  // Capitalize first letter, lowercase rest
+  return cleanName.charAt(0).toUpperCase() + cleanName.slice(1).toLowerCase()
+}

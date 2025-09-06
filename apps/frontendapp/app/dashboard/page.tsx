@@ -2,9 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import PatientDashboard from './components/PatientDashboard'
-import DoctorDashboard from './components/DoctorDashboard'
-import StaffDashboard from './components/StaffDashboard'
 
 interface User {
   id: string
@@ -22,26 +19,37 @@ export default function DashboardPage() {
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
     
-    console.log('Dashboard - Token:', token); // Debug log
-    console.log('Dashboard - User data:', userData); // Debug log
-    
     if (!token || !userData) {
-      console.log('No token or user data, redirecting to login'); // Debug log
       router.push('/login')
       return
     }
     
     try {
       const parsedUser = JSON.parse(userData)
-      console.log('Dashboard - Parsed user:', parsedUser); // Debug log
       setUser(parsedUser)
     } catch (error) {
-      console.log('Error parsing user data:', error); // Debug log
       router.push('/login')
     } finally {
       setLoading(false)
     }
   }, [router])
+
+  // Role-based dashboard routing
+  useEffect(() => {
+    if (user && !loading) {
+      switch (user.userType) {
+        case 'patient':
+          router.replace('/patient/dashboard')
+          break
+        case 'doctor':
+          router.replace('/doctor/dashboard')
+          break
+        case 'staff':
+          router.replace('/staff/dashboard')
+          break
+      }
+    }
+  }, [user, router, loading])
 
   if (loading) {
     return (
@@ -55,26 +63,9 @@ export default function DashboardPage() {
     return null
   }
 
-  // Role-based dashboard routing
-  switch (user.userType) {
-    case 'patient':
-      router.replace('/patient/dashboard')
-      return null
-    case 'doctor':
-      router.replace('/doctor/dashboard')
-      return null
-    case 'staff':
-      return <StaffDashboard user={user} />
-    default:
-      return (
-        <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Invalid User Type
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Please contact support for assistance.
-          </p>
-        </div>
-      )
-  }
+  return (
+    <div className="flex items-center justify-center h-64">
+      <div className="text-lg text-gray-600 dark:text-gray-400">Redirecting...</div>
+    </div>
+  )
 }
