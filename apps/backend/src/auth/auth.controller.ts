@@ -10,6 +10,7 @@ import {
 import { AuthService } from './auth.service';
 import { DoctorSignupDto } from './dtos/doctor-signup.dto';
 import { PatientSignupDto } from './dtos/patient-signup.dto';
+import { StaffSignupDto } from './dtos/staff-signup.dto';
 import { LoginDto } from './dtos/login.dto';
 import { RefreshTokenDto } from './dtos/refresh-tokens.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
@@ -29,6 +30,11 @@ export class AuthController {
   @Post('patient-signup')
   async patientSignUp(@Body() signupData: PatientSignupDto) {
     return this.authService.patientSignup(signupData);
+  }
+
+  @Post('staff-signup')
+  async staffSignUp(@Body() signupData: StaffSignupDto) {
+    return this.authService.staffSignup(signupData);
   }
 
   @Post('login')
