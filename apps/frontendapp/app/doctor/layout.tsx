@@ -14,39 +14,35 @@ interface User {
   userType: 'patient' | 'doctor' | 'staff'
 }
 
-
-
-export default function DashboardLayout({
+export default function DoctorLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
   const [doctorProfile, setDoctorProfile] = useState<DoctorProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
     
     if (!token || !userData) {
-      router.replace('/login')
+      router.push('/login')
       return
     }
     
     try {
       const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-      
-      // Fetch doctor profile if user is a doctor
-      if (parsedUser.userType === 'doctor') {
-        fetchDoctorProfile(parsedUser.id)
-      } else {
-        setLoading(false)
+      if (parsedUser.userType !== 'doctor') {
+        router.push('/dashboard')
+        return
       }
+      setUser(parsedUser)
+      fetchDoctorProfile(parsedUser.id)
     } catch (error) {
-      router.replace('/login')
+      router.push('/login')
     }
   }, [router])
 
@@ -55,7 +51,6 @@ export default function DashboardLayout({
     if (profile) {
       setDoctorProfile(profile)
     } else {
-      // Set fallback profile data
       setDoctorProfile({
         _id: doctorId,
         name: user?.name || 'Doctor',
@@ -66,25 +61,23 @@ export default function DashboardLayout({
     setLoading(false)
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    router.replace('/login')
-  }
-
   const getDisplayName = () => {
     if (user?.userType === 'doctor' && doctorProfile) {
       const name = doctorProfile.name
-      // If name already starts with Dr., return as is
       if (name.startsWith('Dr.')) {
         return name
       }
-      // Otherwise, extract first name and add Dr. prefix
       const firstName = name.split(/[0-9@._-]/)[0]
       const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
       return `Dr. ${capitalizedName}`
     }
     return user?.name || 'User'
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    router.push('/login')
   }
 
   if (loading) {
@@ -112,9 +105,7 @@ export default function DashboardLayout({
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {user.userType === 'patient' && 'Patient Dashboard'}
-                  {user.userType === 'doctor' && 'Doctor Dashboard'}
-                  {user.userType === 'staff' && 'Staff Dashboard'}
+                  Doctor Portal
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Welcome back, {getDisplayName()}

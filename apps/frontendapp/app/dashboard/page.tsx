@@ -58,9 +58,11 @@ export default function DashboardPage() {
   // Role-based dashboard routing
   switch (user.userType) {
     case 'patient':
-      return <PatientDashboard user={user} />
+      router.replace('/patient/dashboard')
+      return null
     case 'doctor':
-      return <DoctorDashboard user={user} />
+      router.replace('/doctor/dashboard')
+      return null
     case 'staff':
       return <StaffDashboard user={user} />
     default:

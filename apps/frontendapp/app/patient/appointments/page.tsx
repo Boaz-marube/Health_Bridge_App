@@ -1,0 +1,285 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Calendar, Clock, Plus, User, Search } from 'lucide-react'
+import { patientService } from '@/app/services/patient.service'
+
+interface Appointment {
+  _id: string
+  doctorId: {
+    _id: string
+    name: string
+    specialization: string
+  }
+  appointmentDate: string
+  appointmentTime: string
+  appointmentType: string
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+  notes?: string
+}
+
+interface Doctor {
+  _id: string
+  name: string
+  specialization: string
+  department: string
+}
+
+export default function PatientAppointmentsPage() {
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [doctors, setDoctors] = useState<Doctor[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showBooking, setShowBooking] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [bookingData, setBookingData] = useState({
+    doctorId: '',
+    date: '',
+    time: '',
+    type: 'consultation'
+  })
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      const parsedUser = JSON.parse(userData)
+      setUser(parsedUser)
+      fetchData(parsedUser.id)
+    }
+  }, [])
+
+  const fetchData = async (patientId: string) => {
+    const [appointmentsData, doctorsData] = await Promise.all([
+      patientService.getAppointments(patientId),
+      patientService.getDoctors()
+    ])
+    setAppointments(appointmentsData)
+    setDoctors(doctorsData)
+    setLoading(false)
+  }
+
+  const handleBookAppointment = async () => {
+    if (!user || !bookingData.doctorId || !bookingData.date || !bookingData.time) return
+
+    try {
+      await patientService.bookAppointment({
+        patientId: user.id,
+        doctorId: bookingData.doctorId,
+        appointmentDate: bookingData.date,
+        appointmentTime: bookingData.time,
+        appointmentType: bookingData.type
+      })
+      
+      // Refresh appointments
+      const updatedAppointments = await patientService.getAppointments(user.id)
+      setAppointments(updatedAppointments)
+      setShowBooking(false)
+      setBookingData({ doctorId: '', date: '', time: '', type: 'consultation' })
+    } catch (error) {
+      console.error('Failed to book appointment:', error)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'scheduled': return 'bg-blue-100 text-blue-800'
+      case 'completed': return 'bg-green-100 text-green-800'
+      case 'cancelled': return 'bg-red-100 text-red-800'
+      case 'no_show': return 'bg-gray-100 text-gray-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const timeSlots = [
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
+  ]
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-600 dark:text-gray-400">Loading appointments...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Appointments</h1>
+          <p className="text-gray-600 dark:text-gray-400">Book and manage your medical appointments</p>
+        </div>
+        <button
+          onClick={() => setShowBooking(true)}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+        >
+          <Plus className="h-4 w-4" />
+          <span>Book Appointment</span>
+        </button>
+      </div>
+
+      {/* Appointments List */}
+      <div className="grid gap-4">
+        {appointments.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
+            <Calendar className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+            <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">No appointments scheduled</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">Book your first appointment to get started</p>
+            <button
+              onClick={() => setShowBooking(true)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+            >
+              Book Appointment
+            </button>
+          </div>
+        ) : (
+          appointments.map((appointment) => (
+            <div key={appointment._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      {appointment.doctorId?.name || 'Unknown Doctor'}
+                    </h3>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                      {appointment.status}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {appointment.doctorId?.specialization || 'General Practice'}
+                  </p>
+                  <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>{new Date(appointment.appointmentDate).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{new Date(appointment.appointmentTime).toLocaleTimeString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                      })}</span>
+                    </div>
+                  </div>
+                  {appointment.notes && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Notes: {appointment.notes}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="bg-blue-500 rounded-full p-2">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Booking Modal */}
+      {showBooking && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Book New Appointment</h2>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              {/* Doctor Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Select Doctor
+                </label>
+                <select
+                  value={bookingData.doctorId}
+                  onChange={(e) => setBookingData({ ...bookingData, doctorId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Choose a doctor</option>
+                  {doctors.map((doctor) => (
+                    <option key={doctor._id} value={doctor._id}>
+                      {doctor.name} - {doctor.specialization}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Select Date
+                </label>
+                <input
+                  type="date"
+                  value={bookingData.date}
+                  onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              {/* Time Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Select Time
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {timeSlots.map((time) => (
+                    <button
+                      key={time}
+                      onClick={() => setBookingData({ ...bookingData, time })}
+                      className={`py-2 px-3 rounded text-sm font-medium ${
+                        bookingData.time === time
+                          ? 'bg-blue-500 text-white'
+                          : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Appointment Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Appointment Type
+                </label>
+                <select
+                  value={bookingData.type}
+                  onChange={(e) => setBookingData({ ...bookingData, type: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="consultation">Consultation</option>
+                  <option value="follow_up">Follow-up</option>
+                  <option value="checkup">Regular Checkup</option>
+                  <option value="emergency">Emergency</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex space-x-3">
+              <button
+                onClick={() => setShowBooking(false)}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBookAppointment}
+                disabled={!bookingData.doctorId || !bookingData.date || !bookingData.time}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white py-2 rounded-lg"
+              >
+                Book Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

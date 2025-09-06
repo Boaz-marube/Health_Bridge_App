@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { Calendar, Clock, Users, FileText, Pill, Heart, Plus, QrCode, Activity, MessageCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { queueService, QueuePatient, QueueStats } from '@/app/lib/queue-service'
+import { patientService, PatientDashboardData } from '@/app/services/patient.service'
+import { formatPatientName } from '@/app/lib/name-utils'
 
 interface User {
   id: string
@@ -16,88 +17,37 @@ interface PatientDashboardProps {
   user: User
 }
 
-// Mock data for demo
-const mockAppointments = [
-  {
-    id: 1,
-    doctor: "Dr. Sarah Johnson",
-    specialty: "Cardiology",
-    date: "2025-01-10",
-    time: "10:30 AM",
-    status: "confirmed",
-  },
-  {
-    id: 2,
-    doctor: "Dr. Michael Chen",
-    specialty: "General Medicine",
-    date: "2025-01-15",
-    time: "2:00 PM",
-    status: "pending",
-  },
-]
 
-const mockMedicalHistory = [
-  {
-    id: 1,
-    date: "2024-12-20",
-    doctor: "Dr. Sarah Johnson",
-    diagnosis: "Routine Checkup",
-    prescription: "Vitamin D supplements",
-  },
-  {
-    id: 2,
-    date: "2024-11-15",
-    doctor: "Dr. Michael Chen",
-    diagnosis: "Mild Hypertension",
-    prescription: "Lisinopril 10mg daily",
-  },
-]
-
-const mockReminders = [
-  {
-    id: 1,
-    medication: "Lisinopril",
-    time: "8:00 AM",
-    taken: true,
-  },
-  {
-    id: 2,
-    medication: "Vitamin D",
-    time: "6:00 PM",
-    taken: false,
-  },
-]
 
 export default function PatientDashboard({ user }: PatientDashboardProps) {
-  const [queuePosition, setQueuePosition] = useState(3)
-  const [estimatedWait, setEstimatedWait] = useState(25)
-  const [queueData, setQueueData] = useState<QueuePatient[]>([])
-  const [queueStats, setQueueStats] = useState<QueueStats | null>(null)
-  const [currentPatient, setCurrentPatient] = useState<QueuePatient | null>(null)
+  const [dashboardData, setDashboardData] = useState<PatientDashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Subscribe to queue updates
-    const unsubscribe = queueService.subscribe((queue, stats) => {
-      setQueueData(queue)
-      setQueueStats(stats)
-      
-      // Find current patient (assuming P002 is John Smith)
-      const patient = queue.find(p => p.id === 'P002')
-      if (patient) {
-        setCurrentPatient(patient)
-        setQueuePosition(queueService.getPatientPosition('P002'))
-        setEstimatedWait(patient.waitTime)
-      }
-    })
+    const fetchDashboardData = async () => {
+      const data = await patientService.getDashboard(user.id)
+      setDashboardData(data)
+      setLoading(false)
+    }
 
-    return () => unsubscribe()
-  }, [])
+    fetchDashboardData()
+  }, [user.id])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-600 dark:text-gray-400">Loading dashboard...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="space-y-2 mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, {user.name}</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Welcome back, {dashboardData?.patient ? formatPatientName(dashboardData.patient.name) : formatPatientName(user.name)}!
+        </h1>
         <p className="text-gray-600 dark:text-gray-400">Here's your health overview for today</p>
       </div>
 
@@ -108,7 +58,11 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
             <Calendar className="h-5 w-5 text-blue-500" />
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Next Appointment</p>
-              <p className="font-semibold text-gray-900 dark:text-white">Jan 10, 10:30 AM</p>
+              <p className="font-semibold text-gray-900 dark:text-white">
+                {dashboardData?.upcomingAppointments[0] 
+                  ? new Date(dashboardData.upcomingAppointments[0].appointmentDate).toLocaleDateString()
+                  : 'None scheduled'}
+              </p>
             </div>
           </div>
         </div>
@@ -118,7 +72,9 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
             <Users className="h-5 w-5 text-green-500" />
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Queue Position</p>
-              <p className="font-semibold text-gray-900 dark:text-white">#{queuePosition}</p>
+              <p className="font-semibold text-gray-900 dark:text-white">
+                {dashboardData?.queuePosition.position ? `#${dashboardData.queuePosition.position}` : 'Not in queue'}
+              </p>
             </div>
           </div>
         </div>
@@ -128,7 +84,9 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
             <Clock className="h-5 w-5 text-yellow-500" />
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Est. Wait Time</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{estimatedWait} min</p>
+              <p className="font-semibold text-gray-900 dark:text-white">
+                {dashboardData?.queuePosition.estimatedWaitTime || 0} min
+              </p>
             </div>
           </div>
         </div>
@@ -138,7 +96,7 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
             <Pill className="h-5 w-5 text-purple-500" />
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Medications</p>
-              <p className="font-semibold text-gray-900 dark:text-white">2 Active</p>
+              <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.prescriptions || 0} Active</p>
             </div>
           </div>
         </div>
@@ -154,41 +112,32 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
               <span>Current Queue Status</span>
             </h3>
             
-            {currentPatient ? (
+            {dashboardData?.queuePosition.position ? (
               <div className="space-y-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Your Position</span>
-                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">#{queuePosition}</span>
+                    <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">#{dashboardData.queuePosition.position}</span>
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Estimated Wait</span>
-                    <span className="text-lg font-semibold text-gray-900 dark:text-white">{estimatedWait} min</span>
+                    <span className="text-lg font-semibold text-gray-900 dark:text-white">{dashboardData.queuePosition.estimatedWaitTime} min</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</span>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      currentPatient.status === 'waiting' 
+                      dashboardData.queuePosition.status === 'waiting' 
                         ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                        : currentPatient.status === 'checked-in'
+                        : dashboardData.queuePosition.status === 'called'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                         : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                     }`}>
-                      {currentPatient.status.replace('-', ' ').toUpperCase()}
+                      {dashboardData.queuePosition.status.replace('_', ' ').toUpperCase()}
                     </span>
                   </div>
                 </div>
                 
-                {currentPatient.estimatedCallTime && (
-                  <div className="text-center p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Estimated call time</p>
-                    <p className="font-semibold text-gray-900 dark:text-white">
-                      {currentPatient.estimatedCallTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                )}
-                
-                {queueService.shouldNotifyPatient('P002') && (
+                {dashboardData.queuePosition.position <= 3 && (
                   <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 p-3 rounded">
                     <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
                       🔔 You'll be called soon! Please stay nearby.
@@ -210,37 +159,52 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
                 <Calendar className="h-5 w-5" />
                 <span>Upcoming Appointments</span>
               </h3>
-              <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1">
+              <button 
+                onClick={() => window.location.href = '/patient/appointments'}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+              >
                 <Plus className="h-4 w-4" />
                 <span>Book New</span>
               </button>
             </div>
             <div className="space-y-4">
-              {mockAppointments.map((appointment) => (
-                <div key={appointment.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <div className="space-y-1">
-                    <p className="font-medium text-gray-900 dark:text-white">{appointment.doctor}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{appointment.specialty}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {appointment.date} at {appointment.time}
-                    </p>
-                  </div>
-                  <div className="text-right space-y-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      appointment.status === "confirmed" 
-                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
-                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                    }`}>
-                      {appointment.status}
-                    </span>
-                    <div>
-                      <button className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
-                        Reschedule
-                      </button>
+              {dashboardData?.upcomingAppointments.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 dark:text-gray-400">No upcoming appointments</p>
+                  <button 
+                    onClick={() => window.location.href = '/patient/appointments'}
+                    className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
+                  >
+                    Book Appointment
+                  </button>
+                </div>
+              ) : (
+                dashboardData?.upcomingAppointments.slice(0, 3).map((appointment: any) => (
+                  <div key={appointment._id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="space-y-1">
+                      <p className="font-medium text-gray-900 dark:text-white">{appointment.doctorName || 'Doctor'}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{appointment.appointmentType || 'Consultation'}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {new Date(appointment.appointmentDate).toLocaleDateString()} at {new Date(appointment.appointmentTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                      </p>
+                    </div>
+                    <div className="text-right space-y-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        appointment.status === "scheduled" 
+                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
+                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                      }`}>
+                        {appointment.status}
+                      </span>
+                      <div>
+                        <button className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+                          Reschedule
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -251,23 +215,32 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
               <span>Recent Medical History</span>
             </h3>
             <div className="space-y-4">
-              {mockMedicalHistory.map((record) => (
-                <div key={record.id} className="flex items-start space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
-                    <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium text-gray-900 dark:text-white">{record.diagnosis}</p>
-                      <span className="text-sm text-gray-600 dark:text-gray-400">{record.date}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{record.doctor}</p>
-                    <p className="text-sm text-gray-700 dark:text-gray-300">Prescription: {record.prescription}</p>
-                  </div>
+              {dashboardData?.recentNotifications.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 dark:text-gray-400">No recent medical history</p>
                 </div>
-              ))}
+              ) : (
+                dashboardData?.recentNotifications.slice(0, 3).map((record: any, index: number) => (
+                  <div key={index} className="flex items-start space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="bg-blue-100 dark:bg-blue-900 p-2 rounded-full">
+                      <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium text-gray-900 dark:text-white">{record.title || 'Medical Record'}</p>
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{new Date(record.createdAt || Date.now()).toLocaleDateString()}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{record.doctorName || 'Doctor'}</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">{record.message || record.description || 'Medical update'}</p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-            <button className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+            <button 
+              onClick={() => window.location.href = '/patient/medical-history'}
+              className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
               View Full History
             </button>
           </div>
@@ -282,25 +255,34 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
               <span>Today's Medications</span>
             </h3>
             <div className="space-y-3">
-              {mockReminders.map((reminder) => (
-                <div key={reminder.id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">{reminder.medication}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{reminder.time}</p>
-                  </div>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    reminder.taken 
-                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
-                      : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                  }`}>
-                    {reminder.taken ? "Taken" : "Pending"}
-                  </span>
+              {dashboardData?.stats.prescriptions === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 dark:text-gray-400">No active medications</p>
                 </div>
-              ))}
+              ) : (
+                Array.from({ length: Math.min(dashboardData?.stats.prescriptions || 0, 3) }).map((_, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">Medication {index + 1}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{index === 0 ? '8:00 AM' : index === 1 ? '2:00 PM' : '8:00 PM'}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      index === 0 
+                        ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
+                        : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                    }`}>
+                      {index === 0 ? "Taken" : "Pending"}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
-            <button className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center space-x-2">
+            <button 
+              onClick={() => window.location.href = '/patient/medications'}
+              className="w-full mt-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-center space-x-2"
+            >
               <Plus className="h-4 w-4" />
-              <span>Set Reminder</span>
+              <span>Manage Medications</span>
             </button>
           </div>
 
@@ -315,15 +297,19 @@ export default function PatientDashboard({ user }: PatientDashboardProps) {
                 <div className="flex items-start space-x-3">
                   <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                   <div>
-                    <h4 className="font-medium text-sm text-gray-900 dark:text-white">Stay Hydrated</h4>
+                    <h4 className="font-medium text-sm text-gray-900 dark:text-white">
+                      {dashboardData?.wellnessTips[0] ? dashboardData.wellnessTips[0].split(' - ')[0] || 'Stay Hydrated' : 'Stay Hydrated'}
+                    </h4>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      Aim for 8 glasses of water today. Proper hydration helps your body function optimally and
-                      supports recovery.
+                      {dashboardData?.wellnessTips[0] || 'Aim for 8 glasses of water today. Proper hydration helps your body function optimally.'}
                     </p>
                   </div>
                 </div>
               </div>
-              <button className="w-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-700">
+              <button 
+                onClick={() => window.location.href = '/patient/wellness'}
+                className="w-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
                 More Tips
               </button>
             </div>

@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/app/components/layout/sidebar'
 import { ModeToggle } from '@/app/components/theme/mode-toggle'
 import { ErrorBoundary } from '@/app/components/ui/error-boundary'
-import { doctorService, DoctorProfile } from '@/app/services/doctor.service'
+import { patientService, PatientProfile } from '@/app/services/patient.service'
+import { formatPatientName } from '@/app/lib/name-utils'
 
 interface User {
   id: string
@@ -14,77 +15,63 @@ interface User {
   userType: 'patient' | 'doctor' | 'staff'
 }
 
-
-
-export default function DashboardLayout({
+export default function PatientLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
-  const [doctorProfile, setDoctorProfile] = useState<DoctorProfile | null>(null)
+  const [patientProfile, setPatientProfile] = useState<PatientProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     const token = localStorage.getItem('token')
     const userData = localStorage.getItem('user')
     
     if (!token || !userData) {
-      router.replace('/login')
+      router.push('/login')
       return
     }
     
     try {
       const parsedUser = JSON.parse(userData)
-      setUser(parsedUser)
-      
-      // Fetch doctor profile if user is a doctor
-      if (parsedUser.userType === 'doctor') {
-        fetchDoctorProfile(parsedUser.id)
-      } else {
-        setLoading(false)
+      if (parsedUser.userType !== 'patient') {
+        router.replace('/dashboard')
+        return
       }
+      setUser(parsedUser)
+      fetchPatientProfile(parsedUser)
     } catch (error) {
       router.replace('/login')
     }
   }, [router])
 
-  const fetchDoctorProfile = async (doctorId: string) => {
-    const profile = await doctorService.getProfile(doctorId)
+  const fetchPatientProfile = async (userData: User) => {
+    const profile = await patientService.getProfile(userData.id)
     if (profile) {
-      setDoctorProfile(profile)
+      setPatientProfile(profile)
     } else {
-      // Set fallback profile data
-      setDoctorProfile({
-        _id: doctorId,
-        name: user?.name || 'Doctor',
-        email: user?.email || '',
-        specialization: 'General Practice'
+      setPatientProfile({
+        _id: userData.id,
+        name: userData.name,
+        email: userData.email
       })
     }
     setLoading(false)
+  }
+
+  const getDisplayName = () => {
+    if (patientProfile) {
+      return formatPatientName(patientProfile.name)
+    }
+    return formatPatientName(user?.name || 'Patient')
   }
 
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     router.replace('/login')
-  }
-
-  const getDisplayName = () => {
-    if (user?.userType === 'doctor' && doctorProfile) {
-      const name = doctorProfile.name
-      // If name already starts with Dr., return as is
-      if (name.startsWith('Dr.')) {
-        return name
-      }
-      // Otherwise, extract first name and add Dr. prefix
-      const firstName = name.split(/[0-9@._-]/)[0]
-      const capitalizedName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase()
-      return `Dr. ${capitalizedName}`
-    }
-    return user?.name || 'User'
   }
 
   if (loading) {
@@ -112,18 +99,11 @@ export default function DashboardLayout({
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {user.userType === 'patient' && 'Patient Dashboard'}
-                  {user.userType === 'doctor' && 'Doctor Dashboard'}
-                  {user.userType === 'staff' && 'Staff Dashboard'}
+                  Patient Portal
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   Welcome back, {getDisplayName()}
                 </p>
-                {user?.userType === 'doctor' && doctorProfile?.specialization && (
-                  <p className="text-xs text-gray-500 dark:text-gray-500">
-                    {doctorProfile.specialization}
-                  </p>
-                )}
               </div>
               
               <div className="flex items-center space-x-4">
