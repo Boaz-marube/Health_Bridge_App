@@ -2,8 +2,9 @@ import { IsString, IsDateString, IsEnum, IsOptional } from 'class-validator';
 import { AppointmentStatus } from '../enums/appointment-status.enum';
 
 export class CreateAppointmentDto {
+  @IsOptional()
   @IsString()
-  patientId: string;
+  patientId?: string;
 
   @IsString()
   doctorId: string;

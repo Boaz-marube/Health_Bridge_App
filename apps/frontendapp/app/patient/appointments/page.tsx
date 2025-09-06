@@ -14,7 +14,7 @@ interface Appointment {
   appointmentDate: string
   appointmentTime: string
   appointmentType: string
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+  status: 'pending' | 'confirmed' | 'scheduled' | 'completed' | 'cancelled' | 'no_show'
   notes?: string
 }
 
@@ -37,6 +37,9 @@ export default function PatientAppointmentsPage() {
     time: '',
     type: 'consultation'
   })
+  const [showReschedule, setShowReschedule] = useState(false)
+  const [rescheduleAppointment, setRescheduleAppointment] = useState<Appointment | null>(null)
+  const [rescheduleData, setRescheduleData] = useState({ date: '', time: '' })
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -62,16 +65,13 @@ export default function PatientAppointmentsPage() {
 
     try {
       await patientService.bookAppointment({
-        patientId: user.id,
         doctorId: bookingData.doctorId,
         appointmentDate: bookingData.date,
         appointmentTime: bookingData.time,
         appointmentType: bookingData.type
       })
       
-      // Refresh appointments
-      const updatedAppointments = await patientService.getAppointments(user.id)
-      setAppointments(updatedAppointments)
+      await fetchData(user.id)
       setShowBooking(false)
       setBookingData({ doctorId: '', date: '', time: '', type: 'consultation' })
     } catch (error) {
@@ -79,8 +79,48 @@ export default function PatientAppointmentsPage() {
     }
   }
 
+  const handleRescheduleAppointment = async () => {
+    if (!rescheduleAppointment || !rescheduleData.date || !rescheduleData.time) return
+
+    try {
+      await patientService.rescheduleAppointment(rescheduleAppointment._id, {
+        appointmentDate: rescheduleData.date,
+        appointmentTime: rescheduleData.time
+      })
+      
+      await fetchData(user.id)
+      setShowReschedule(false)
+      setRescheduleAppointment(null)
+      setRescheduleData({ date: '', time: '' })
+    } catch (error) {
+      console.error('Failed to reschedule appointment:', error)
+    }
+  }
+
+  const handleCancelAppointment = async (appointmentId: string) => {
+    if (!confirm('Are you sure you want to cancel this appointment?')) return
+    
+    try {
+      await patientService.cancelAppointment(appointmentId)
+      await fetchData(user.id)
+    } catch (error) {
+      console.error('Failed to cancel appointment:', error)
+    }
+  }
+
+  const openRescheduleModal = (appointment: Appointment) => {
+    setRescheduleAppointment(appointment)
+    setRescheduleData({
+      date: new Date(appointment.appointmentDate).toISOString().split('T')[0],
+      time: appointment.appointmentTime
+    })
+    setShowReschedule(true)
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800'
+      case 'confirmed': return 'bg-blue-100 text-blue-800'
       case 'scheduled': return 'bg-blue-100 text-blue-800'
       case 'completed': return 'bg-green-100 text-green-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
@@ -156,11 +196,7 @@ export default function PatientAppointmentsPage() {
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-4 w-4" />
-                      <span>{new Date(appointment.appointmentTime).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: '2-digit',
-                        hour12: true
-                      })}</span>
+                      <span>{appointment.appointmentTime}</span>
                     </div>
                   </div>
                   {appointment.notes && (
@@ -170,9 +206,27 @@ export default function PatientAppointmentsPage() {
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="bg-blue-500 rounded-full p-2">
-                    <User className="h-4 w-4 text-white" />
-                  </div>
+                  {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
+                    <>
+                      <button 
+                        onClick={() => openRescheduleModal(appointment)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                      >
+                        Reschedule
+                      </button>
+                      <button 
+                        onClick={() => handleCancelAppointment(appointment._id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                  {appointment.status === 'pending' && (
+                    <span className="text-xs text-yellow-600 dark:text-yellow-400">
+                      Awaiting confirmation
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -275,6 +329,77 @@ export default function PatientAppointmentsPage() {
                 className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white py-2 rounded-lg"
               >
                 Book Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reschedule Modal */}
+      {showReschedule && rescheduleAppointment && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Reschedule Appointment with {rescheduleAppointment.doctorId?.name}
+              </h2>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              {/* Date Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  New Date
+                </label>
+                <input
+                  type="date"
+                  value={rescheduleData.date}
+                  onChange={(e) => setRescheduleData({ ...rescheduleData, date: e.target.value })}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              {/* Time Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  New Time
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {timeSlots.map((time) => (
+                    <button
+                      key={time}
+                      onClick={() => setRescheduleData({ ...rescheduleData, time })}
+                      className={`py-2 px-3 rounded text-sm font-medium ${
+                        rescheduleData.time === time
+                          ? 'bg-blue-500 text-white'
+                          : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowReschedule(false)
+                  setRescheduleAppointment(null)
+                  setRescheduleData({ date: '', time: '' })
+                }}
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRescheduleAppointment}
+                disabled={!rescheduleData.date || !rescheduleData.time}
+                className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white py-2 rounded-lg"
+              >
+                Reschedule
               </button>
             </div>
           </div>

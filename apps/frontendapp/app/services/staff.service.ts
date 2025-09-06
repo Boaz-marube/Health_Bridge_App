@@ -104,6 +104,10 @@ export class StaffService {
     return apiService.delete(`/appointments/${appointmentId}/permanent`);
   }
 
+  async confirmAppointment(appointmentId: string) {
+    return apiService.put(`/appointments/${appointmentId}/confirm`);
+  }
+
   async getQueueManagement() {
     try {
       // Since there's no general queue endpoint, we'll return empty for now

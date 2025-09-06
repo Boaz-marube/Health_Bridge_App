@@ -15,6 +15,7 @@ interface User {
 export default function PatientDashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [dashboardData, setDashboardData] = useState<PatientDashboardData | null>(null)
+  const [appointments, setAppointments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -27,8 +28,18 @@ export default function PatientDashboardPage() {
   }, [])
 
   const fetchDashboardData = async (userId: string) => {
-    const data = await patientService.getDashboard(userId)
-    setDashboardData(data)
+    const [dashboardData, appointmentsData] = await Promise.all([
+      patientService.getDashboard(userId),
+      patientService.getAppointments(userId)
+    ])
+    
+    // Filter for confirmed appointments only
+    const confirmedAppointments = appointmentsData.filter(
+      (apt: any) => apt.status === 'confirmed' || apt.status === 'scheduled'
+    )
+    
+    setDashboardData(dashboardData)
+    setAppointments(confirmedAppointments)
     setLoading(false)
   }
 
@@ -58,8 +69,8 @@ export default function PatientDashboardPage() {
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">Next Appointment</p>
               <p className="font-semibold text-gray-900 dark:text-white">
-                {dashboardData?.upcomingAppointments[0] 
-                  ? new Date(dashboardData.upcomingAppointments[0].appointmentDate).toLocaleDateString()
+                {appointments[0] 
+                  ? new Date(appointments[0].appointmentDate).toLocaleDateString()
                   : 'None scheduled'}
               </p>
             </div>
@@ -120,9 +131,9 @@ export default function PatientDashboardPage() {
               </button>
             </div>
             <div className="space-y-4">
-              {dashboardData?.upcomingAppointments.length === 0 ? (
+              {appointments.length === 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-gray-500 dark:text-gray-400">No upcoming appointments</p>
+                  <p className="text-gray-500 dark:text-gray-400">No confirmed appointments</p>
                   <button 
                     onClick={() => window.location.href = '/patient/appointments'}
                     className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm"
@@ -131,14 +142,25 @@ export default function PatientDashboardPage() {
                   </button>
                 </div>
               ) : (
-                dashboardData?.upcomingAppointments.slice(0, 3).map((appointment: any) => (
+                appointments.slice(0, 3).map((appointment: any) => (
                   <div key={appointment._id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
                     <div className="space-y-1">
-                      <p className="font-medium text-gray-900 dark:text-white">{appointment.doctorName || 'Doctor'}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{appointment.appointmentType || 'Consultation'}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {new Date(appointment.appointmentDate).toLocaleDateString()} at {new Date(appointment.appointmentTime).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {appointment.doctorId?.name || 'Doctor'}
                       </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {appointment.appointmentType || 'Consultation'}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {new Date(appointment.appointmentDate).toLocaleDateString()} at {appointment.appointmentTime}
+                      </p>
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                        appointment.status === 'confirmed' 
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                          : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      }`}>
+                        {appointment.status}
+                      </span>
                     </div>
                   </div>
                 ))
