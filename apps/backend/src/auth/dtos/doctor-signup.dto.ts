@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsDateString, IsOptional } from 'class-validator';
 
 export class DoctorSignupDto {
   @IsNotEmpty()
@@ -14,13 +14,20 @@ export class DoctorSignupDto {
 
   @IsNotEmpty()
   @IsString()
-  specialization: string;
-
-  @IsNotEmpty()
-  @IsString()
-  licenseNumber: string;
-
-  @IsNotEmpty()
-  @IsString()
   phoneNumber: string;
+
+  @IsDateString()
+  dateOfBirth: string;
+
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @IsOptional()
+  @IsString()
+  specialization?: string;
+
+  @IsOptional()
+  @IsString()
+  licenseNumber?: string;
 }
