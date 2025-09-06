@@ -56,9 +56,11 @@ describe('AuthService', () => {
         name: 'Dr. Smith',
         email: 'doctor@test.com',
         password: 'password123',
+        phoneNumber: '+1234567890',
+        dateOfBirth: '1980-01-01',
+        address: '123 Doctor St',
         specialization: 'Cardiology',
         licenseNumber: 'MD123',
-        phoneNumber: '+1234567890',
       };
 
       await service.doctorSignup(doctorData);
@@ -68,9 +70,9 @@ describe('AuthService', () => {
         email: 'doctor@test.com',
         password: expect.any(String),
         userType: UserType.DOCTOR,
+        phoneNumber: '+1234567890',
         specialization: 'Cardiology',
         licenseNumber: 'MD123',
-        phoneNumber: '+1234567890',
       });
     });
 
@@ -82,9 +84,11 @@ describe('AuthService', () => {
           name: 'Dr. Smith',
           email: 'doctor@test.com',
           password: 'password123',
+          phoneNumber: '+1234567890',
+          dateOfBirth: '1980-01-01',
+          address: '123 Doctor St',
           specialization: 'Cardiology',
           licenseNumber: 'MD123',
-          phoneNumber: '+1234567890',
         }),
       ).rejects.toThrow('Email already in use');
     });

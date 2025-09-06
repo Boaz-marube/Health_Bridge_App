@@ -48,9 +48,11 @@ describe('AuthController', () => {
       name: 'Dr. Smith',
       email: 'doctor@test.com',
       password: 'password123',
+      phoneNumber: '+1234567890',
+      dateOfBirth: '1980-01-01',
+      address: '123 Doctor St',
       specialization: 'Cardiology',
       licenseNumber: 'MD123',
-      phoneNumber: '+1234567890',
     };
 
     await controller.doctorSignUp(doctorData);
