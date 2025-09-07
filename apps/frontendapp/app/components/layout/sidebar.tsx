@@ -235,10 +235,14 @@ export function Sidebar({ userType }: SidebarProps) {
           <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
             Ask me about appointments, medications, or health questions.
           </p>
-          <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded text-sm flex items-center justify-center space-x-2">
+          <Link 
+            href={`/${userType}/chatbot`}
+            className="w-full text-white py-2 px-3 rounded text-sm flex items-center justify-center space-x-2"
+            style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
+          >
             <MessageCircle className="h-3 w-3" />
             <span>Start Chat</span>
-          </button>
+          </Link>
         </div>
       </div>
 
