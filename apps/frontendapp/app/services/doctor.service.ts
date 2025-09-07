@@ -23,7 +23,25 @@ export interface DoctorProfile {
 export class DoctorService {
   async getDashboard(doctorId: string): Promise<DashboardData> {
     try {
-      return await apiService.get(`/doctors/${doctorId}/dashboard`);
+      const [dashboardData, queueData] = await Promise.all([
+        apiService.get(`/doctors/${doctorId}/dashboard`).catch(() => null),
+        apiService.get(`/queue/doctor/${doctorId}`).catch(() => [])
+      ]);
+      
+      // Calculate queue stats
+      const waitingPatients = queueData.filter((item: any) => item.status === 'waiting');
+      
+      return {
+        stats: {
+          todayAppointments: dashboardData?.stats?.todayAppointments || 0,
+          totalPatients: dashboardData?.stats?.totalPatients || 0,
+          pendingReviews: dashboardData?.stats?.pendingReviews || 0,
+          queueLength: waitingPatients.length
+        },
+        todaySchedule: dashboardData?.todaySchedule || [],
+        currentQueue: queueData || [],
+        recentUpdates: dashboardData?.recentUpdates || []
+      };
     } catch (error) {
       // Return fallback data on error
       return {

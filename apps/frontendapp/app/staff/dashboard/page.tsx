@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { staffService, StaffDashboardData } from '@/app/services/staff.service'
 import { Users, Calendar, FileText, Settings, BarChart3, Shield, Bell, AlertTriangle, CheckCircle, Clock, TrendingUp, Activity } from 'lucide-react'
 import { formatName } from '@/app/lib/name-utils'
+import StatCardSkeleton from '@/app/components/skeletons/StatCardSkeleton'
+import { getTimeBasedGreeting } from '@/app/lib/time-utils'
 
 interface User {
   id: string
@@ -42,63 +44,63 @@ export default function StaffDashboardPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600 dark:text-gray-400">Loading dashboard...</div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
       <div className="space-y-2 mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Staff Dashboard</h1>
-        <p className="text-gray-600 dark:text-gray-400">Welcome back, {formatName(user?.name || '')}. Here's your system overview.</p>
+        <p className="text-gray-600 dark:text-gray-400">{getTimeBasedGreeting()}, {formatName(user?.name || '')}. Here's your system overview.</p>
       </div>
 
       {/* System Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2">
-            <Users className="h-5 w-5 text-blue-500" />
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Queue Length</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.queueLength || 0}</p>
+        {loading ? (
+          Array(4).fill(0).map((_, i) => <StatCardSkeleton key={i} />)
+        ) : (
+          <>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex items-center space-x-2">
+                <Users className="h-5 w-5 text-blue-500" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Queue Length</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.queueLength || 0}</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5 text-green-500" />
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Today's Appointments</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.totalAppointments || 0}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-5 w-5 text-green-500" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Today's Appointments</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.totalAppointments || 0}</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2">
-            <Activity className="h-5 w-5 text-purple-500" />
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Completed Today</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.completedAppointments || 0}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex items-center space-x-2">
+                <Activity className="h-5 w-5 text-purple-500" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Completed Today</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.completedAppointments || 0}</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2">
-            <Shield className="h-5 w-5 text-red-500" />
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Cancelled</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.cancelledAppointments || 0}</p>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex items-center space-x-2">
+                <Shield className="h-5 w-5 text-red-500" />
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Cancelled</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{dashboardData?.stats.cancelledAppointments || 0}</p>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

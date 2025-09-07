@@ -31,23 +31,60 @@ export interface StaffProfile {
 export class StaffService {
   async getDashboard(staffId: string): Promise<StaffDashboardData> {
     try {
-      const data = await apiService.get(`/staff/dashboard/${staffId}`);
+      // Use existing endpoints to build dashboard data
+      const [appointments, doctors] = await Promise.all([
+        this.getAllAppointments().catch(() => []),
+        this.getDoctors().catch(() => [])
+      ]);
+      
+      // Get queue data for all doctors
+      let totalQueueLength = 0;
+      let completedQueueToday = 0;
+      for (const doctor of doctors) {
+        try {
+          const queueData = await apiService.get(`/queue/doctor/${doctor._id}`);
+          const waitingPatients = queueData.filter((item: any) => item.status === 'waiting');
+          const completedPatients = queueData.filter((item: any) => item.status === 'completed');
+          totalQueueLength += waitingPatients.length;
+          completedQueueToday += completedPatients.length;
+        } catch (error) {
+          // Continue if queue fetch fails for a doctor
+        }
+      }
+      
+      const today = new Date().toISOString().split('T')[0];
+      const todayAppointments = appointments.filter((apt: any) => {
+        const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
+        return aptDate === today;
+      });
+      
+      // Calculate real appointment statistics
+      const completedToday = appointments.filter((apt: any) => {
+        const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
+        return aptDate === today && apt.status === 'completed';
+      }).length;
+      
+      const cancelledToday = appointments.filter((apt: any) => {
+        const aptDate = new Date(apt.appointmentDate).toISOString().split('T')[0];
+        return aptDate === today && apt.status === 'cancelled';
+      }).length;
+      
       return {
         doctorAvailability: [],
-        scheduledAppointments: [],
+        scheduledAppointments: todayAppointments,
         queueStatus: {
-          totalPatients: 0,
-          waitingPatients: data.stats?.waitingPatients || 0,
-          inProgressPatients: 0,
-          completedToday: data.stats?.completedToday || 0
+          totalPatients: totalQueueLength,
+          waitingPatients: todayAppointments.filter((apt: any) => apt.status === 'pending').length,
+          inProgressPatients: todayAppointments.filter((apt: any) => apt.status === 'confirmed').length,
+          completedToday: completedQueueToday
         },
-        recentNotifications: data.notifications || [],
+        recentNotifications: [],
         pendingMessages: [],
         stats: {
-          totalAppointments: data.todayAppointments || 0,
-          completedAppointments: data.stats?.completedToday || 0,
-          cancelledAppointments: 0,
-          queueLength: 0
+          totalAppointments: todayAppointments.length,
+          completedAppointments: completedQueueToday,
+          cancelledAppointments: cancelledToday,
+          queueLength: totalQueueLength
         }
       };
     } catch (error) {

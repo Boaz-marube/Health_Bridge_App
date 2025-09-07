@@ -14,6 +14,7 @@ import { HealthRecordsModule } from './health-records/health-records.module';
 import { StaffModule } from './staff/staff.module';
 import { QueueModule } from './queue/queue.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { WebSocketModule } from './websocket/websocket.module';
 import * as dotenv from 'dotenv';
 
 // Load environment variables
@@ -50,6 +51,7 @@ dotenv.config();
     StaffModule,
     QueueModule,
     NotificationsModule,
+    WebSocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],
