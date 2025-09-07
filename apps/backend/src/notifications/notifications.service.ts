@@ -150,4 +150,17 @@ export class NotificationsService {
       .limit(50)
       .exec();
   }
+
+  // Delete notification
+  async deleteNotification(notificationId: string) {
+    const notification = await this.notificationModel
+      .findByIdAndDelete(notificationId)
+      .exec();
+      
+    if (!notification) {
+      throw new NotFoundException(`Notification with ID ${notificationId} not found`);
+    }
+    
+    return { message: 'Notification deleted successfully' };
+  }
 }

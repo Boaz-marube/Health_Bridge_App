@@ -6,6 +6,7 @@ import { Sidebar } from '@/app/components/layout/sidebar'
 import { ModeToggle } from '@/app/components/theme/mode-toggle'
 import { ErrorBoundary } from '@/app/components/ui/error-boundary'
 import { doctorService, DoctorProfile } from '@/app/services/doctor.service'
+import { NotificationBell } from '@/app/components/notifications/NotificationBell'
 
 interface User {
   id: string
@@ -118,6 +119,7 @@ export default function DoctorLayout({
               </div>
               
               <div className="flex items-center space-x-4">
+                <NotificationBell userType="doctor" userId={user.id} />
                 <ModeToggle />
                 <button
                   onClick={handleLogout}

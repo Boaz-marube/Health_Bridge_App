@@ -7,6 +7,7 @@ import { ModeToggle } from '@/app/components/theme/mode-toggle'
 import { ErrorBoundary } from '@/app/components/ui/error-boundary'
 import { staffService, StaffProfile } from '@/app/services/staff.service'
 import { formatPatientName } from '@/app/lib/name-utils'
+import { NotificationBell } from '@/app/components/notifications/NotificationBell'
 
 interface User {
   id: string
@@ -112,6 +113,7 @@ export default function StaffLayout({
               </div>
               
               <div className="flex items-center space-x-4">
+                <NotificationBell userType="staff" userId={user.id} />
                 <ModeToggle />
                 <button
                   onClick={handleLogout}

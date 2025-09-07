@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { staffService } from '@/app/services/staff.service'
+import { notificationService } from '@/app/services/notification.service'
 import { Bell, AlertTriangle, CheckCircle, Info, Send, Plus } from 'lucide-react'
 import { formatName } from '@/app/lib/name-utils'
+import { useToast } from '@/app/components/ui/toast'
 
 interface Notification {
   _id: string
@@ -22,23 +24,50 @@ export default function StaffNotificationsPage() {
   const [loading, setLoading] = useState(true)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [newNotification, setNewNotification] = useState({
+    recipientType: 'patient' as 'patient' | 'doctor',
+    recipientId: '',
     title: '',
     message: '',
-    type: 'info' as const,
-    priority: 'medium' as const,
-    recipient: ''
+    type: 'system_alert' as const,
+    priority: 'medium' as const
   })
+  const [patients, setPatients] = useState<any[]>([])
+  const [doctors, setDoctors] = useState<any[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(false)
+  const { showToast, ToastComponent } = useToast()
 
   useEffect(() => {
     fetchNotifications()
   }, [])
+
+  useEffect(() => {
+    if (showCreateForm) {
+      fetchUsers()
+    }
+  }, [showCreateForm])
+
+  const fetchUsers = async () => {
+    setLoadingUsers(true)
+    try {
+      const [patientsData, doctorsData] = await Promise.all([
+        staffService.getPatients(),
+        staffService.getDoctors()
+      ])
+      setPatients(patientsData)
+      setDoctors(doctorsData)
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    } finally {
+      setLoadingUsers(false)
+    }
+  }
 
   const fetchNotifications = async () => {
     try {
       const userData = localStorage.getItem('user')
       if (userData) {
         const user = JSON.parse(userData)
-        const data = await staffService.getNotifications(user.id)
+        const data = await notificationService.getNotifications(user.id, 'staff')
         setNotifications(data)
       }
     } catch (error) {
@@ -49,19 +78,35 @@ export default function StaffNotificationsPage() {
   }
 
   const sendNotification = async () => {
+    if (!newNotification.recipientId || !newNotification.title || !newNotification.message) {
+      showToast('Please fill in all required fields', 'error')
+      return
+    }
+
     try {
-      await staffService.sendNotification(newNotification)
+      await notificationService.sendNotification({
+        recipientId: newNotification.recipientId,
+        recipientType: newNotification.recipientType,
+        type: newNotification.type,
+        title: newNotification.title,
+        message: newNotification.message,
+        priority: newNotification.priority
+      })
+      
+      // Reset form
       setNewNotification({
+        recipientType: 'patient',
+        recipientId: '',
         title: '',
         message: '',
-        type: 'info',
-        priority: 'medium',
-        recipient: ''
+        type: 'system_alert',
+        priority: 'medium'
       })
       setShowCreateForm(false)
-      await fetchNotifications()
+      showToast('Notification sent successfully!', 'success')
     } catch (error) {
       console.error('Error sending notification:', error)
+      showToast('Failed to send notification. Please try again.', 'error')
     }
   }
 
@@ -112,30 +157,77 @@ export default function StaffNotificationsPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Send New Notification</h2>
           <div className="space-y-4">
+            {/* Recipient Selection - Moved to Top */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Recipient Type *
+                </label>
+                <select
+                  value={newNotification.recipientType}
+                  onChange={(e) => setNewNotification({...newNotification, recipientType: e.target.value as any, recipientId: ''})}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="patient">Patient</option>
+                  <option value="doctor">Doctor</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Select {newNotification.recipientType === 'patient' ? 'Patient' : 'Doctor'} *
+                </label>
+                <select
+                  value={newNotification.recipientId}
+                  onChange={(e) => setNewNotification({...newNotification, recipientId: e.target.value})}
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  disabled={loadingUsers}
+                >
+                  <option value="">Choose {newNotification.recipientType}...</option>
+                  {newNotification.recipientType === 'patient' 
+                    ? patients.map((patient) => (
+                        <option key={patient._id} value={patient._id}>
+                          {formatName(patient.name)} - {patient.email}
+                        </option>
+                      ))
+                    : doctors.map((doctor) => (
+                        <option key={doctor._id} value={doctor._id}>
+                          {formatName(doctor.name)} - {doctor.specialization}
+                        </option>
+                      ))
+                  }
+                </select>
+              </div>
+            </div>
+
+            {/* Title */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Title
+                Title *
               </label>
               <input
                 type="text"
                 value={newNotification.title}
                 onChange={(e) => setNewNotification({...newNotification, title: e.target.value})}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Notification title"
+                placeholder="Enter notification title"
               />
             </div>
+
+            {/* Message */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Message
+                Message *
               </label>
               <textarea
                 value={newNotification.message}
                 onChange={(e) => setNewNotification({...newNotification, message: e.target.value})}
                 className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                rows={3}
-                placeholder="Notification message"
+                rows={4}
+                placeholder="Enter your notification message"
               />
             </div>
+
+            {/* Type and Priority */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -146,10 +238,11 @@ export default function StaffNotificationsPage() {
                   onChange={(e) => setNewNotification({...newNotification, type: e.target.value as any})}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
-                  <option value="info">Info</option>
-                  <option value="warning">Warning</option>
-                  <option value="success">Success</option>
-                  <option value="error">Error</option>
+                  <option value="system_alert">System Alert</option>
+                  <option value="appointment_reminder">Appointment Reminder</option>
+                  <option value="medicine_reminder">Medicine Reminder</option>
+                  <option value="wellness_tip">Wellness Tip</option>
+                  <option value="queue_update">Queue Update</option>
                 </select>
               </div>
               <div>
@@ -164,25 +257,15 @@ export default function StaffNotificationsPage() {
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Recipient (optional)
-              </label>
-              <input
-                type="text"
-                value={newNotification.recipient}
-                onChange={(e) => setNewNotification({...newNotification, recipient: e.target.value})}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="Leave empty for broadcast"
-              />
             </div>
             <div className="flex space-x-2">
               <button
                 onClick={sendNotification}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center space-x-2"
+                disabled={!newNotification.recipientId || !newNotification.title || !newNotification.message}
+                className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded flex items-center space-x-2"
               >
                 <Send className="h-4 w-4" />
                 <span>Send</span>
@@ -253,6 +336,7 @@ export default function StaffNotificationsPage() {
           )}
         </div>
       </div>
+      {ToastComponent}
     </div>
   )
 }
