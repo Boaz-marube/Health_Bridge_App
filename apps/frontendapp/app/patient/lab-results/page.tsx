@@ -1,0 +1,250 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { FileText, Calendar, User, Eye, Download } from 'lucide-react'
+import { patientService } from '@/app/services/patient.service'
+import { formatName } from '@/app/lib/name-utils'
+import { useToast } from '@/app/components/ui/toast'
+
+interface LabResult {
+  _id: string
+  testType: string
+  testDate: string
+  resultFormat: 'upload' | 'text'
+  resultText?: string
+  additionalNotes?: string
+  fileName?: string
+  fileSize?: number
+  status: string
+  doctorId: {
+    name: string
+    specialization?: string
+  }
+  createdAt: string
+}
+
+export default function PatientLabResultsPage() {
+  const [labResults, setLabResults] = useState<LabResult[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedResult, setSelectedResult] = useState<LabResult | null>(null)
+  const [showModal, setShowModal] = useState(false)
+  const { showToast, ToastComponent } = useToast()
+
+  useEffect(() => {
+    fetchLabResults()
+  }, [])
+
+  const fetchLabResults = async () => {
+    try {
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const user = JSON.parse(userData)
+        const data = await patientService.getLabResults(user.id)
+        setLabResults(data)
+      }
+    } catch (error) {
+      console.error('Error fetching lab results:', error)
+      showToast('Failed to load lab results', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatTestType = (testType: string) => {
+    return testType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+    }
+  }
+
+  const viewResult = (result: LabResult) => {
+    setSelectedResult(result)
+    setShowModal(true)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-gray-600 dark:text-gray-400">Loading lab results...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lab Results</h1>
+        <p className="text-gray-600 dark:text-gray-400">View your medical test results and reports</p>
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="p-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Your Lab Results ({labResults.length})
+          </h2>
+          
+          {labResults.length === 0 ? (
+            <div className="text-center py-8">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400">No lab results available</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {labResults.map((result) => (
+                <div
+                  key={result._id}
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3">
+                      <div className="bg-blue-500 rounded-full p-2">
+                        <FileText className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          {formatTestType(result.testType)}
+                        </h3>
+                        <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex items-center space-x-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{new Date(result.testDate).toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <User className="h-3 w-3" />
+                            <span>Dr. {formatName(result.doctorId.name)}</span>
+                          </div>
+                        </div>
+                        {result.additionalNotes && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                            {result.additionalNotes}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(result.status)}`}>
+                        {result.status.toUpperCase()}
+                      </span>
+                      <button
+                        onClick={() => viewResult(result)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                      >
+                        <Eye className="h-3 w-3" />
+                        <span>View</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Result Detail Modal */}
+      {showModal && selectedResult && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {formatTestType(selectedResult.testType)} Results
+                </h3>
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Test Date:</span>
+                    <p className="text-gray-900 dark:text-white">{new Date(selectedResult.testDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Doctor:</span>
+                    <p className="text-gray-900 dark:text-white">Dr. {formatName(selectedResult.doctorId.name)}</p>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Status:</span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedResult.status)}`}>
+                      {selectedResult.status.toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Result Type:</span>
+                    <p className="text-gray-900 dark:text-white">{selectedResult.resultFormat === 'upload' ? 'File Upload' : 'Text Entry'}</p>
+                  </div>
+                </div>
+
+                {selectedResult.resultFormat === 'text' && selectedResult.resultText && (
+                  <div>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Results:</span>
+                    <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{selectedResult.resultText}</p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedResult.resultFormat === 'upload' && selectedResult.fileName && (
+                  <div>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Attached File:</span>
+                    <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">{selectedResult.fileName}</p>
+                          {selectedResult.fileSize && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {(selectedResult.fileSize / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1">
+                        <Download className="h-3 w-3" />
+                        <span>Download</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {selectedResult.additionalNotes && (
+                  <div>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Additional Notes:</span>
+                    <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <p className="text-gray-900 dark:text-white">{selectedResult.additionalNotes}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="text-xs text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  Uploaded on {new Date(selectedResult.createdAt).toLocaleString()}
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {ToastComponent}
+    </div>
+  )
+}

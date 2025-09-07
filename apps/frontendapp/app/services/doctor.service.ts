@@ -113,6 +113,38 @@ export class DoctorService {
       return [];
     }
   }
+
+  async uploadLabResult(labResultData: any) {
+    return apiService.post('/lab-results', labResultData);
+  }
+
+  async uploadLabResultWithFile(formData: FormData) {
+    const config = {
+      method: 'POST',
+      body: formData,
+      // Don't set Content-Type header, let browser set it with boundary
+    }
+    
+    const userData = localStorage.getItem('user')
+    const token = localStorage.getItem('token')
+    
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002'}/lab-results`, {
+      ...config,
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    return response.json()
+  }
+
+  async getLabResults(doctorId: string) {
+    return apiService.get(`/lab-results/doctor/${doctorId}`);
+  }
 }
 
 export const doctorService = new DoctorService();

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Calendar, Users, FileText, Clock } from 'lucide-react'
+import { Calendar, Users, FileText, Clock, Upload } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { doctorService, DashboardData } from '@/app/services/doctor.service'
 import { useWebSocket } from '@/app/hooks/useWebSocket'
@@ -130,7 +130,7 @@ export default function DoctorDashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Link href="/doctor/appointments" className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
           <Calendar className="h-12 w-12 text-blue-500 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -158,6 +158,16 @@ export default function DoctorDashboardPage() {
           </h3>
           <p className="text-gray-600 dark:text-gray-400">
             Manage patient queue and appointments
+          </p>
+        </Link>
+
+        <Link href="/doctor/lab-results" className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+          <Upload className="h-12 w-12 text-purple-500 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            Upload Lab Results
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            Upload and manage patient lab results
           </p>
         </Link>
       </div>
