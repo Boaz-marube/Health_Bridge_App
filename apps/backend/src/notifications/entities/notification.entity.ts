@@ -11,6 +11,9 @@ export class Notification {
   @Prop({ required: true, enum: ['patient', 'doctor', 'staff'] })
   recipientType: string;
 
+  @Prop()
+  senderId: string;
+
   @Prop({ required: true, enum: ['appointment_reminder', 'medicine_reminder', 'wellness_tip', 'queue_update', 'system_alert'] })
   type: string;
 
@@ -40,6 +43,9 @@ export class Notification {
 
   @Prop({ type: Object, default: {} })
   metadata: Record<string, any>; // Additional data like appointmentId, etc.
+
+  @Prop({ type: [String], default: [] })
+  hiddenFor: string[]; // Array of user IDs who have hidden this notification
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);

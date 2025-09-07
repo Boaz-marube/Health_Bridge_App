@@ -84,6 +84,13 @@ export function Sidebar({ userType }: SidebarProps) {
     const profile = await staffService.getProfile(staffId)
     if (profile) {
       setStaffProfile(profile)
+    } else {
+      // Fallback: use user data from localStorage if profile not found
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const user = JSON.parse(userData)
+        setStaffProfile({ name: user.name, email: user.email })
+      }
     }
   }
 

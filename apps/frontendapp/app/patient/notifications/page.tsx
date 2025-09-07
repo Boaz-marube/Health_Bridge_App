@@ -64,15 +64,19 @@ export default function PatientNotificationsPage() {
     if (!deleteModal.notificationId) return
     
     try {
-      await notificationService.deleteNotification(deleteModal.notificationId)
-      setNotifications(prev => prev.filter(n => n._id !== deleteModal.notificationId))
-      if (selectedNotification?._id === deleteModal.notificationId) {
-        setSelectedNotification(null)
+      const userData = localStorage.getItem('user')
+      if (userData) {
+        const user = JSON.parse(userData)
+        await notificationService.hideNotification(deleteModal.notificationId, user.id)
+        setNotifications(prev => prev.filter(n => n._id !== deleteModal.notificationId))
+        if (selectedNotification?._id === deleteModal.notificationId) {
+          setSelectedNotification(null)
+        }
+        showToast('Notification removed from your view', 'success')
       }
-      showToast('Notification deleted successfully', 'success')
     } catch (error) {
-      console.error('Error deleting notification:', error)
-      showToast('Failed to delete notification', 'error')
+      console.error('Error hiding notification:', error)
+      showToast('Failed to remove notification', 'error')
     } finally {
       setDeleteModal({ isOpen: false, notificationId: null })
     }

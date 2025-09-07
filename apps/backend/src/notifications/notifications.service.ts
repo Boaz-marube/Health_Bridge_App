@@ -13,6 +13,8 @@ export class NotificationsService {
   async create(createNotificationDto: CreateNotificationDto) {
     const notification = new this.notificationModel({
       ...createNotificationDto,
+      status: 'sent', // Set to sent immediately
+      sentAt: new Date(),
       scheduledFor: createNotificationDto.scheduledFor ? new Date(createNotificationDto.scheduledFor) : new Date(),
     });
     return notification.save();
@@ -20,14 +22,23 @@ export class NotificationsService {
 
   async findByRecipient(recipientId: string, recipientType: string) {
     return this.notificationModel
-      .find({ recipientId, recipientType })
+      .find({ 
+        recipientId, 
+        recipientType,
+        hiddenFor: { $ne: recipientId } // Exclude notifications hidden by this user
+      })
       .sort({ createdAt: -1 })
       .exec();
   }
 
   async findUnread(recipientId: string, recipientType: string) {
     return this.notificationModel
-      .find({ recipientId, recipientType, isRead: false })
+      .find({ 
+        recipientId, 
+        recipientType, 
+        isRead: false,
+        hiddenFor: { $ne: recipientId } // Exclude notifications hidden by this user
+      })
       .sort({ createdAt: -1 })
       .exec();
   }
@@ -151,7 +162,32 @@ export class NotificationsService {
       .exec();
   }
 
-  // Delete notification
+  // Get notifications sent by a specific sender
+  async findBySender(senderId: string) {
+    return this.notificationModel
+      .find({ senderId })
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  // Hide notification for a specific user (soft delete)
+  async hideNotification(notificationId: string, userId: string) {
+    const notification = await this.notificationModel
+      .findByIdAndUpdate(
+        notificationId,
+        { $addToSet: { hiddenFor: userId } },
+        { new: true }
+      )
+      .exec();
+      
+    if (!notification) {
+      throw new NotFoundException(`Notification with ID ${notificationId} not found`);
+    }
+    
+    return { message: 'Notification hidden successfully' };
+  }
+
+  // Delete notification (only for staff - hard delete)
   async deleteNotification(notificationId: string) {
     const notification = await this.notificationModel
       .findByIdAndDelete(notificationId)
