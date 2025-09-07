@@ -153,6 +153,14 @@ export class PatientService {
     
     return profileData;
   }
+
+  async getLabResults(patientId: string) {
+    try {
+      return await apiService.get(`/lab-results/patient/${patientId}`);
+    } catch (error) {
+      return [];
+    }
+  }
 }
 
 export const patientService = new PatientService();

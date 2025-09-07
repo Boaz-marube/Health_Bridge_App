@@ -24,6 +24,7 @@ import {
   UserCheck,
   BarChart3,
   Activity,
+  Upload,
 } from "lucide-react"
 
 interface User {
@@ -103,7 +104,8 @@ export function Sidebar({ userType }: SidebarProps) {
           { id: "appointments", label: "Appointments", icon: Calendar, path: "/patient/appointments" },
           { id: "queue", label: "Queue Status", icon: Users, path: "/patient/queue" },
           { id: "notifications", label: "Notifications", icon: Bell, path: "/patient/notifications" },
-          { id: "medical-records", label: "Medical History", icon: FileText, path: "/patient/medical-history" },
+          { id: "lab-results", label: "Lab Results", icon: FileText, path: "/patient/lab-results" },
+          { id: "medical-records", label: "Medical History", icon: Activity, path: "/patient/medical-history" },
           { id: "medications", label: "Medications", icon: Pill, path: "/patient/medications" },
           { id: "wellness", label: "Wellness Tips", icon: Heart, path: "/patient/wellness" },
         ]
@@ -114,6 +116,7 @@ export function Sidebar({ userType }: SidebarProps) {
           { id: "queue", label: "Queue", icon: Users, path: "/doctor/queue" },
           { id: "appointments", label: "Appointments", icon: Calendar, path: "/doctor/appointments" },
           { id: "notifications", label: "Notifications", icon: Bell, path: "/doctor/notifications" },
+          { id: "lab-results", label: "Upload Lab Results", icon: Upload, path: "/doctor/lab-results" },
           { id: "records", label: "Medical Records", icon: FileText, path: "/doctor/records" },
           { id: "prescriptions", label: "Prescriptions", icon: Pill, path: "/doctor/prescriptions" },
         ]
