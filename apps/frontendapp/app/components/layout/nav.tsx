@@ -21,7 +21,19 @@ export function Navbar() {
           </Link>
         </div>
 
-        <div className="flex flex-1 items-center justify-end pr-8 space-x-3">
+        <div className="flex flex-1 items-center justify-between pr-8">
+          <div className="flex items-center space-x-6 ml-8">
+            <a href="#home" className="text-sm font-medium hover:text-primary transition-colors cursor-pointer">
+              Home
+            </a>
+            <a href="#about" className="text-sm font-medium hover:text-primary transition-colors cursor-pointer">
+              About Us
+            </a>
+            <a href="#testimonials" className="text-sm font-medium hover:text-primary transition-colors cursor-pointer">
+              Testimonials
+            </a>
+          </div>
+          <div className="flex items-center space-x-3">
           <Link href="/signup">
             <button
               style={{
@@ -39,6 +51,7 @@ export function Navbar() {
               Login
             </Button>
           </Link>
+          </div>
         </div>
       </div>
     </nav>
