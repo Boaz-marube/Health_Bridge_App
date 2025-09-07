@@ -6,12 +6,17 @@ import { DoctorSchedule } from '../doctors/schemas/doctor-schedule.schema';
 import { CreateAppointmentDto } from './dtos/create-appointment.dto';
 import { UpdateAppointmentDto } from './dtos/update-appointment.dto';
 import { AppointmentStatus } from './enums/appointment-status.enum';
+import { WebSocketGatewayService } from '../websocket/websocket.gateway';
+import { QueueService } from '../queue/queue.service';
+import { QueuePriority } from '../queue/entities/queue.entity';
 
 @Injectable()
 export class AppointmentsService {
   constructor(
     @InjectModel('Appointment') private appointmentModel: Model<Appointment>,
     @InjectModel('DoctorSchedule') private scheduleModel: Model<DoctorSchedule>,
+    private websocketGateway: WebSocketGatewayService,
+    private queueService: QueueService,
   ) {}
 
   async create(userId: string, createAppointmentDto: CreateAppointmentDto) {
@@ -80,11 +85,22 @@ export class AppointmentsService {
   }
 
   async cancel(id: string) {
-    return this.appointmentModel.findByIdAndUpdate(
+    const appointment = await this.appointmentModel.findByIdAndUpdate(
       id,
       { status: AppointmentStatus.CANCELLED },
       { new: true }
-    );
+    ).populate('patientId doctorId');
+
+    // Emit real-time update to patient
+    if (appointment) {
+      this.websocketGateway.emitAppointmentUpdate(appointment.patientId.toString(), {
+        appointmentId: appointment._id,
+        status: AppointmentStatus.CANCELLED,
+        message: 'Your appointment has been cancelled.'
+      });
+    }
+
+    return appointment;
   }
 
   async delete(id: string) {
@@ -92,11 +108,42 @@ export class AppointmentsService {
   }
 
   async confirm(id: string) {
-    return this.appointmentModel.findByIdAndUpdate(
+    const appointment = await this.appointmentModel.findByIdAndUpdate(
       id,
       { status: AppointmentStatus.CONFIRMED },
       { new: true }
-    );
+    ).populate('patientId doctorId');
+
+    if (appointment) {
+      // Check if appointment is for today
+      const today = new Date().toISOString().split('T')[0];
+      const appointmentDate = new Date(appointment.appointmentDate).toISOString().split('T')[0];
+      
+      if (appointmentDate === today) {
+        // Add patient to queue with appointment priority
+        try {
+          await this.queueService.joinQueue(
+            appointment.patientId.toString(),
+            appointment.doctorId.toString(),
+            QueuePriority.APPOINTMENT,
+            appointment._id.toString()
+          );
+        } catch (error) {
+          // Patient might already be in queue, ignore error
+        }
+      }
+
+      // Emit real-time update to patient
+      this.websocketGateway.emitAppointmentUpdate(appointment.patientId.toString(), {
+        appointmentId: appointment._id,
+        status: AppointmentStatus.CONFIRMED,
+        message: appointmentDate === today 
+          ? 'Your appointment has been confirmed! You have been added to the queue.'
+          : 'Your appointment has been confirmed!'
+      });
+    }
+
+    return appointment;
   }
 
   async reschedule(id: string, newDate: string, newTime: string) {

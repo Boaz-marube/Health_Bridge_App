@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Search, User, Calendar, FileText, Phone, Mail } from 'lucide-react'
 import { doctorService } from '@/app/services/doctor.service'
+import PatientCardSkeleton from '@/app/components/skeletons/PatientCardSkeleton'
 
 interface Patient {
   _id: string
@@ -38,13 +39,7 @@ export default function PatientsPage() {
     patient.email.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600 dark:text-gray-400">Loading patients...</div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="space-y-6">
@@ -70,7 +65,10 @@ export default function PatientsPage() {
 
       {/* Patients Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPatients.map((patient) => (
+        {loading ? (
+          Array(6).fill(0).map((_, i) => <PatientCardSkeleton key={i} />)
+        ) : (
+          filteredPatients.map((patient) => (
           <div key={patient._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-3 mb-4">
               <div className="bg-blue-500 rounded-full p-2">
@@ -111,10 +109,11 @@ export default function PatientsPage() {
               </button>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
 
-      {filteredPatients.length === 0 && (
+      {!loading && filteredPatients.length === 0 && (
         <div className="text-center py-12">
           <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No patients found</h3>
