@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaArrowLeft } from "react-icons/fa";
@@ -15,6 +16,7 @@ const LoginPage: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -90,17 +92,18 @@ const LoginPage: React.FC = () => {
           <FaArrowLeft size={20} />
         </Link>
         <div className="flex items-center">
-          <div className="flex items-center justify-center w-10 h-10 mr-3 bg-blue-100 rounded-full dark:bg-blue-900">
-            <div className="flex items-center justify-center w-6 h-6 bg-blue-500 rounded-full">
-              <div className="w-3 h-3 bg-white rounded-full"></div>
-            </div>
+          <div className="w-10 h-10 mr-3 flex items-center justify-center">
+            <Image
+              src="/logo.jpg"
+              alt="Health Bridge Logo"
+              width={40}
+              height={40}
+              className="w-10 h-10 object-contain rounded-full"
+            />
           </div>
           <div>
             <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Health
-            </h1>
-            <h1 className="-mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-              Bridge
+              Health Bridge
             </h1>
           </div>
         </div>
@@ -146,16 +149,33 @@ const LoginPage: React.FC = () => {
               <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                 Password
               </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Enter Password"
-                className="w-full px-4 py-3 text-gray-700 placeholder-gray-400 border-0 rounded-lg bg-blue-50 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-                disabled={loading}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Enter Password"
+                  className="w-full px-4 py-3 pr-12 text-gray-700 placeholder-gray-400 border-0 rounded-lg bg-blue-50 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
               <div className="mt-2 text-right">
                 <Link
                   href="/forgot-password"
@@ -189,7 +209,12 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center justify-center w-full py-3 font-medium text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
+              style={{
+                backgroundColor: "#3870FF",
+                backgroundImage: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
+                color: "white",
+              }}
+              className="flex items-center justify-center w-full py-3 font-medium text-white transition-colors rounded-lg hover:opacity-90 disabled:opacity-50"
             >
               {loading ? (
                 <>
