@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Clock, Plus, User } from 'lucide-react'
 import { doctorService } from '@/app/services/doctor.service'
+import AppointmentListSkeleton from '@/app/components/skeletons/AppointmentListSkeleton'
 
 interface Appointment {
   _id: string
@@ -54,13 +55,7 @@ export default function AppointmentsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600 dark:text-gray-400">Loading appointments...</div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="space-y-6">
@@ -74,7 +69,9 @@ export default function AppointmentsPage() {
 
       {/* Appointments List */}
       <div className="grid gap-4">
-        {appointments.length === 0 ? (
+        {loading ? (
+          <AppointmentListSkeleton />
+        ) : appointments.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
             <Calendar className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
             <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">No appointments scheduled</h3>

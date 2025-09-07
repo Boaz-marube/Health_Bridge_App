@@ -3,6 +3,20 @@ import { HydratedDocument } from 'mongoose';
 
 export type QueueDocument = HydratedDocument<Queue>;
 
+export enum QueueStatus {
+  WAITING = 'waiting',
+  IN_PROGRESS = 'in_progress', 
+  COMPLETED = 'completed',
+  CANCELLED = 'cancelled',
+  NO_SHOW = 'no_show'
+}
+
+export enum QueuePriority {
+  EMERGENCY = 'emergency',
+  APPOINTMENT = 'appointment',
+  WALK_IN = 'walk_in'
+}
+
 @Schema({ timestamps: true })
 export class Queue {
   @Prop({ required: true })
@@ -11,35 +25,35 @@ export class Queue {
   @Prop({ required: true })
   doctorId: string;
 
-  @Prop({ required: true })
-  appointmentId: string;
+  @Prop()
+  appointmentId?: string;
 
   @Prop({ required: true })
-  queueDate: Date;
+  queueDate: string;
 
   @Prop({ required: true })
   position: number;
 
-  @Prop({ required: true, enum: ['waiting', 'in_progress', 'completed', 'cancelled'] })
-  status: string;
+  @Prop({ required: true, enum: Object.values(QueueStatus), default: QueueStatus.WAITING })
+  status: QueueStatus;
 
-  @Prop({ enum: ['normal', 'priority', 'emergency'], default: 'normal' })
+  @Prop({ required: true, enum: Object.values(QueuePriority), default: QueuePriority.WALK_IN })
   priority: string;
 
-  @Prop()
-  estimatedWaitTime: number; // in minutes
+  @Prop({ default: Date.now })
+  arrivalTime: Date;
 
   @Prop()
-  checkedInAt: Date;
+  estimatedWaitTime: number;
 
   @Prop()
-  calledAt: Date;
+  calledAt?: Date;
 
   @Prop()
-  completedAt: Date;
+  completedAt?: Date;
 
   @Prop()
-  notes: string;
+  notes?: string;
 }
 
 export const QueueSchema = SchemaFactory.createForClass(Queue);

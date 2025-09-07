@@ -1,217 +1,217 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { staffService } from '@/app/services/staff.service'
-import { Users, Clock, AlertTriangle, CheckCircle, ArrowUp, ArrowDown } from 'lucide-react'
-import { formatName } from '@/app/lib/name-utils'
-
-interface QueueItem {
-  _id: string
-  patientId: string
-  patientName: string
-  appointmentType: string
-  priority: 'low' | 'medium' | 'high' | 'urgent'
-  status: 'waiting' | 'in-progress' | 'completed'
-  estimatedWaitTime: number
-  checkInTime: string
-}
+import { Users, RefreshCw, Plus, ArrowUp, X, AlertTriangle } from 'lucide-react'
+import { queueService } from '@/app/services/queue.service'
+import { apiService } from '@/app/services/api.service'
+import QueueSkeleton from '@/app/components/skeletons/QueueSkeleton'
 
 export default function StaffQueuePage() {
-  const [queueItems, setQueueItems] = useState<QueueItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [allQueues, setAllQueues] = useState<any[]>([])
+  const [selectedDoctor, setSelectedDoctor] = useState('')
+  const [doctors, setDoctors] = useState<any[]>([])
+
+  const handleSyncAppointments = async () => {
+    setLoading(true)
+    try {
+      const result = await apiService.post('/queue/sync-appointments')
+      setMessage(result.message || 'Successfully synced today\'s appointments to queue!')
+      setTimeout(() => setMessage(''), 5000)
+    } catch (error) {
+      setMessage('Failed to sync appointments')
+      setTimeout(() => setMessage(''), 5000)
+    }
+    setLoading(false)
+  }
+
+  const fetchDoctors = async () => {
+    try {
+      const doctorsList = await apiService.get('/doctors')
+      setDoctors(doctorsList)
+      if (doctorsList.length > 0) {
+        setSelectedDoctor(doctorsList[0]._id)
+        fetchQueueForDoctor(doctorsList[0]._id)
+      }
+    } catch (error) {
+      console.error('Failed to fetch doctors:', error)
+    }
+  }
+
+  const fetchQueueForDoctor = async (doctorId: string) => {
+    try {
+      const queueData = await queueService.getDoctorQueue(doctorId)
+      setAllQueues(queueData)
+    } catch (error) {
+      console.error('Failed to fetch queue:', error)
+      setAllQueues([])
+    }
+  }
+
+  const handleDoctorChange = (doctorId: string) => {
+    setSelectedDoctor(doctorId)
+    fetchQueueForDoctor(doctorId)
+  }
+
+  const handleFastTrack = async (queueId: string) => {
+    try {
+      await queueService.fastTrackPatient(queueId)
+      setMessage('Patient moved to emergency priority')
+      fetchQueueForDoctor(selectedDoctor)
+      setTimeout(() => setMessage(''), 3000)
+    } catch (error) {
+      setMessage('Failed to fast track patient')
+      setTimeout(() => setMessage(''), 3000)
+    }
+  }
+
+  const handleRemoveFromQueue = async (queueId: string) => {
+    try {
+      await queueService.removeFromQueue(queueId)
+      setMessage('Patient removed from queue')
+      fetchQueueForDoctor(selectedDoctor)
+      setTimeout(() => setMessage(''), 3000)
+    } catch (error) {
+      setMessage('Failed to remove patient from queue')
+      setTimeout(() => setMessage(''), 3000)
+    }
+  }
 
   useEffect(() => {
-    fetchQueueData()
+    fetchDoctors()
   }, [])
-
-  const fetchQueueData = async () => {
-    try {
-      const data = await staffService.getQueueManagement()
-      setQueueItems(data)
-    } catch (error) {
-      console.error('Error fetching queue data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const updateQueueStatus = async (queueId: string, status: string) => {
-    try {
-      await staffService.updateQueueStatus(queueId, status)
-      await fetchQueueData()
-    } catch (error) {
-      console.error('Error updating queue status:', error)
-    }
-  }
-
-  const fastTrackPatient = async (queueId: string) => {
-    try {
-      await staffService.fastTrackPatient(queueId)
-      await fetchQueueData()
-    } catch (error) {
-      console.error('Error fast-tracking patient:', error)
-    }
-  }
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-100 dark:bg-red-900/20'
-      case 'high': return 'text-orange-600 bg-orange-100 dark:bg-orange-900/20'
-      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20'
-      default: return 'text-green-600 bg-green-100 dark:bg-green-900/20'
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'text-green-600 bg-green-100 dark:bg-green-900/20'
-      case 'in-progress': return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20'
-      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20'
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600 dark:text-gray-400">Loading queue...</div>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Queue Management</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage patient queue and appointments</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Queue Management</h1>
+          <p className="text-gray-600 dark:text-gray-400">Manage patient queues and sync appointments</p>
         </div>
+      </div>
+
+      {/* Message */}
+      {message && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+          {message}
+        </div>
+      )}
+
+      {/* Sync Button */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Sync Today's Appointments
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Add all confirmed appointments for today to their respective doctor queues.
+        </p>
         <button
-          onClick={fetchQueueData}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={handleSyncAppointments}
+          disabled={loading}
+          className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
         >
-          Refresh Queue
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <span>{loading ? 'Syncing...' : 'Sync Appointments to Queue'}</span>
         </button>
       </div>
 
-      {/* Queue Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2">
-            <Users className="h-5 w-5 text-blue-500" />
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Total in Queue</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{queueItems.length}</p>
-            </div>
-          </div>
+      {/* Queue Management */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Queue Management
+        </h3>
+        
+        {/* Doctor Selection */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Select Doctor
+          </label>
+          <select
+            value={selectedDoctor}
+            onChange={(e) => handleDoctorChange(e.target.value)}
+            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+          >
+            {doctors.map((doctor) => (
+              <option key={doctor._id} value={doctor._id}>
+                {doctor.name}
+              </option>
+            ))}
+          </select>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2">
-            <Clock className="h-5 w-5 text-yellow-500" />
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Waiting</p>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                {queueItems.filter(item => item.status === 'waiting').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="h-5 w-5 text-orange-500" />
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">In Progress</p>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                {queueItems.filter(item => item.status === 'in-progress').length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="flex items-center space-x-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400">Completed</p>
-              <p className="font-semibold text-gray-900 dark:text-white">
-                {queueItems.filter(item => item.status === 'completed').length}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Queue List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Current Queue</h2>
-        </div>
-        <div className="p-6">
-          {queueItems.length === 0 ? (
-            <div className="text-center py-8">
-              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No patients in queue</p>
+        {/* Queue Display */}
+        <div className="space-y-4">
+          {allQueues.length === 0 ? (
+            <div className="text-center py-6 text-gray-500 dark:text-gray-400">
+              No patients in queue for selected doctor
             </div>
           ) : (
-            <div className="space-y-4">
-              {queueItems.map((item, index) => (
-                <div key={item._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-lg font-bold text-gray-500 dark:text-gray-400">
-                        #{index + 1}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {formatName(item.patientName)}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {item.appointmentType} • Check-in: {new Date(item.checkInTime).toLocaleTimeString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(item.priority)}`}>
-                        {item.priority.toUpperCase()}
-                      </span>
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(item.status)}`}>
-                        {item.status.replace('-', ' ').toUpperCase()}
-                      </span>
-                    </div>
+            allQueues.map((queueItem) => (
+              <div key={queueItem._id} className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="flex items-center space-x-4">
+                  <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center font-semibold">
+                    {queueItem.position}
                   </div>
-                  
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Est. wait time: {item.estimatedWaitTime} minutes
-                    </div>
-                    <div className="flex space-x-2">
-                      {item.status === 'waiting' && (
-                        <>
-                          <button
-                            onClick={() => updateQueueStatus(item._id, 'in-progress')}
-                            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                          >
-                            Start
-                          </button>
-                          <button
-                            onClick={() => fastTrackPatient(item._id)}
-                            className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm"
-                          >
-                            Fast Track
-                          </button>
-                        </>
-                      )}
-                      {item.status === 'in-progress' && (
-                        <button
-                          onClick={() => updateQueueStatus(item._id, 'completed')}
-                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-                        >
-                          Complete
-                        </button>
-                      )}
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">
+                      {queueItem.patientId?.name || 'Unknown Patient'}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {queueItem.patientId?.email || 'No email'}
+                    </p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        queueItem.priority === 'emergency' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                        queueItem.priority === 'appointment' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                        'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+                      }`}>
+                        {queueItem.priority === 'emergency' ? '🚨 Emergency' :
+                         queueItem.priority === 'appointment' ? '📅 Appointment' : '🚶 Walk-in'}
+                      </span>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        queueItem.status === 'waiting' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                        queueItem.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      }`}>
+                        {queueItem.status.replace('_', ' ')}
+                      </span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    ~{queueItem.estimatedWaitTime || 0} min
+                  </span>
+                  
+                  {queueItem.status === 'waiting' && (
+                    <>
+                      {queueItem.priority !== 'emergency' && (
+                        <button
+                          onClick={() => handleFastTrack(queueItem._id)}
+                          className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                          title="Move to Emergency Priority"
+                        >
+                          <ArrowUp className="h-3 w-3" />
+                          <span>Emergency</span>
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={() => handleRemoveFromQueue(queueItem._id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                        title="Remove from Queue"
+                      >
+                        <X className="h-3 w-3" />
+                        <span>Remove</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>

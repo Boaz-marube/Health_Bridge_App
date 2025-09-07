@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Clock, Plus, User, Search } from 'lucide-react'
 import { patientService } from '@/app/services/patient.service'
+import { useWebSocket } from '@/app/hooks/useWebSocket'
+import AppointmentListSkeleton from '@/app/components/skeletons/AppointmentListSkeleton'
 
 interface Appointment {
   _id: string
@@ -40,6 +42,7 @@ export default function PatientAppointmentsPage() {
   const [showReschedule, setShowReschedule] = useState(false)
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Appointment | null>(null)
   const [rescheduleData, setRescheduleData] = useState({ date: '', time: '' })
+  const [notifications, setNotifications] = useState<string[]>([])
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -49,6 +52,24 @@ export default function PatientAppointmentsPage() {
       fetchData(parsedUser.id)
     }
   }, [])
+
+  // WebSocket for real-time updates
+  useWebSocket({
+    userId: user?.id || '',
+    onAppointmentUpdate: (data) => {
+      // Update appointments when status changes
+      setAppointments(prev => prev.map(apt => 
+        apt._id === data.appointmentId 
+          ? { ...apt, status: data.status }
+          : apt
+      ))
+      // Show notification
+      setNotifications(prev => [...prev, data.message])
+      setTimeout(() => {
+        setNotifications(prev => prev.slice(1))
+      }, 5000)
+    }
+  })
 
   const fetchData = async (patientId: string) => {
     const [appointmentsData, doctorsData] = await Promise.all([
@@ -134,16 +155,21 @@ export default function PatientAppointmentsPage() {
     '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
   ]
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-gray-600 dark:text-gray-400">Loading appointments...</div>
-      </div>
-    )
-  }
+
 
   return (
     <div className="space-y-6">
+      {/* Notifications */}
+      {notifications.length > 0 && (
+        <div className="fixed top-4 right-4 z-50 space-y-2">
+          {notifications.map((notification, index) => (
+            <div key={index} className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-lg">
+              {notification}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -161,7 +187,9 @@ export default function PatientAppointmentsPage() {
 
       {/* Appointments List */}
       <div className="grid gap-4">
-        {appointments.length === 0 ? (
+        {loading ? (
+          <AppointmentListSkeleton />
+        ) : appointments.length === 0 ? (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
             <Calendar className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
             <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">No appointments scheduled</h3>
