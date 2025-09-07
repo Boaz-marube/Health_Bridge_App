@@ -1,4 +1,5 @@
 import { apiService } from './api.service';
+import { apiClient } from './api-client.service';
 
 export interface Notification {
   _id: string;
@@ -23,33 +24,61 @@ export interface Notification {
 export class NotificationService {
   async getNotifications(userId: string, userType: 'patient' | 'doctor' | 'staff'): Promise<Notification[]> {
     try {
-      return await apiService.get(`/notifications/recipient/${userId}?type=${userType}`);
+      return await apiClient.get<Notification[]>(`/notifications/recipient/${userId}?type=${userType}`);
     } catch (error) {
-      return [];
+      console.warn('Notifications API unavailable, using localStorage fallback');
+      const stored = localStorage.getItem(`notifications_${userType}_${userId}`);
+      return stored ? JSON.parse(stored) : [];
     }
   }
 
   async getUnreadNotifications(userId: string, userType: 'patient' | 'doctor' | 'staff'): Promise<Notification[]> {
     try {
-      return await apiService.get(`/notifications/unread/${userId}?type=${userType}`);
+      return await apiClient.get<Notification[]>(`/notifications/unread/${userId}?type=${userType}`);
     } catch (error) {
+      console.warn('Unread notifications API unavailable, using localStorage fallback');
+      const stored = localStorage.getItem(`notifications_${userType}_${userId}`);
+      if (stored) {
+        const notifications = JSON.parse(stored);
+        return notifications.filter((n: Notification) => !n.isRead);
+      }
       return [];
     }
   }
 
-  async markAsRead(notificationId: string): Promise<void> {
+  async markAsRead(notificationId: string, userId?: string, userType?: string): Promise<void> {
     try {
-      await apiService.patch(`/notifications/${notificationId}/read`);
+      await apiClient.patch(`/notifications/${notificationId}/read`, {});
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.warn('Mark as read API unavailable, using localStorage fallback');
+      if (userId && userType) {
+        const stored = localStorage.getItem(`notifications_${userType}_${userId}`);
+        if (stored) {
+          const notifications = JSON.parse(stored);
+          const updated = notifications.map((notif: any) => 
+            notif._id === notificationId ? { ...notif, isRead: true, readAt: new Date().toISOString() } : notif
+          );
+          localStorage.setItem(`notifications_${userType}_${userId}`, JSON.stringify(updated));
+        }
+      }
     }
   }
 
   async markAllAsRead(userId: string, userType: 'patient' | 'doctor' | 'staff'): Promise<void> {
     try {
-      await apiService.patch(`/notifications/read-all/${userId}?type=${userType}`);
+      await apiClient.patch(`/notifications/read-all/${userId}?type=${userType}`, {});
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
+      console.warn('Mark all as read API unavailable, using localStorage fallback');
+      const stored = localStorage.getItem(`notifications_${userType}_${userId}`);
+      if (stored) {
+        const notifications = JSON.parse(stored);
+        const updated = notifications.map((notif: any) => ({ 
+          ...notif, 
+          isRead: true, 
+          readAt: new Date().toISOString() 
+        }));
+        localStorage.setItem(`notifications_${userType}_${userId}`, JSON.stringify(updated));
+      }
     }
   }
 
@@ -102,6 +131,48 @@ export class NotificationService {
     } catch (error) {
       console.error('Error fetching sent notifications:', error);
       return [];
+    }
+  }
+
+  async createNotification(notification: {
+    userId: string;
+    userType: 'patient' | 'doctor' | 'staff';
+    title: string;
+    message: string;
+    type: string;
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+  }) {
+    try {
+      return await apiClient.post('/notifications', {
+        recipientId: notification.userId,
+        recipientType: notification.userType,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        priority: notification.priority
+      });
+    } catch (error) {
+      console.warn('Create notification API unavailable, using localStorage fallback');
+      const newNotification = {
+        _id: Date.now().toString(),
+        recipientId: notification.userId,
+        recipientType: notification.userType,
+        type: notification.type,
+        title: notification.title,
+        message: notification.message,
+        priority: notification.priority,
+        status: 'delivered' as const,
+        isRead: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      const stored = localStorage.getItem(`notifications_${notification.userType}_${notification.userId}`);
+      const notifications = stored ? JSON.parse(stored) : [];
+      notifications.unshift(newNotification);
+      localStorage.setItem(`notifications_${notification.userType}_${notification.userId}`, JSON.stringify(notifications));
+      
+      return newNotification;
     }
   }
 }

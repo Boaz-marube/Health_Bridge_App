@@ -9,6 +9,8 @@ import { queueService, QueueStatus } from '@/app/services/queue.service'
 import StatCardSkeleton from '@/app/components/skeletons/StatCardSkeleton'
 import AppointmentSkeleton from '@/app/components/skeletons/AppointmentSkeleton'
 import { getTimeBasedGreeting } from '@/app/lib/time-utils'
+import { appointmentStatusService } from '@/app/services/appointment-status.service'
+import { notificationService } from '@/app/services/notification.service'
 
 interface User {
   id: string
@@ -24,6 +26,8 @@ export default function PatientDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState<string[]>([])
   const [queueStatus, setQueueStatus] = useState<QueueStatus>({ position: null, estimatedWaitTime: 0, status: 'not_in_queue' })
+  const [missedAppointments, setMissedAppointments] = useState<any[]>([])
+  const [requestingReschedule, setRequestingReschedule] = useState<string | null>(null)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -31,6 +35,7 @@ export default function PatientDashboardPage() {
       const parsedUser = JSON.parse(userData)
       setUser(parsedUser)
       fetchDashboardData(parsedUser.id)
+      fetchMissedAppointments(parsedUser.id)
     }
   }, [])
 
@@ -85,6 +90,42 @@ export default function PatientDashboardPage() {
     setAppointments(confirmedAppointments)
     setQueueStatus(queueData)
     setLoading(false)
+  }
+
+  const fetchMissedAppointments = (patientId: string) => {
+    const appointments = JSON.parse(localStorage.getItem('appointments') || '[]')
+    const missed = appointments.filter((apt: any) => 
+      apt.patientId === patientId && apt.status === 'missed'
+    )
+    setMissedAppointments(missed)
+  }
+
+  const handleRescheduleRequest = async (appointmentId: string) => {
+    setRequestingReschedule(appointmentId)
+    try {
+      await notificationService.createNotification({
+        userId: 'staff',
+        userType: 'staff',
+        title: 'Reschedule Request',
+        message: `Patient ${user?.name} has requested to reschedule their missed appointment.`,
+        type: 'appointment',
+        priority: 'medium'
+      })
+      
+      const appointments = JSON.parse(localStorage.getItem('appointments') || '[]')
+      const index = appointments.findIndex((apt: any) => apt.id === appointmentId)
+      if (index !== -1) {
+        appointments[index].rescheduleRequested = true
+        localStorage.setItem('appointments', JSON.stringify(appointments))
+      }
+      
+      fetchMissedAppointments(user?.id || '')
+      setNotifications(prev => [...prev, 'Reschedule request sent to staff'])
+    } catch (error) {
+      console.error('Failed to request reschedule:', error)
+    } finally {
+      setRequestingReschedule(null)
+    }
   }
 
 
@@ -166,6 +207,51 @@ export default function PatientDashboardPage() {
           </>
         )}
       </div>
+
+      {/* Missed Appointments Alert */}
+      {missedAppointments.length > 0 && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 flex items-center space-x-2">
+              <Bell className="h-5 w-5" />
+              <span>Missed Appointments</span>
+            </h3>
+            <span className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-3 py-1 rounded-full text-sm font-medium">
+              {missedAppointments.length}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {missedAppointments.map((appointment: any) => (
+              <div key={appointment.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border">
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    Dr. {appointment.doctorName || 'Doctor'}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {new Date(appointment.scheduledTime).toLocaleDateString()} at {appointment.appointmentTime}
+                  </p>
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                    {appointment.appointmentType || 'General Consultation'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleRescheduleRequest(appointment.id)}
+                  disabled={appointment.rescheduleRequested || requestingReschedule === appointment.id}
+                  className="text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50 transition-opacity"
+                  style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
+                >
+                  {appointment.rescheduleRequested ? 'Request Sent' : requestingReschedule === appointment.id ? 'Sending...' : 'Request Reschedule'}
+                </button>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+            <p className="text-sm text-red-800 dark:text-red-200">
+              <strong>Important:</strong> Please request rescheduling for your missed appointments. Our staff will contact you with new available times within 24 hours.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}

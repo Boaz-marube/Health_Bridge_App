@@ -5,6 +5,7 @@ import { Calendar, Clock, Plus, User, Search } from 'lucide-react'
 import { patientService } from '@/app/services/patient.service'
 import { useWebSocket } from '@/app/hooks/useWebSocket'
 import AppointmentListSkeleton from '@/app/components/skeletons/AppointmentListSkeleton'
+import { businessHoursService } from '@/app/services/business-hours.service'
 
 interface Appointment {
   _id: string
@@ -39,6 +40,7 @@ export default function PatientAppointmentsPage() {
     time: '',
     type: 'consultation'
   })
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<any[]>([])
   const [showReschedule, setShowReschedule] = useState(false)
   const [rescheduleAppointment, setRescheduleAppointment] = useState<Appointment | null>(null)
   const [rescheduleData, setRescheduleData] = useState({ date: '', time: '' })
@@ -150,10 +152,23 @@ export default function PatientAppointmentsPage() {
     }
   }
 
-  const timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
-  ]
+  useEffect(() => {
+    if (bookingData.date) {
+      const selectedDate = new Date(bookingData.date)
+      const slots = businessHoursService.getAvailableTimeSlots(selectedDate)
+      setAvailableTimeSlots(slots)
+    } else {
+      setAvailableTimeSlots([])
+    }
+  }, [bookingData.date])
+
+  useEffect(() => {
+    if (rescheduleData.date) {
+      const selectedDate = new Date(rescheduleData.date)
+      const slots = businessHoursService.getAvailableTimeSlots(selectedDate)
+      setAvailableTimeSlots(slots)
+    }
+  }, [rescheduleData.date])
 
 
 
@@ -298,10 +313,13 @@ export default function PatientAppointmentsPage() {
                 <input
                   type="date"
                   value={bookingData.date}
-                  onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
-                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => {
+                    setBookingData({ ...bookingData, date: e.target.value, time: '' })
+                  }}
+                  min={new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().split('T')[0]}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
+
               </div>
 
               {/* Time Selection */}
@@ -309,21 +327,31 @@ export default function PatientAppointmentsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Time
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {timeSlots.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => setBookingData({ ...bookingData, time })}
-                      className={`py-2 px-3 rounded text-sm font-medium ${
-                        bookingData.time === time
-                          ? 'bg-blue-500 text-white'
-                          : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+                {!bookingData.date ? (
+                  <p className="text-sm text-gray-500 py-4">Please select a date first</p>
+                ) : availableTimeSlots.length === 0 ? (
+                  <p className="text-sm text-red-600 py-4">No available time slots for this date</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                    {availableTimeSlots.map((slot) => (
+                      <button
+                        key={slot.time}
+                        onClick={() => slot.available && setBookingData({ ...bookingData, time: slot.time })}
+                        disabled={!slot.available}
+                        title={slot.reason}
+                        className={`py-2 px-3 rounded text-sm font-medium ${
+                          bookingData.time === slot.time
+                            ? 'bg-blue-500 text-white'
+                            : slot.available
+                            ? 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            : 'border border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
+                        }`}
+                      >
+                        {businessHoursService.formatTimeSlot(slot.time)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Appointment Type */}
@@ -393,21 +421,29 @@ export default function PatientAppointmentsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   New Time
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {timeSlots.map((time) => (
-                    <button
-                      key={time}
-                      onClick={() => setRescheduleData({ ...rescheduleData, time })}
-                      className={`py-2 px-3 rounded text-sm font-medium ${
-                        rescheduleData.time === time
-                          ? 'bg-blue-500 text-white'
-                          : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
+                {!rescheduleData.date ? (
+                  <p className="text-sm text-gray-500 py-4">Please select a date first</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                    {availableTimeSlots.map((slot) => (
+                      <button
+                        key={slot.time}
+                        onClick={() => slot.available && setRescheduleData({ ...rescheduleData, time: slot.time })}
+                        disabled={!slot.available}
+                        title={slot.reason}
+                        className={`py-2 px-3 rounded text-sm font-medium ${
+                          rescheduleData.time === slot.time
+                            ? 'bg-blue-500 text-white'
+                            : slot.available
+                            ? 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            : 'border border-gray-200 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed bg-gray-100 dark:bg-gray-800'
+                        }`}
+                      >
+                        {businessHoursService.formatTimeSlot(slot.time)}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

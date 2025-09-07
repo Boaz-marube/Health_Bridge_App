@@ -24,6 +24,31 @@ export class Appointment extends Document {
 
   @Prop()
   notes: string;
+
+  @Prop()
+  reason?: string;
+
+  @Prop({ default: 'normal' })
+  priority?: string;
+
+  @Prop()
+  completedAt?: Date;
+
+  @Prop()
+  missedAt?: Date;
+
+  @Prop({ default: 0 })
+  rescheduleCount?: number;
 }
 
 export const AppointmentSchema = SchemaFactory.createForClass(Appointment);
+
+// Add middleware to set completion/missed timestamps
+AppointmentSchema.pre('findOneAndUpdate', function() {
+  const update = this.getUpdate() as any;
+  if (update.status === AppointmentStatus.COMPLETED) {
+    update.completedAt = new Date();
+  } else if (update.status === AppointmentStatus.NO_SHOW) {
+    update.missedAt = new Date();
+  }
+});

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Calendar, Clock, Plus, User } from 'lucide-react'
 import { doctorService } from '@/app/services/doctor.service'
 import AppointmentListSkeleton from '@/app/components/skeletons/AppointmentListSkeleton'
+import { appointmentStatusService } from '@/app/services/appointment-status.service'
 
 interface Appointment {
   _id: string
@@ -16,7 +17,7 @@ interface Appointment {
   appointmentDate: string
   appointmentTime: string
   appointmentType: string
-  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+  status: 'scheduled' | 'completed' | 'cancelled' | 'missed'
   notes?: string
 }
 
@@ -50,7 +51,7 @@ export default function AppointmentsPage() {
       case 'scheduled': return 'bg-blue-100 text-blue-800'
       case 'completed': return 'bg-green-100 text-green-800'
       case 'cancelled': return 'bg-red-100 text-red-800'
-      case 'no_show': return 'bg-gray-100 text-gray-800'
+      case 'missed': return 'bg-gray-100 text-gray-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
@@ -109,11 +110,28 @@ export default function AppointmentsPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <div className="bg-blue-500 rounded-full p-2">
-                    <User className="h-4 w-4 text-white" />
+                {appointment.status === 'scheduled' && (
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => {
+                        appointmentStatusService.completeAppointment(appointment._id)
+                        fetchAppointments(user.id)
+                      }}
+                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Complete
+                    </button>
+                    <button 
+                      onClick={() => {
+                        appointmentStatusService.cancelAppointment(appointment._id)
+                        fetchAppointments(user.id)
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Cancel
+                    </button>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           ))

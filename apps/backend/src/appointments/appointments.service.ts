@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Appointment } from './schemas/appointment.schema';
@@ -15,8 +15,8 @@ export class AppointmentsService {
   constructor(
     @InjectModel('Appointment') private appointmentModel: Model<Appointment>,
     @InjectModel('DoctorSchedule') private scheduleModel: Model<DoctorSchedule>,
-    private websocketGateway: WebSocketGatewayService,
-    private queueService: QueueService,
+    @Inject(forwardRef(() => WebSocketGatewayService)) private websocketGateway: WebSocketGatewayService,
+    @Inject(forwardRef(() => QueueService)) private queueService: QueueService,
   ) {}
 
   async create(userId: string, createAppointmentDto: CreateAppointmentDto) {
@@ -146,16 +146,33 @@ export class AppointmentsService {
     return appointment;
   }
 
-  async reschedule(id: string, newDate: string, newTime: string) {
+  async reschedule(id: string, newDate: string, newTime: string, rescheduleReason?: string, priority?: string) {
+    const updateData: any = {
+      appointmentDate: new Date(newDate),
+      appointmentTime: newTime,
+      status: AppointmentStatus.SCHEDULED
+    };
+
+    if (rescheduleReason) {
+      updateData.reason = rescheduleReason;
+    }
+
+    if (priority) {
+      updateData.priority = priority;
+    } else {
+      updateData.priority = 'high';
+    }
+
+    const appointment = await this.appointmentModel.findById(id);
+    if (appointment) {
+      updateData.rescheduleCount = (appointment.rescheduleCount || 0) + 1;
+    }
+
     return this.appointmentModel.findByIdAndUpdate(
       id,
-      { 
-        appointmentDate: new Date(newDate),
-        appointmentTime: newTime,
-        status: AppointmentStatus.PENDING 
-      },
+      updateData,
       { new: true }
-    );
+    ).populate('patientId doctorId');
   }
 
   async getAvailableSlots(doctorId: string, date: string) {
@@ -214,5 +231,157 @@ export class AppointmentsService {
       },
       status: { $ne: AppointmentStatus.CANCELLED }
     });
+  }
+
+  async getScheduledAppointments(userId: string, userType: string) {
+    let filter: any = {
+      status: { $in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING] }
+    };
+    
+    if (userType === 'doctor') {
+      filter.doctorId = userId;
+    } else if (userType === 'patient') {
+      filter.patientId = userId;
+    }
+    // For staff, return all scheduled appointments (no additional filter)
+
+    return this.appointmentModel
+      .find(filter)
+      .populate('patientId', 'name email')
+      .populate('doctorId', 'name email specialization')
+      .sort({ appointmentDate: 1, appointmentTime: 1 });
+  }
+
+  async complete(id: string) {
+    const appointment = await this.appointmentModel.findByIdAndUpdate(
+      id,
+      { status: AppointmentStatus.COMPLETED },
+      { new: true }
+    ).populate('patientId doctorId');
+
+    if (appointment) {
+      // Emit real-time update to patient
+      this.websocketGateway.emitAppointmentUpdate(appointment.patientId.toString(), {
+        appointmentId: appointment._id,
+        status: AppointmentStatus.COMPLETED,
+        message: 'Your appointment has been completed.'
+      });
+    }
+
+    return appointment;
+  }
+
+  async markAsMissed(id: string) {
+    const appointment = await this.appointmentModel.findByIdAndUpdate(
+      id,
+      { status: AppointmentStatus.NO_SHOW },
+      { new: true }
+    ).populate('patientId doctorId');
+
+    if (appointment) {
+      // Emit real-time update to patient
+      this.websocketGateway.emitAppointmentUpdate(appointment.patientId.toString(), {
+        appointmentId: appointment._id,
+        status: AppointmentStatus.NO_SHOW,
+        message: 'You missed your appointment. Please reschedule.'
+      });
+    }
+
+    return appointment;
+  }
+
+  async getPriorityAppointments(userId: string, userType: string) {
+    let filter: any = {
+      $or: [
+        { status: { $in: [AppointmentStatus.NO_SHOW, AppointmentStatus.MISSED] } },
+        { priority: { $in: ['high', 'urgent'] } }
+      ]
+    };
+    
+    if (userType === 'doctor') {
+      filter.doctorId = userId;
+    } else if (userType === 'patient') {
+      filter.patientId = userId;
+    }
+    // For staff, return all priority appointments (no additional filter)
+
+    return this.appointmentModel
+      .find(filter)
+      .populate('patientId', 'name email phone')
+      .populate('doctorId', 'name email specialization')
+      .sort({ priority: -1, missedAt: -1, updatedAt: -1 });
+  }
+
+  async getMissedAppointments(userId: string, userType: string) {
+    let filter: any = {
+      status: { $in: [AppointmentStatus.NO_SHOW, AppointmentStatus.MISSED] }
+    };
+    
+    if (userType === 'doctor') {
+      filter.doctorId = userId;
+    } else if (userType === 'patient') {
+      filter.patientId = userId;
+    }
+    // For staff, return all missed appointments (no additional filter)
+
+    return this.appointmentModel
+      .find(filter)
+      .populate('patientId', 'name email phone')
+      .populate('doctorId', 'name email specialization')
+      .sort({ missedAt: -1, updatedAt: -1 });
+  }
+
+  async batchUpdateStatus(batchData: { appointmentIds: string[], status: string, missedReason?: string, priority?: string }) {
+    const updateData: any = { status: batchData.status };
+    
+    if (batchData.missedReason) {
+      updateData.reason = batchData.missedReason;
+    }
+    
+    if (batchData.priority) {
+      updateData.priority = batchData.priority;
+    }
+
+    if (batchData.status === AppointmentStatus.NO_SHOW || batchData.status === AppointmentStatus.MISSED) {
+      updateData.missedAt = new Date();
+    }
+
+    return this.appointmentModel.updateMany(
+      { _id: { $in: batchData.appointmentIds } },
+      updateData
+    );
+  }
+
+  async updateStatus(id: string, status: string) {
+    const updateData: any = { status };
+    
+    if (status === AppointmentStatus.COMPLETED) {
+      updateData.completedAt = new Date();
+    } else if (status === AppointmentStatus.NO_SHOW || status === AppointmentStatus.MISSED) {
+      updateData.missedAt = new Date();
+    }
+
+    return this.appointmentModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
+  }
+
+  async updateMissedReason(id: string, reason: string) {
+    const updateData: any = { reason };
+    
+    // Adjust priority based on reason
+    if (reason === 'emergency' || reason === 'illness') {
+      updateData.priority = 'urgent';
+    } else if (reason === 'no_show') {
+      updateData.priority = 'high';
+    }
+
+    return this.appointmentModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
   }
 }
