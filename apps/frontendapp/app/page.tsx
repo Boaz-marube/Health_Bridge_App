@@ -725,7 +725,10 @@ function SpecialtiesPage() {
                   }}
                   onError={(e) => {
                     e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling.style.display = 'flex';
+                    const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (nextSibling) {
+                      nextSibling.style.display = 'flex';
+                    }
                   }}
                 />
                 <div
@@ -973,7 +976,10 @@ function WellnessTipsPage() {
                   onError={(e) => {
                     console.log('Image failed to load:', tip.img);
                     e.currentTarget.style.display = 'none';
-                    e.currentTarget.nextElementSibling.style.display = 'flex';
+                    const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                    if (nextSibling) {
+                      nextSibling.style.display = 'flex';
+                    }
                   }}
                 />
                 <div

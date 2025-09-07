@@ -15,6 +15,8 @@ import { StaffModule } from './staff/staff.module';
 import { QueueModule } from './queue/queue.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { WebSocketModule } from './websocket/websocket.module';
+import { LabResultsModule } from './lab-results/lab-results.module';
+import { PrescriptionsModule } from './prescriptions/prescriptions.module';
 import * as dotenv from 'dotenv';
 
 // Load environment variables
@@ -52,6 +54,8 @@ dotenv.config();
     QueueModule,
     NotificationsModule,
     WebSocketModule,
+    LabResultsModule,
+    PrescriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
