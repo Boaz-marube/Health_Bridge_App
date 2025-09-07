@@ -133,11 +133,25 @@ export class PatientService {
   }
 
   async getProfile(patientId: string): Promise<PatientProfile | null> {
-    try {
-      return await apiService.get(`/patients/${patientId}`);
-    } catch (error) {
-      return null;
+    // Get from localStorage since API endpoints don't exist yet
+    const stored = localStorage.getItem(`patient_profile_${patientId}`);
+    
+    if (stored) {
+      return JSON.parse(stored);
     }
+    
+    // Return null if no stored profile
+    return null;
+  }
+
+  async updateProfile(patientId: string, profileData: any) {
+    // Store in localStorage since API endpoints don't exist yet
+    localStorage.setItem(`patient_profile_${patientId}`, JSON.stringify(profileData));
+    
+    // Simulate API delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    return profileData;
   }
 }
 

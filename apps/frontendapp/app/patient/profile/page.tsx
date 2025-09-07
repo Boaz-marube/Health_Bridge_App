@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Mail, Phone, Calendar, MapPin, Edit, Heart, AlertTriangle, Droplets, Pill, Save, X, Plus } from 'lucide-react'
+import { User, Mail, Phone, Calendar, MapPin, Edit, Heart, AlertTriangle, Droplets, Pill, Save, X, Plus, Camera } from 'lucide-react'
 import { patientService } from '@/app/services/patient.service'
 import { formatPatientName } from '@/app/lib/name-utils'
 
@@ -21,6 +21,7 @@ export default function PatientProfilePage() {
   const [isEditingProfile, setIsEditingProfile] = useState(false)
   const [medicalData, setMedicalData] = useState<any>({})
   const [profileData, setProfileData] = useState<any>({})
+  const [newProfileImage, setNewProfileImage] = useState<string | null>(null)
 
   useEffect(() => {
     const userData = localStorage.getItem('user')
@@ -55,11 +56,22 @@ export default function PatientProfilePage() {
     })
     setProfileData({
       name: profile?.name || user?.name || '',
-      phone: profile?.phone || '',
+      phone: profile?.phone || profile?.phoneNumber || '',
       address: profile?.address || '',
       dateOfBirth: profile?.dateOfBirth || '',
       gender: profile?.gender || ''
     })
+    
+    // Set profile image from database or localStorage
+    if (profile?.profileImage) {
+      setProfileImage(profile.profileImage)
+    } else {
+      // Check localStorage for profile image
+      const storedImage = localStorage.getItem(`profile_image_${userId}`)
+      if (storedImage) {
+        setProfileImage(storedImage)
+      }
+    }
     setLoading(false)
   }
 
@@ -78,28 +90,48 @@ export default function PatientProfilePage() {
         ...patientProfile,
         medicalHistory: medicalData
       }
-      // Here you would call the API to update the profile
-      // await patientService.updateProfile(user.id, updatedProfile)
-      setPatientProfile(updatedProfile)
-      setIsEditingMedical(false)
+      
+      // Call API to update the profile
+      if (user?.id) {
+        await patientService.updateProfile(user.id, updatedProfile)
+        setPatientProfile(updatedProfile)
+        setIsEditingMedical(false)
+      }
     } catch (error) {
       console.error('Failed to update medical history:', error)
+      alert('Failed to save medical history. Please try again.')
     }
   }
 
   const handleProfileSave = async () => {
     try {
-      // Update patient profile with basic data
-      const updatedProfile = {
+      // Separate profile data and image to reduce payload size
+      const basicProfileData = {
         ...patientProfile,
         ...profileData
       }
-      // Here you would call the API to update the profile
-      // await patientService.updateProfile(user.id, updatedProfile)
-      setPatientProfile(updatedProfile)
-      setIsEditingProfile(false)
+      
+      // Remove large data from the main update
+      delete basicProfileData.profileImage
+      
+      // Call API to update the profile
+      if (user?.id) {
+        await patientService.updateProfile(user.id, basicProfileData)
+        
+        // Update profile image separately if changed
+        if (newProfileImage) {
+          // Store image locally for now (can be sent separately to image endpoint)
+          localStorage.setItem(`profile_image_${user.id}`, newProfileImage)
+          setProfileImage(newProfileImage)
+          setNewProfileImage(null)
+        }
+        
+        setPatientProfile({ ...basicProfileData, profileImage: newProfileImage || profileImage })
+        setIsEditingProfile(false)
+      }
     } catch (error) {
       console.error('Failed to update profile:', error)
+      alert('Failed to save profile. Please try again.')
     }
   }
 
@@ -111,12 +143,69 @@ export default function PatientProfilePage() {
   const handleProfileCancel = () => {
     setProfileData({
       name: patientProfile?.name || user?.name || '',
-      phone: patientProfile?.phone || '',
+      phone: patientProfile?.phone || patientProfile?.phoneNumber || '',
       address: patientProfile?.address || '',
       dateOfBirth: patientProfile?.dateOfBirth || '',
       gender: patientProfile?.gender || ''
     })
+    setNewProfileImage(null)
     setIsEditingProfile(false)
+  }
+
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
+      const img = new Image()
+      
+      img.onload = () => {
+        // Set max dimensions
+        const maxWidth = 300
+        const maxHeight = 300
+        
+        let { width, height } = img
+        
+        // Calculate new dimensions
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width
+            width = maxWidth
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height
+            height = maxHeight
+          }
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        // Draw and compress
+        ctx.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', 0.7)) // 70% quality
+      }
+      
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      try {
+        const compressedImage = await compressImage(file)
+        setNewProfileImage(compressedImage)
+      } catch (error) {
+        console.error('Failed to compress image:', error)
+        // Fallback to original method
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          setNewProfileImage(e.target?.result as string)
+        }
+        reader.readAsDataURL(file)
+      }
+    }
   }
 
   const addArrayItem = (field: string) => {
@@ -192,17 +281,35 @@ export default function PatientProfilePage() {
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
         <div className="flex items-center space-x-6 mb-6">
           {/* Profile Photo */}
-          <div className="flex-shrink-0">
-            {profileImage ? (
+          <div className="flex-shrink-0 relative">
+            {(newProfileImage || profileImage) ? (
               <img
-                src={profileImage}
+                src={newProfileImage || profileImage}
                 alt={formatPatientName(user?.name || '')}
-                className="w-24 h-24 rounded-full border-4 border-gray-200 dark:border-gray-600"
+                className="w-24 h-24 rounded-full border-4 border-gray-200 dark:border-gray-600 object-cover"
               />
             ) : (
               <div className="w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center">
                 <User className="w-12 h-12 text-white" />
               </div>
+            )}
+            
+            {isEditingProfile && (
+              <>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="profile-photo-upload"
+                />
+                <label
+                  htmlFor="profile-photo-upload"
+                  className="absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 cursor-pointer shadow-lg transition-colors"
+                >
+                  <Camera className="w-4 h-4" />
+                </label>
+              </>
             )}
           </div>
           
