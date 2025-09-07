@@ -46,6 +46,11 @@ export class NotificationsController {
     return this.notificationsService.getPendingNotifications();
   }
 
+  @Get('sender/:senderId')
+  findBySender(@Param('senderId') senderId: string) {
+    return this.notificationsService.findBySender(senderId);
+  }
+
   @Patch(':id/read')
   markAsRead(@Param('id') id: string) {
     return this.notificationsService.markAsRead(id);
@@ -116,6 +121,14 @@ export class NotificationsController {
     tip: string;
   }) {
     return this.notificationsService.createWellnessTip(data.patientId, data.tip);
+  }
+
+  @Patch(':id/hide')
+  hideNotification(
+    @Param('id') id: string,
+    @Body() body: { userId: string }
+  ) {
+    return this.notificationsService.hideNotification(id, body.userId);
   }
 
   @Delete(':id')

@@ -8,6 +8,10 @@ export class CreateNotificationDto {
   @IsEnum(['patient', 'doctor', 'staff'])
   recipientType: string;
 
+  @IsOptional()
+  @IsString()
+  senderId?: string;
+
   @IsString()
   type: string;
 

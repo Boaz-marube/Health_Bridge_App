@@ -16,6 +16,8 @@ export interface Notification {
   metadata?: Record<string, any>;
   createdAt: string;
   updatedAt: string;
+  recipientName?: string;
+  senderName?: string;
 }
 
 export class NotificationService {
@@ -59,8 +61,15 @@ export class NotificationService {
     message: string;
     priority?: 'low' | 'medium' | 'high' | 'urgent';
     metadata?: Record<string, any>;
+    senderId?: string;
   }): Promise<void> {
     try {
+      // Add sender ID from localStorage if not provided
+      const userData = localStorage.getItem('user');
+      if (userData && !notificationData.senderId) {
+        const user = JSON.parse(userData);
+        notificationData.senderId = user.id;
+      }
       await apiService.post('/notifications', notificationData);
     } catch (error) {
       console.error('Error sending notification:', error);
@@ -74,6 +83,25 @@ export class NotificationService {
     } catch (error) {
       console.error('Error deleting notification:', error);
       throw error;
+    }
+  }
+
+  async hideNotification(notificationId: string, userId: string): Promise<void> {
+    try {
+      await apiService.patch(`/notifications/${notificationId}/hide`, { userId });
+    } catch (error) {
+      console.error('Backend not available, using delete as fallback:', error);
+      // Fallback to delete if hide endpoint not available
+      await this.deleteNotification(notificationId);
+    }
+  }
+
+  async getSentNotifications(senderId: string): Promise<Notification[]> {
+    try {
+      return await apiService.get(`/notifications/sender/${senderId}`);
+    } catch (error) {
+      console.error('Error fetching sent notifications:', error);
+      return [];
     }
   }
 }

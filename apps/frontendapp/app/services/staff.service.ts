@@ -110,11 +110,26 @@ export class StaffService {
   }
 
   async getProfile(staffId: string): Promise<StaffProfile | null> {
-    try {
-      return await apiService.get(`/staff/${staffId}`);
-    } catch (error) {
-      return null;
+    // TODO: Implement staff profile endpoint
+    // try {
+    //   return await apiService.get(`/staff/${staffId}`);
+    // } catch (error) {
+    //   return null;
+    // }
+    
+    // Temporary fallback
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      return {
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        department: 'General',
+        role: 'Staff'
+      };
     }
+    return null;
   }
 
   async getAllAppointments() {
