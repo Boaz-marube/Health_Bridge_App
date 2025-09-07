@@ -8,19 +8,18 @@ import { useToast } from '@/app/components/ui/toast'
 
 interface LabResult {
   _id: string
-  testType: string
+  testName: string
   testDate: string
-  resultFormat: 'upload' | 'text'
-  resultText?: string
-  additionalNotes?: string
-  fileName?: string
-  fileSize?: number
+  results: string
+  notes?: string
+  referenceRange?: string
+  units?: string
   status: string
   doctorId: {
     name: string
     specialization?: string
   }
-  createdAt: string
+  createdAt?: string
 }
 
 export default function PatientLabResultsPage() {
@@ -51,6 +50,7 @@ export default function PatientLabResultsPage() {
   }
 
   const formatTestType = (testType: string) => {
+    if (!testType) return 'Unknown Test'
     return testType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
 
@@ -107,7 +107,7 @@ export default function PatientLabResultsPage() {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-900 dark:text-white">
-                          {formatTestType(result.testType)}
+                          {formatTestType(result.testName)}
                         </h3>
                         <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
                           <div className="flex items-center space-x-1">
@@ -119,9 +119,9 @@ export default function PatientLabResultsPage() {
                             <span>Dr. {formatName(result.doctorId.name)}</span>
                           </div>
                         </div>
-                        {result.additionalNotes && (
+                        {result.notes && (
                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                            {result.additionalNotes}
+                            {result.notes}
                           </p>
                         )}
                       </div>
@@ -153,7 +153,7 @@ export default function PatientLabResultsPage() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {formatTestType(selectedResult.testType)} Results
+                  {formatTestType(selectedResult.testName)} Results
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}
@@ -180,55 +180,35 @@ export default function PatientLabResultsPage() {
                     </span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Result Type:</span>
-                    <p className="text-gray-900 dark:text-white">{selectedResult.resultFormat === 'upload' ? 'File Upload' : 'Text Entry'}</p>
+                    <span className="font-medium text-gray-700 dark:text-gray-300">Reference Range:</span>
+                    <p className="text-gray-900 dark:text-white">{selectedResult.referenceRange || 'N/A'}</p>
                   </div>
                 </div>
 
-                {selectedResult.resultFormat === 'text' && selectedResult.resultText && (
-                  <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Results:</span>
-                    <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{selectedResult.resultText}</p>
-                    </div>
+                <div>
+                  <span className="font-medium text-gray-700 dark:text-gray-300">Results:</span>
+                  <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{selectedResult.results}</p>
+                    {selectedResult.units && (
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Units: {selectedResult.units}</p>
+                    )}
                   </div>
-                )}
+                </div>
 
-                {selectedResult.resultFormat === 'upload' && selectedResult.fileName && (
-                  <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Attached File:</span>
-                    <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <FileText className="h-5 w-5 text-blue-500" />
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{selectedResult.fileName}</p>
-                          {selectedResult.fileSize && (
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {(selectedResult.fileSize / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1">
-                        <Download className="h-3 w-3" />
-                        <span>Download</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {selectedResult.additionalNotes && (
+                {selectedResult.notes && (
                   <div>
                     <span className="font-medium text-gray-700 dark:text-gray-300">Additional Notes:</span>
                     <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <p className="text-gray-900 dark:text-white">{selectedResult.additionalNotes}</p>
+                      <p className="text-gray-900 dark:text-white">{selectedResult.notes}</p>
                     </div>
                   </div>
                 )}
 
-                <div className="text-xs text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  Uploaded on {new Date(selectedResult.createdAt).toLocaleString()}
-                </div>
+                {selectedResult.createdAt && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    Created on {new Date(selectedResult.createdAt).toLocaleString()}
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end mt-6">

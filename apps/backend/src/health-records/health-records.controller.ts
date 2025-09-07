@@ -6,14 +6,22 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { HealthRecordsService } from './health-records.service';
 import { CreateHealthRecordDto } from './dto/create-health-record.dto';
 import { CreateHealthMetricDto } from './dto/create-health-metric.dto';
+import { AuthenticationGuard } from '../guards/authentication.guard';
 
-@Controller()
+@Controller('health-records')
+@UseGuards(AuthenticationGuard)
 export class HealthRecordsController {
   constructor(private readonly healthRecordsService: HealthRecordsService) {}
+
+  @Get()
+  findAllRecords() {
+    return this.healthRecordsService.findAllRecords();
+  }
 
   @Post('patients/:patientId/health-records')
   createRecord(

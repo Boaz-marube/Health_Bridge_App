@@ -110,7 +110,7 @@ export class PatientService {
 
   async getMedicalHistory(patientId: string) {
     try {
-      return await apiService.get(`/health-records/patient/${patientId}`);
+      return await apiService.get(`/health-records/patients/${patientId}/health-records`);
     } catch (error) {
       return [];
     }

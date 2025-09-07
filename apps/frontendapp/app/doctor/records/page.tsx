@@ -36,8 +36,8 @@ export default function RecordsPage() {
   }
 
   const filteredRecords = records.filter(record => {
-    const matchesSearch = record.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         record.patientId?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = record.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         record.patientId?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = selectedType === 'all' || record.recordType === selectedType
     return matchesSearch && matchesType
   })
