@@ -7,6 +7,7 @@ import { ModeToggle } from '@/app/components/theme/mode-toggle'
 import { ErrorBoundary } from '@/app/components/ui/error-boundary'
 import { patientService, PatientProfile } from '@/app/services/patient.service'
 import { formatPatientName } from '@/app/lib/name-utils'
+import { NotificationBell } from '@/app/components/notifications/NotificationBell'
 
 interface User {
   id: string
@@ -107,6 +108,7 @@ export default function PatientLayout({
               </div>
               
               <div className="flex items-center space-x-4">
+                <NotificationBell userType="patient" userId={user.id} />
                 <ModeToggle />
                 <button
                   onClick={handleLogout}
