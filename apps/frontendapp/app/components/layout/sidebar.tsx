@@ -121,6 +121,7 @@ export function Sidebar({ userType }: SidebarProps) {
         return [
           { id: "dashboard", label: "Dashboard", icon: Home, path: "/staff/dashboard" },
           { id: "appointments", label: "Appointments", icon: Calendar, path: "/staff/appointments" },
+          { id: "reschedule", label: "Reschedule", icon: ClipboardList, path: "/staff/appointments/reschedule" },
           { id: "queue", label: "Queue Management", icon: Users, path: "/staff/queue" },
           { id: "notifications", label: "Notifications", icon: Bell, path: "/staff/notifications" },
           { id: "messages", label: "Patient Messages", icon: MessageCircle, path: "/staff/messages" },

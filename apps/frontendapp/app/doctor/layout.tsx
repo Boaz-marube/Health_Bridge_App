@@ -7,6 +7,8 @@ import { ModeToggle } from '@/app/components/theme/mode-toggle'
 import { ErrorBoundary } from '@/app/components/ui/error-boundary'
 import { doctorService, DoctorProfile } from '@/app/services/doctor.service'
 import { NotificationBell } from '@/app/components/notifications/NotificationBell'
+import { appointmentStatusService } from '@/app/services/appointment-status.service'
+import { appointmentReminderService } from '@/app/services/appointment-reminder.service'
 
 interface User {
   id: string
@@ -42,8 +44,18 @@ export default function DoctorLayout({
       }
       setUser(parsedUser)
       fetchDoctorProfile(parsedUser.id)
+      
+      // Start appointment status monitoring and reminders
+      appointmentStatusService.startStatusMonitoring()
+      appointmentReminderService.startReminderService()
     } catch (error) {
       router.push('/login')
+    }
+
+    // Cleanup on unmount
+    return () => {
+      appointmentStatusService.stopStatusMonitoring()
+      appointmentReminderService.stopReminderService()
     }
   }, [router])
 

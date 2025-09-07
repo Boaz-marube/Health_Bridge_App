@@ -23,6 +23,14 @@ export class CreateAppointmentDto {
   notes?: string;
 
   @IsOptional()
+  @IsString()
+  reason?: string;
+
+  @IsOptional()
+  @IsString()
+  priority?: string;
+
+  @IsOptional()
   @IsEnum(AppointmentStatus)
   status?: AppointmentStatus = AppointmentStatus.SCHEDULED;
 }

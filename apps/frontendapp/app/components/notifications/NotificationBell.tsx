@@ -5,6 +5,7 @@ import { Bell, Eye, Clock } from 'lucide-react'
 import { notificationService, Notification } from '@/app/services/notification.service'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { NotificationPanel } from './NotificationPanel'
 
 interface NotificationBellProps {
   userType: 'patient' | 'doctor' | 'staff'
@@ -14,6 +15,7 @@ interface NotificationBellProps {
 export function NotificationBell({ userType, userId }: NotificationBellProps) {
   const [unreadNotifications, setUnreadNotifications] = useState<Notification[]>([])
   const [showDropdown, setShowDropdown] = useState(false)
+  const [showPanel, setShowPanel] = useState(false)
   const [loading, setLoading] = useState(true)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -70,7 +72,7 @@ export function NotificationBell({ userType, userId }: NotificationBellProps) {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setShowDropdown(!showDropdown)}
+        onClick={() => setShowPanel(true)}
         className="relative p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
       >
         <Bell className="h-6 w-6" />
@@ -81,85 +83,12 @@ export function NotificationBell({ userType, userId }: NotificationBellProps) {
         )}
       </button>
 
-      {showDropdown && (
-        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
-              <Link
-                href={`/${userType}/notifications`}
-                className="text-blue-500 hover:text-blue-600 text-sm"
-                onClick={() => setShowDropdown(false)}
-              >
-                View All
-              </Link>
-            </div>
-          </div>
-
-          <div className="max-h-96 overflow-y-auto">
-            {loading ? (
-              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                Loading...
-              </div>
-            ) : unreadNotifications.length === 0 ? (
-              <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                No new notifications
-              </div>
-            ) : (
-              unreadNotifications.slice(0, 5).map((notification) => (
-                <div
-                  key={notification._id}
-                  className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                  onClick={() => {
-                    handleMarkAsRead(notification._id)
-                    setShowDropdown(false)
-                    router.push(`/${userType}/notifications`)
-                  }}
-                >
-                  <div className="flex items-start space-x-3">
-                    <span className="text-lg">{getNotificationIcon(notification.type)}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-900 dark:text-white text-sm truncate">
-                        {notification.title}
-                      </p>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm truncate">
-                        {notification.message}
-                      </p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <Clock className="h-3 w-3 text-gray-400" />
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(notification.createdAt).toLocaleTimeString()}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleMarkAsRead(notification._id)
-                      }}
-                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-
-          {unreadNotifications.length > 5 && (
-            <div className="p-3 border-t border-gray-200 dark:border-gray-700 text-center">
-              <Link
-                href={`/${userType}/notifications`}
-                className="text-blue-500 hover:text-blue-600 text-sm"
-                onClick={() => setShowDropdown(false)}
-              >
-                View {unreadNotifications.length - 5} more notifications
-              </Link>
-            </div>
-          )}
-        </div>
-      )}
+      <NotificationPanel
+        userId={userId}
+        userType={userType}
+        isOpen={showPanel}
+        onClose={() => setShowPanel(false)}
+      />
     </div>
   )
 }
