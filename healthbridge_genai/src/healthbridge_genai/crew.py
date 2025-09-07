@@ -9,8 +9,9 @@ Crew setup for HealthBridge.
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 
 from dotenv import load_dotenv
 
@@ -30,7 +31,47 @@ except ImportError as e:
         "  pip install pyyaml\n"
     ) from e
 
+try:
+    from langchain_google_genai import ChatGoogleGenerativeAI
+    from crewai.llm import LLM
+except ImportError as e:
+    raise ImportError(
+        "Required packages not installed. Please install them first:\n\n"
+        "  pip install langchain-google-genai\n"
+        "  pip install litellm\n"
+    ) from e
+
+# Import our custom RAG tools
+from .tools import PatientRAGTool, GuidelineRAGTool, create_rag_tool
+
 logger = logging.getLogger("healthbridge.crew")
+
+# ---------------------------
+# LLM Configuration
+# ---------------------------
+
+def _create_gemini_llm():
+    """Create a Gemini 1.5 LLM instance for CrewAI agents using LiteLLM format."""
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "GOOGLE_API_KEY not found in environment variables. "
+            "Please add your Gemini API key to your .env file:\n"
+            "GOOGLE_API_KEY=your_api_key_here"
+        )
+    
+    # Set the environment variable for LiteLLM
+    os.environ["GOOGLE_API_KEY"] = api_key
+    
+    # Use CrewAI's LLM wrapper with proper LiteLLM format
+    llm = LLM(
+        model="gemini/gemini-1.5-flash",  # LiteLLM format: provider/model
+        temperature=0.1,
+        api_key=api_key
+    )
+    
+    logger.info("Gemini 1.5 LLM initialized successfully with LiteLLM format")
+    return llm
 
 # ---------------------------
 # YAML loading
@@ -46,23 +87,50 @@ def _read_yaml(path: Path) -> dict:
 # Builders
 # ---------------------------
 
-def _build_agents(agents_cfg: dict) -> Dict[str, Agent]:
-    """Create CrewAI Agent objects from agents.yaml."""
+def _build_agents(agents_cfg: dict, db_path: str = None) -> Dict[str, Agent]:
+    """Create CrewAI Agent objects from agents.yaml with appropriate RAG tools."""
     agents: Dict[str, Agent] = {}
+    
+    # Initialize Gemini LLM
+    llm = _create_gemini_llm()
+    
+    # Initialize RAG tools
+    patient_rag_tool = PatientRAGTool(db_path=db_path)
+    guideline_rag_tool = GuidelineRAGTool(db_path=db_path)
+    general_rag_tool = create_rag_tool("general", db_path=db_path)
+    
     for key, spec in agents_cfg.items():
         role = (spec.get("role") or "").strip()
         goal = (spec.get("goal") or "").strip()
         backstory = (spec.get("backstory") or "").strip()
 
+        # Assign appropriate tools based on agent type
+        tools = []
+        if key == "medical_history_agent":
+            # Medical history agent gets patient records tool
+            tools = [patient_rag_tool]
+        elif key == "treatment_guideline_agent":
+            # Treatment guideline agent gets medical guidelines tool
+            tools = [guideline_rag_tool]
+        elif key == "symptom_checker_agent":
+            # Symptom checker might need both patient records and guidelines
+            tools = [patient_rag_tool, guideline_rag_tool]
+        # Other agents can use the general RAG tool if needed
+        # elif key in ["appointment_scheduler_agent", "queue_monitoring_agent", "analytics_agent"]:
+        #     tools = [general_rag_tool]
+
         agent = Agent(
             role=role or key,
             goal=goal or f"Execute responsibilities for {key}",
             backstory=backstory or "",
+            tools=tools,
+            llm=llm,  # Add Gemini LLM to each agent
             allow_delegation=False,
             verbose=True,
         )
         agents[key] = agent
-        logger.debug("Built agent: %s -> %s", key, role)
+        tool_names = [tool.name for tool in tools]
+        logger.debug("Built agent: %s -> %s with tools: %s", key, role, tool_names)
     return agents
 
 
@@ -101,7 +169,7 @@ def _build_tasks(tasks_cfg: dict, agents: Dict[str, Agent]) -> Dict[str, Task]:
 # Public API
 # ---------------------------
 
-def create_healthbridge_crew(config_dir: Path) -> Tuple[Crew, Dict[str, Agent], Dict[str, Task]]:
+def create_healthbridge_crew(config_dir: Path, db_path: str = None) -> Tuple[Crew, Dict[str, Agent], Dict[str, Task]]:
     """Build the Crew, returning (crew, agents_map, tasks_map)."""
     load_dotenv()
 
@@ -114,7 +182,7 @@ def create_healthbridge_crew(config_dir: Path) -> Tuple[Crew, Dict[str, Agent], 
     if not isinstance(tasks_cfg, dict) or not tasks_cfg:
         raise ValueError("tasks.yaml must be a non-empty mapping")
 
-    agents_map = _build_agents(agents_cfg)
+    agents_map = _build_agents(agents_cfg, db_path=db_path)
     tasks_map = _build_tasks(tasks_cfg, agents_map)
 
     crew = Crew(

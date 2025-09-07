@@ -1,8 +1,76 @@
-.env
+# Python
 __pycache__/
-.DS_Store
-../w.bat
-venv10
-venv
-temp_data/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+venv10/
+env/
+ENV/
+
+# Environment Variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ChromaDB Databases
+demo_chroma_db/
+chroma_db/
 chroma_db_test/
+
+# Demo Data
+demo_data/
+temp_data/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+../w.bat
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Medical Data (for privacy)
+patient_data/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
