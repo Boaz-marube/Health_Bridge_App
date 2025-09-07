@@ -92,6 +92,7 @@ export function Sidebar({ userType }: SidebarProps) {
       case "patient":
         return [
           { id: "dashboard", label: "Dashboard", icon: Home, path: "/patient/dashboard" },
+          { id: "profile", label: "Profile", icon: User, path: "/patient/profile" },
           { id: "appointments", label: "Appointments", icon: Calendar, path: "/patient/appointments" },
           { id: "queue", label: "Queue Status", icon: Users, path: "/patient/queue" },
           { id: "medical-records", label: "Medical History", icon: FileText, path: "/patient/medical-history" },
@@ -163,17 +164,31 @@ export function Sidebar({ userType }: SidebarProps) {
     <div className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen flex flex-col">
       {/* User Profile Section */}
       <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center space-x-3">
-          <div className="bg-blue-500 rounded-full p-2">
-            <UserIcon className="h-5 w-5 text-white" />
+        {userType === 'patient' ? (
+          <Link href="/patient/profile" className="flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 -m-2 transition-colors">
+            <div className="bg-blue-500 rounded-full p-2">
+              <UserIcon className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                {userInfo.name}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{userType}</p>
+            </div>
+          </Link>
+        ) : (
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-500 rounded-full p-2">
+              <UserIcon className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                {userInfo.name}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{userType}</p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">
-              {userInfo.name}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{userType}</p>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Navigation Menu */}
