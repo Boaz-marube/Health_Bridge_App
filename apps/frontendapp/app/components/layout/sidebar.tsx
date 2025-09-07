@@ -95,6 +95,7 @@ export function Sidebar({ userType }: SidebarProps) {
           { id: "profile", label: "Profile", icon: User, path: "/patient/profile" },
           { id: "appointments", label: "Appointments", icon: Calendar, path: "/patient/appointments" },
           { id: "queue", label: "Queue Status", icon: Users, path: "/patient/queue" },
+          { id: "notifications", label: "Notifications", icon: Bell, path: "/patient/notifications" },
           { id: "medical-records", label: "Medical History", icon: FileText, path: "/patient/medical-history" },
           { id: "medications", label: "Medications", icon: Pill, path: "/patient/medications" },
           { id: "wellness", label: "Wellness Tips", icon: Heart, path: "/patient/wellness" },
@@ -105,6 +106,7 @@ export function Sidebar({ userType }: SidebarProps) {
           { id: "patients", label: "Patients", icon: User, path: "/doctor/patients" },
           { id: "queue", label: "Queue", icon: Users, path: "/doctor/queue" },
           { id: "appointments", label: "Appointments", icon: Calendar, path: "/doctor/appointments" },
+          { id: "notifications", label: "Notifications", icon: Bell, path: "/doctor/notifications" },
           { id: "records", label: "Medical Records", icon: FileText, path: "/doctor/records" },
           { id: "prescriptions", label: "Prescriptions", icon: Pill, path: "/doctor/prescriptions" },
         ]

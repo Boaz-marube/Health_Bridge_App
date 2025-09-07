@@ -1,28 +1,50 @@
 import Link from "next/link"
-import { ModeToggle } from "@/app/components/theme/mode-toggle"
+import Image from "next/image"
+import { Button } from "../ui/button"
 
-export function Nav() {
+export function Navbar() {
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">Health Bridge</span>
+      <div className="container flex h-16 items-center">
+        <div className="mr-4 flex pl-4">
+          <Link href="/" className="mr-8 flex items-center space-x-3">
+            <div className="w-8 h-8 flex items-center justify-center">
+              <Image
+                src="/logo.jpg"
+                alt="Health Bridge Logo"
+                width={32}
+                height={32}
+                className="w-8 h-8 object-contain"
+              />
+            </div>
+            <span className="text-xl font-semibold">Health Bridge</span>
           </Link>
         </div>
-        
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="flex items-center space-x-6">
-            <Link href="/about" className="text-sm font-medium">
-              About
-            </Link>
-            <Link href="/auth/login" className="text-sm font-medium">
+
+        <div className="flex flex-1 items-center justify-end pr-8 space-x-3">
+          <Link href="/signup">
+            <button
+              style={{
+                backgroundColor: "#3870FF", // Fallback color
+                backgroundImage: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
+                color: "white",
+              }}
+              className="px-6 py-2 rounded-md font-medium hover:opacity-90 transition-opacity"
+            >
+              Sign up
+            </button>
+          </Link>
+          <Link href="/login">
+            <Button variant="outline" className="px-6 bg-transparent">
               Login
-            </Link>
-          </nav>
-          <ModeToggle />
+            </Button>
+          </Link>
         </div>
       </div>
     </nav>
   )
 }
+
+export default Navbar
+
+

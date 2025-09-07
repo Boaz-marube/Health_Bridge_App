@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto, UpdateNotificationDto } from './dto/create-notification.dto';
@@ -115,5 +116,10 @@ export class NotificationsController {
     tip: string;
   }) {
     return this.notificationsService.createWellnessTip(data.patientId, data.tip);
+  }
+
+  @Delete(':id')
+  deleteNotification(@Param('id') id: string) {
+    return this.notificationsService.deleteNotification(id);
   }
 }
