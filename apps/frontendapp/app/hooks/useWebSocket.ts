@@ -20,8 +20,13 @@ export const useWebSocket = ({
     if (!userId) return
 
     // Connect to WebSocket server
-    socketRef.current = io('http://localhost:5002', {
-      transports: ['websocket'],
+    socketRef.current = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002', {
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+      maxReconnectionAttempts: 5
     })
 
     const socket = socketRef.current
