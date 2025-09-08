@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { useToast } from "@/app/components/ui/toast"
+import { ModeToggle } from "@/app/components/theme/mode-toggle"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -124,13 +125,18 @@ export default function VerifyCodePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <ModeToggle />
+      </div>
+      
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Back Button */}
           <Link 
             href="/forgot-password"
-            className="flex items-center text-gray-600 hover:text-gray-800 mb-8 transition-colors"
+            className="flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 mb-8 transition-colors"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back
@@ -157,9 +163,9 @@ export default function VerifyCodePage() {
                 <h1 className="text-3xl sm:text-4xl font-bold text-blue-600 mb-4">
                   Enter Your Verification Code
                 </h1>
-                <p className="text-gray-600 mb-8 text-sm sm:text-base">
+                <p className="text-gray-600 dark:text-gray-400 mb-8 text-sm sm:text-base">
                   Please check your inbox to find the 6-digit code we sent to{" "}
-                  <span className="font-medium text-gray-800">{email}</span>
+                  <span className="font-medium text-gray-800 dark:text-gray-200">{email}</span>
                 </p>
               </div>
 
@@ -177,7 +183,7 @@ export default function VerifyCodePage() {
                       value={digit}
                       onChange={(e) => handleCodeChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
-                      className="w-12 h-12 sm:w-14 sm:h-14 text-center text-lg font-semibold bg-blue-50 border-2 border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                      className="w-12 h-12 sm:w-14 sm:h-14 text-center text-lg font-semibold bg-blue-50 dark:bg-gray-800 border-2 border-blue-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                       disabled={isLoading}
                     />
                   ))}
@@ -189,10 +195,10 @@ export default function VerifyCodePage() {
                     type="button"
                     onClick={handleResendCode}
                     disabled={isResending}
-                    className="text-gray-600 hover:text-gray-800 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Didn't get it?{" "}
-                    <span className="text-blue-600 hover:text-blue-800 font-medium">
+                    <span className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
                       {isResending ? "Sending..." : "Resend code"}
                     </span>
                   </button>
@@ -212,7 +218,7 @@ export default function VerifyCodePage() {
                 <div className="text-center">
                   <Link
                     href="/login"
-                    className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors"
+                    className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-sm transition-colors"
                   >
                     Back to Login
                     <ArrowRight className="w-4 h-4 ml-1" />

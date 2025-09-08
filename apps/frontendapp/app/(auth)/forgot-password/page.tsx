@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { ArrowLeft, ArrowRight } from "lucide-react"
+import { ModeToggle } from "@/app/components/theme/mode-toggle"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -42,6 +43,11 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <ModeToggle />
+      </div>
+      
       {/* Main Content */}
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -72,7 +78,7 @@ export default function ForgotPasswordPage() {
             {/* Right Side - Form */}
             <div className="w-full max-w-md mx-auto lg:mx-0 order-1 lg:order-2">
               <div className="text-center lg:text-left mb-8">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-500 mb-4">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-600 dark:text-blue-400 mb-4">
                   Forgot Password
                 </h1>
                 <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base leading-relaxed">
@@ -103,7 +109,7 @@ export default function ForgotPasswordPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading}
-                    className="w-full px-4 py-3 text-gray-700 placeholder-gray-400 border-0 rounded-lg bg-blue-50 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    className="w-full px-4 py-3 text-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border-0 rounded-lg bg-blue-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                   />
                 </div>
 
@@ -147,7 +153,7 @@ export default function ForgotPasswordPage() {
                 <div className="text-center">
                   <Link
                     href="/login"
-                    className="inline-flex items-center text-blue-500 hover:text-blue-600 font-medium text-sm transition-colors"
+                    className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium text-sm transition-colors"
                   >
                     Back to Login
                     <ArrowRight className="w-4 h-4 ml-1" />
