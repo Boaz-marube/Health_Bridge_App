@@ -66,11 +66,16 @@ export class AuthController {
     return this.authService.forgotPassword(forgotPasswordDto.email);
   }
 
-  @Put('reset-password')
-  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(
+  @Post('verify-reset-code')
+  async verifyResetCode(@Body() body: { email: string; code: string }) {
+    return this.authService.verifyResetCode(body.email, body.code);
+  }
+
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: { token: string; newPassword: string }) {
+    return this.authService.resetPasswordWithToken(
       resetPasswordDto.newPassword,
-      resetPasswordDto.resetToken,
+      resetPasswordDto.token,
     );
   }
 

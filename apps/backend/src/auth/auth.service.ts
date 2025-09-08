@@ -155,24 +155,64 @@ export class AuthService {
     const user = await this.UserModel.findOne({ email });
 
     if (user) {
-      //If user exists, generate password reset link
+      //If user exists, generate 6-digit code
       const expiryDate = new Date();
-      expiryDate.setHours(expiryDate.getHours() + 1);
+      expiryDate.setMinutes(expiryDate.getMinutes() + 15); // 15 minutes expiry
 
-      const resetToken = nanoid(64);
+      const resetCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+      
+      // Delete any existing reset tokens for this user
+      await this.ResetTokenModel.deleteMany({ userId: user._id });
+      
       await this.ResetTokenModel.create({
-        token: resetToken,
+        token: resetCode,
         userId: user._id,
         expiryDate,
       });
-      //Send the link to the user by email
-      this.mailService.sendPasswordResetEmail(email, resetToken);
+      
+      //Send the code to the user by email
+      try {
+        await this.mailService.sendPasswordResetCode(email, resetCode);
+      } catch (error) {
+        console.error('Email sending failed, but continuing with flow:', error);
+        // Continue with the flow even if email fails
+      }
     }
 
-    return { message: 'If this user exists, they will receive an email' };
+    return { message: 'If this user exists, they will receive a verification code' };
   }
 
-  async resetPassword(newPassword: string, resetToken: string) {
+  async verifyResetCode(email: string, code: string) {
+    const user = await this.UserModel.findOne({ email });
+    if (!user) {
+      throw new UnauthorizedException('Invalid code');
+    }
+
+    //Find a valid reset token document
+    const token = await this.ResetTokenModel.findOne({
+      token: code,
+      userId: user._id,
+      expiryDate: { $gte: new Date() },
+    });
+
+    if (!token) {
+      throw new UnauthorizedException('Invalid or expired code');
+    }
+
+    // Generate a temporary token for password reset
+    const resetToken = nanoid(64);
+    const expiryDate = new Date();
+    expiryDate.setMinutes(expiryDate.getMinutes() + 10); // 10 minutes to reset password
+
+    // Update the token with new reset token
+    token.token = resetToken;
+    token.expiryDate = expiryDate;
+    await token.save();
+
+    return { token: resetToken, message: 'Code verified successfully' };
+  }
+
+  async resetPasswordWithToken(newPassword: string, resetToken: string) {
     //Find a valid reset token document
     const token = await this.ResetTokenModel.findOneAndDelete({
       token: resetToken,
@@ -180,7 +220,7 @@ export class AuthService {
     });
 
     if (!token) {
-      throw new UnauthorizedException('Invalid link');
+      throw new UnauthorizedException('Invalid or expired token');
     }
 
     //Change user password (MAKE SURE TO HASH!!)
@@ -191,6 +231,8 @@ export class AuthService {
 
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
+
+    return { message: 'Password reset successfully' };
   }
 
   async refreshTokens(refreshToken: string) {
