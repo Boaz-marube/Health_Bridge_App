@@ -8,6 +8,7 @@ import { ErrorBoundary } from '@/app/components/ui/error-boundary'
 import { staffService, StaffProfile } from '@/app/services/staff.service'
 import { formatPatientName } from '@/app/lib/name-utils'
 import { NotificationBell } from '@/app/components/notifications/NotificationBell'
+import { Menu } from 'lucide-react'
 
 interface User {
   id: string
@@ -24,6 +25,7 @@ export default function StaffLayout({
   const [user, setUser] = useState<User | null>(null)
   const [staffProfile, setStaffProfile] = useState<StaffProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -89,16 +91,21 @@ export default function StaffLayout({
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Sidebar */}
-        <Sidebar userType={user.userType} />
+        <Sidebar userType={user.userType} isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
         
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0">
-          {/* Header */}
-          <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div>
+        {/* Header */}
+        <header className="fixed top-0 right-0 left-16 md:left-64 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4 z-40">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden p-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+              <div className="hidden sm:block">
                 <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                   Staff Portal
                 </h1>
@@ -111,27 +118,27 @@ export default function StaffLayout({
                   </p>
                 )}
               </div>
-              
-              <div className="flex items-center space-x-4">
-                <NotificationBell userType="staff" userId={user.id} />
-                <ModeToggle />
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
             </div>
-          </header>
-          
-          {/* Page Content */}
-          <main className="flex-1 p-6">
-            <ErrorBoundary>
-              {children}
-            </ErrorBoundary>
-          </main>
-        </div>
+            
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <NotificationBell userType="staff" userId={user.id} />
+              <ModeToggle />
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 sm:px-4 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </header>
+        
+        {/* Main Content */}
+        <main className="ml-16 md:ml-64 pt-16 p-4 sm:p-6 ">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </main>
       </div>
     </ErrorBoundary>
   )
