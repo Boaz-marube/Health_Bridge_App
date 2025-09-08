@@ -249,7 +249,7 @@ export default function HomePage() {
         background: GRADIENT_STYLE, 
         margin: "0 auto", 
         maxWidth: "800px",
-        marginTop: "-30px",
+        marginTop: "10px",
         marginBottom: "40px"
       }}></div>
       
@@ -457,7 +457,7 @@ function DoctorsSection() {
             ></span>
           ))}
         </div>
-        <div style={{ textAlign: "center", marginBottom: "0px" }}>
+        <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <button
             onClick={() => setShowMore(!showMore)}
             style={{
