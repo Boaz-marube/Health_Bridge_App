@@ -45,6 +45,11 @@ export class AppointmentsController {
     return this.appointmentsService.getAvailableSlots(doctorId, date);
   }
 
+  @Get('upcoming-reminders')
+  async getUpcomingReminders(@Req() req) {
+    return this.appointmentsService.getUpcomingReminders(req.userId, req.userType);
+  }
+
   @Get(':id')
   async getAppointmentById(@Param('id') id: string) {
     return this.appointmentsService.findById(id);
