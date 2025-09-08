@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HealthBridge AI Tester</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .chat-container {
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+      }
+      .message {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 5px;
+      }
+      .user {
+        background: #e3f2fd;
+        text-align: right;
+      }
+      .ai {
+        background: #f5f5f5;
+      }
+      input,
+      button {
+        padding: 10px;
+        margin: 5px;
+      }
+      .login-form {
+        margin-bottom: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HealthBridge AI Tester</h1>
+
+    <div class="login-form" id="loginForm">
+      <h2>Login</h2>
+      <input
+        type="text"
+        id="username"
+        placeholder="Username"
+        value="test_user"
+      />
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        value="test_pass"
+      />
+      <select id="role">
+        <option value="patient">Patient</option>
+        <option value="doctor">Doctor</option>
+      </select>
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="chatInterface" style="display: none">
+      <div class="chat-container">
+        <div id="messages"></div>
+        <input
+          type="text"
+          id="messageInput"
+          placeholder="Type your message..."
+          onkeypress="handleKeyPress(event)"
+        />
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="testRAG()">Test RAG</button>
+        <button onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <script>
+      let token = null;
+      let userId = null;
+      let userRole = null;
+      let conversationId = null;
+
+      async function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const role = document.getElementById("role").value;
+
+        try {
+          const response = await fetch("http://localhost:8000/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password, role }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            token = data.access_token;
+            userId = data.user_id;
+            userRole = data.role;
+
+            document.getElementById("loginForm").style.display = "none";
+            document.getElementById("chatInterface").style.display = "block";
+            addMessage(
+              "System",
+              `Logged in as ${userRole}: ${userId}`,
+              "system"
+            );
+          } else {
+            alert("Login failed");
+          }
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("Login error");
+        }
+      }
+
+      async function sendMessage() {
+        if (!token) return;
+
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        addMessage("You", message, "user");
+        messageInput.value = "";
+
+        try {
+          const response = await fetch("http://localhost:8000/ai/chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              message: message,
+              conversation_id: conversationId,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            conversationId = data.conversation_id;
+            addMessage("AI", data.response, "ai");
+            addMessage(
+              "System",
+              `Task: ${data.selected_task}, Confidence: ${data.selection_confidence}`,
+              "system"
+            );
+          } else {
+            addMessage("System", "Error sending message", "error");
+          }
+        } catch (error) {
+          console.error("Send message error:", error);
+          addMessage("System", "Network error", "error");
+        }
+      }
+
+      async function testRAG() {
+        if (!token) return;
+
+        const query = prompt("Enter query for RAG test:");
+        if (!query) return;
+
+        try {
+          const response = await fetch("http://localhost:8000/rag/query", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              message: query,
+              user_id: userId,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            addMessage(
+              "System",
+              `RAG found ${data.results.length} documents:`,
+              "system"
+            );
+            data.results.slice(0, 2).forEach((doc) => {
+              addMessage("RAG", doc.content.substring(0, 150) + "...", "rag");
+            });
+          }
+        } catch (error) {
+          console.error("RAG test error:", error);
+        }
+      }
+
+      function addMessage(sender, text, type) {
+        const messagesDiv = document.getElementById("messages");
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${type}`;
+        messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        messagesDiv.appendChild(messageDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+      }
+
+      function handleKeyPress(event) {
+        if (event.key === "Enter") {
+          sendMessage();
+        }
+      }
+
+      function logout() {
+        token = null;
+        userId = null;
+        userRole = null;
+        conversationId = null;
+        document.getElementById("loginForm").style.display = "block";
+        document.getElementById("chatInterface").style.display = "none";
+        document.getElementById("messages").innerHTML = "";
+      }
+    </script>
+  </body>
+</html>

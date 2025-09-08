@@ -1,6 +1,4 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from chromadb import PersistentClient
 from typing import Optional, Dict, List
@@ -11,34 +9,15 @@ import re
 from datetime import datetime, timedelta
 import uuid
 from collections import defaultdict
-import jwt
-from jwt.exceptions import InvalidTokenError
 
 # ---- CONFIG ----
 PERSIST_DIRECTORY = r"C:\Users\IdeaPad-320\Desktop\health_bridge_second\Health_Bridge_App\healthbridge_genai\real_medical_db"
-
-# ---- AUTH CONFIG ----
-SECRET_KEY = "healthbridge-secret-key-2024-change-in-production"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Add the path to your crew module
 sys.path.append(r"C:\Users\IdeaPad-320\Desktop\health_bridge_second\Health_Bridge_App\healthbridge_genai\real_medical_db")
 
 # ---- FASTAPI APP ----
 app = FastAPI(title="HealthBridge AI API", version="1.0.0")
-
-# Add CORS middleware for React frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:8000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# ---- SECURITY ----
-security = HTTPBearer()
 
 # ---- GLOBAL CHROMA CLIENT ----
 chroma_client = PersistentClient(path=PERSIST_DIRECTORY)
@@ -49,95 +28,24 @@ agents_map = None
 tasks_map = None
 
 # ---- MEMORY STORAGE ----
+# In production, use a proper database. For now, we'll use in-memory storage
 user_conversation_memory = defaultdict(list)
-user_profiles = {}
-user_roles = {}  # Store user roles for authentication
+user_profiles = {}  # Store user roles and preferences
 
 # ---- REQUEST MODELS ----
 class ChatRequest(BaseModel):
+    user_id: str
     message: str
-    conversation_id: Optional[str] = None
+    role: Optional[str] = "patient"  # "doctor" or "patient"
+    conversation_id: Optional[str] = None  # For continuing conversations
 
 class UserProfileRequest(BaseModel):
+    user_id: str
     role: str 
     specialty: Optional[str] = None 
-    medical_conditions: Optional[List[str]] = None
+    medical_conditions: Optional[List[str]] = None  # For patients
 
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-    role: str  # "doctor" or "patient"
 
-class TokenData(BaseModel):
-    user_id: str
-    role: str
-
-# ---- AUTHENTICATION FUNCTIONS ----
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Create JWT access token"""
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
-
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> TokenData:
-    """Get current user from JWT token"""
-    try:
-        payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        role: str = payload.get("role")
-        if user_id is None or role is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication credentials",
-            )
-        return TokenData(user_id=user_id, role=role)
-    except InvalidTokenError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-        )
-
-# ---- AUTHENTICATION ENDPOINTS ----
-@app.post("/auth/login")
-async def login(request: LoginRequest):
-    """Login endpoint - in production, use proper user database"""
-    # Simple demo authentication - in real app, verify against database
-    user_id = f"{request.role}_{request.username}"
-    
-    # Store user role for future reference
-    user_roles[user_id] = request.role
-    
-    # Create access token
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(
-        data={"sub": user_id, "role": request.role},
-        expires_delta=access_token_expires
-    )
-    
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user_id": user_id,
-        "role": request.role,
-        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    }
-
-@app.get("/auth/me")
-async def get_current_user_info(current_user: TokenData = Depends(get_current_user)):
-    """Get current user information"""
-    profile = user_profiles.get(current_user.user_id, {})
-    return {
-        "user_id": current_user.user_id,
-        "role": current_user.role,
-        "profile": profile
-    }
-
-# ---- STARTUP EVENT ----
 @app.on_event("startup")
 async def startup_event():
     """Runs once when FastAPI starts — check DB status and initialize CrewAI."""
@@ -151,7 +59,7 @@ async def startup_event():
             stats = c.count()
             print(f"📄 Number of documents in collection '{c.name}': {stats}")
     
-    # Initialize CrewAI
+    
     try:
         from .crew import create_healthbridge_crew
         config_dir = Path(r"C:\Users\IdeaPad-320\Desktop\health_bridge_second\Health_Bridge_App\healthbridge_genai\src\healthbridge_genai\config")
@@ -163,12 +71,14 @@ async def startup_event():
     except Exception as e:
         print(f"⚠️ CrewAI initialization failed: {e}")
 
-# ---- MEMORY FUNCTIONS ----
+
 def get_conversation_history(user_id: str, conversation_id: str = None, max_messages: int = 10) -> List[Dict]:
     """Get conversation history for a user"""
     if conversation_id:
+        
         return [msg for msg in user_conversation_memory[user_id] if msg.get("conversation_id") == conversation_id][-max_messages:]
     else:
+        
         return user_conversation_memory[user_id][-max_messages:]
 
 def add_to_memory(user_id: str, message: str, response: str, role: str, conversation_id: str = None):
@@ -186,7 +96,7 @@ def add_to_memory(user_id: str, message: str, response: str, role: str, conversa
         "ai_response": response
     })
     
-    # Keep only last 50 messages per user
+  
     if len(user_conversation_memory[user_id]) > 50:
         user_conversation_memory[user_id] = user_conversation_memory[user_id][-50:]
     
@@ -205,6 +115,7 @@ def get_conversation_summary(user_id: str, conversation_id: str) -> str:
     
     return summary
 
+
 def format_response_for_role(response: str, role: str, query: str) -> str:
     """Format the response based on user role"""
     if role.lower() == "doctor":
@@ -222,10 +133,14 @@ def format_response_for_role(response: str, role: str, query: str) -> str:
     
     return formatted
 
-# ---- TASK SELECTION LOGIC ----
+
 def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
-    """Advanced query analysis to determine the most appropriate task type."""
+    """
+    Advanced query analysis to determine the most appropriate task type.
+    Returns both the task key and confidence score.
+    """
     query_lower = query.lower()
+    
     
     task_patterns = {
         "symptom_checker_task": {
@@ -265,15 +180,19 @@ def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
         task_patterns["symptom_checker_task"]["weight"] = 1.2
         task_patterns["general_medical_task"]["weight"] = 1.0
     
+    
     task_scores = {}
     for task_key, pattern in task_patterns.items():
         score = 0
         for keyword in pattern["keywords"]:
             if keyword in query_lower:
                 score += pattern["weight"]
+                # Additional points for exact matches or proximity to important words
                 if re.search(rf'\b{keyword}\b', query_lower):
                     score += 0.5
+        
         task_scores[task_key] = score
+    
     
     if "?" in query:
         if any(word in query_lower for word in ["what", "how", "why", "when", "where"]):
@@ -281,10 +200,11 @@ def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
     
     selected_task = max(task_scores.items(), key=lambda x: x[1])
     
+    
     if selected_task[1] < 1.0:
         selected_task = ("general_medical_task", 0.5)
     
-    confidence = min(selected_task[1] / 3.0, 1.0)
+    confidence = min(selected_task[1] / 3.0, 1.0)  
     
     return {
         "task_key": selected_task[0],
@@ -294,15 +214,24 @@ def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
 
 # ---- RAG ONLY ENDPOINT ----
 @app.post("/rag/query")
-async def rag_query_endpoint(request: ChatRequest, current_user: TokenData = Depends(get_current_user)):
-    """Pure RAG endpoint - retrieves relevant medical information only."""
+async def rag_query_endpoint(request: ChatRequest):
+    """
+    Pure RAG endpoint - retrieves relevant medical information only
+    without CrewAI processing.
+    """
     query_text = request.message
-    user_id = current_user.user_id
+    user_id = request.user_id
 
     print(f"\n🔍 RAG query from user '{user_id}': {query_text}")
 
+    # Load collection
     collection = chroma_client.get_or_create_collection("healthbridge_ai")
-    results = collection.query(query_texts=[query_text], n_results=5)
+
+    # Perform similarity search
+    results = collection.query(
+        query_texts=[query_text],
+        n_results=2
+    )
 
     if not results or not results.get("documents"):
         print("⚠️ No relevant data found in ChromaDB")
@@ -327,6 +256,7 @@ async def rag_query_endpoint(request: ChatRequest, current_user: TokenData = Dep
         })
 
     print(f"✅ Found {len(formatted_results)} relevant documents")
+
     return {
         "status": "success",
         "user_id": user_id,
@@ -334,23 +264,26 @@ async def rag_query_endpoint(request: ChatRequest, current_user: TokenData = Dep
         "results": formatted_results
     }
 
-# ---- MAIN CHAT ENDPOINT ----
+
 @app.post("/ai/chat")
-async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = Depends(get_current_user)):
-    """Main endpoint for user interaction with authentication."""
+async def crewai_chat_endpoint(request: ChatRequest):
+    """
+    Main endpoint for user interaction - combines RAG retrieval with CrewAI processing.
+    Now with memory preservation and role-based responses.
+    """
     query_text = request.message
-    user_id = current_user.user_id
-    role = current_user.role
+    user_id = request.user_id
+    role = request.role or "patient"
     conversation_id = request.conversation_id
 
     print(f"\n🤖 CrewAI chat request from user '{user_id}' (role: {role}): {query_text}")
 
-    # Get conversation history
+    
     conversation_history = get_conversation_history(user_id, conversation_id)
     conversation_summary = get_conversation_summary(user_id, conversation_id) if conversation_history else "No previous conversation."
 
-    # Get RAG context
-    rag_response = await rag_query_endpoint(request, current_user)
+    
+    rag_response = await rag_query_endpoint(request)
     
     if rag_response["status"] == "no_data":
         return {
@@ -367,43 +300,45 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
     
     print(f"🎯 Auto-selected task: {task_key} (confidence: {confidence})")
 
-    # Prepare RAG context
-    rag_documents = rag_response["results"]
+    # Prepare RAG context for CrewAI with memory integration
     rag_context = "\n\n".join([
         f"Document {result['rank']} (Relevance: {result['similarity_score']:.3f}):\n{result['content']}"
-        for result in rag_documents
+        for result in rag_response["results"]
     ])
+
+    # Enhanced query with memory and role context
+    enhanced_query = f"""
+    USER QUERY: {query_text}
+    USER ROLE: {role.upper()}
+    
+    CONVERSATION CONTEXT:
+    {conversation_summary}
+    
+    RELEVANT MEDICAL CONTEXT FROM DATABASE:
+    {rag_context}
+
+    TASK CONTEXT: You are a specialized medical AI assistant focused on {task_key.replace('_', ' ').replace('task', '').title()}.
+    Your response should be tailored for a {role} - use appropriate tone and detail level.
+
+    INSTRUCTIONS:
+    1. Analyze the user's query in context of their role ({role}) and conversation history
+    2. Provide a comprehensive, professional medical response appropriate for {role}
+    3. If the context is insufficient, acknowledge limitations and provide general guidance
+    4. Always include appropriate medical disclaimers
+    5. Maintain continuity with previous conversation if relevant
+    6. Tailor response depth and terminology for {role} understanding
+    """
 
     # Process with CrewAI
     try:
         if crew is None or tasks_map is None:
             raise Exception("CrewAI not initialized")
 
+        # Fallback to general if specific task not found
         if task_key not in tasks_map:
             print(f"⚠️ Task '{task_key}' not found, falling back to general_medical_task")
             task_key = "general_medical_task"
             confidence = 0.5
-
-        # Enhanced query with memory and role context
-        enhanced_query = f"""
-        USER QUERY: {query_text}
-        USER ROLE: {role.upper()}
-        
-        CONVERSATION CONTEXT:
-        {conversation_summary}
-        
-        RELEVANT MEDICAL CONTEXT FROM DATABASE:
-        {rag_context}
-
-        TASK CONTEXT: You are a specialized medical AI assistant focused on {task_key.replace('_', ' ').replace('task', '').title()}.
-
-        INSTRUCTIONS:
-        1. Analyze the user's query in context of their role ({role}) and conversation history
-        2. Provide a comprehensive, professional medical response appropriate for {role}
-        3. If the context is insufficient, acknowledge limitations and provide general guidance
-        4. Always include appropriate medical disclaimers
-        5. Maintain continuity with previous conversation if relevant
-        """
 
         # Run the selected task
         raw_result = run_single_task(enhanced_query, task_key)
@@ -414,7 +349,7 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
         # Store in memory
         new_conversation_id = add_to_memory(user_id, query_text, formatted_response, role, conversation_id)
         
-        return {
+        response_data = {
             "status": "success",
             "user_id": user_id,
             "query": query_text,
@@ -422,35 +357,31 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
             "selection_confidence": confidence,
             "user_role": role,
             "conversation_id": new_conversation_id,
-            "rag_context_summary": f"Found {len(rag_documents)} relevant documents",
+            "rag_context_summary": f"Found {len(rag_response['results'])} relevant documents",
             "response": formatted_response
         }
         
+        return response_data
+        
     except Exception as e:
         print(f"❌ CrewAI execution error: {e}")
-        # Fallback response
-        fallback_response = f"""
-**ANALYSIS OF YOUR QUERY: "{query_text}"**
-
-I found {len(rag_documents)} relevant medical documents but encountered an error processing them.
-
-**MEDICAL DISCLAIMER:** Please consult healthcare professionals for medical advice.
-"""
-        
+        # Fallback to just returning RAG results
         return {
-            "status": "error",
+            "status": "crewai_error",
             "user_id": user_id,
             "query": query_text,
             "error": str(e),
-            "response": fallback_response
+            "rag_results": rag_response["results"],
+            "response": "I encountered an error processing your request with our AI system. Here's the relevant information I found: " + 
+                       "\n\n".join([result["content"][:200] + "..." for result in rag_response["results"][:3]])
         }
 
 # ---- USER PROFILE MANAGEMENT ----
 @app.post("/user/profile")
-async def set_user_profile(request: UserProfileRequest, current_user: TokenData = Depends(get_current_user)):
+async def set_user_profile(request: UserProfileRequest):
     """Set or update user profile information"""
-    user_profiles[current_user.user_id] = {
-        "role": current_user.role,
+    user_profiles[request.user_id] = {
+        "role": request.role,
         "specialty": request.specialty,
         "medical_conditions": request.medical_conditions or [],
         "last_updated": datetime.now().isoformat()
@@ -458,21 +389,24 @@ async def set_user_profile(request: UserProfileRequest, current_user: TokenData 
     
     return {
         "status": "success",
-        "user_id": current_user.user_id,
-        "profile": user_profiles[current_user.user_id]
+        "user_id": request.user_id,
+        "profile": user_profiles[request.user_id]
     }
 
-@app.get("/user/profile")
-async def get_user_profile(current_user: TokenData = Depends(get_current_user)):
+@app.get("/user/{user_id}/profile")
+async def get_user_profile(user_id: str):
     """Get user profile information"""
-    profile = user_profiles.get(current_user.user_id, {})
+    profile = user_profiles.get(user_id)
+    if not profile:
+        return {"status": "not_found", "user_id": user_id}
+    
     return {"status": "success", "profile": profile}
 
-@app.get("/user/conversations")
-async def get_user_conversations(current_user: TokenData = Depends(get_current_user)):
-    """Get list of conversations for authenticated user"""
+@app.get("/user/{user_id}/conversations")
+async def get_user_conversations(user_id: str):
+    """Get list of conversations for a user"""
     conversations = {}
-    for msg in user_conversation_memory.get(current_user.user_id, []):
+    for msg in user_conversation_memory.get(user_id, []):
         conv_id = msg["conversation_id"]
         if conv_id not in conversations:
             conversations[conv_id] = {
@@ -483,7 +417,7 @@ async def get_user_conversations(current_user: TokenData = Depends(get_current_u
         conversations[conv_id]["message_count"] += 1
     
     return {
-        "user_id": current_user.user_id,
+        "user_id": user_id,
         "conversations": conversations
     }
 
@@ -524,15 +458,14 @@ async def root():
             "role_based_responses": "✅ (doctor/patient)",
             "conversation_memory": "✅",
             "rag_integration": "✅",
-            "auto_task_selection": "✅",
-            "authentication": "✅"
+            "auto_task_selection": "✅"
         },
         "endpoints": {
-            "auth_login": "POST /auth/login",
-            "ai_chat": "POST /ai/chat",
-            "rag_query": "POST /rag/query",
-            "user_profile": "GET/POST /user/profile",
-            "user_conversations": "GET /user/conversations"
+            "ai_chat": "/ai/chat (POST) - MAIN ENDPOINT",
+            "rag_only": "/rag/query (POST)",
+            "user_profile": "/user/profile (POST)",
+            "user_conversations": "/user/{id}/conversations (GET)",
+            "analyze_query": "/analyze-query (POST)"
         }
     }
 
@@ -554,15 +487,17 @@ async def system_status():
         "user_profiles": len(user_profiles)
     }
 
-# ---- TASK ANALYSIS ENDPOINT ----
+# ---- TASK ANALYSIS ENDPOINT (FOR DEBUGGING) ----
 @app.post("/analyze-query")
-async def analyze_query_endpoint(request: ChatRequest, current_user: TokenData = Depends(get_current_user)):
-    """Debug endpoint to see how queries are analyzed"""
-    analysis = analyze_query_and_select_task(request.message, current_user.role)
+async def analyze_query_endpoint(request: ChatRequest):
+    """
+    Debug endpoint to see how queries are analyzed without executing tasks.
+    """
+    analysis = analyze_query_and_select_task(request.message, request.role or "patient")
     
     return {
-        "user_id": current_user.user_id,
+        "user_id": request.user_id,
         "query": request.message,
-        "user_role": current_user.role,
+        "user_role": request.role or "patient",
         "analysis": analysis
     }
