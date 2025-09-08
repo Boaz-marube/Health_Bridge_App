@@ -59,13 +59,11 @@ export default function PatientsPage() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Patients</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your patient records</p>
-        </div>
+      <div className="space-y-2 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Patients</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage your patient records</p>
       </div>
 
       {/* Search */}
@@ -73,55 +71,56 @@ export default function PatientsPage() {
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <input
           type="text"
-          placeholder="Search patients by name or email..."
+          placeholder="Search patients..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+          className="w-full pl-10 pr-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base"
         />
       </div>
 
       {/* Patients Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {loading ? (
           Array(8).fill(0).map((_, i) => <PatientCardSkeleton key={i} />)
         ) : (
           paginatedPatients.map((patient) => (
-          <div key={patient._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+          <div key={patient._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="bg-blue-500 rounded-full p-2">
-                <User className="h-5 w-5 text-white" />
+              <div className="bg-blue-500 rounded-full p-2 flex-shrink-0">
+                <User className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">{patient.name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Patient ID: {patient._id.slice(-6)}</p>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">{patient.name}</h3>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">ID: {patient._id.slice(-6)}</p>
               </div>
             </div>
 
             <div className="space-y-2 mb-4">
-              <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                <Mail className="h-4 w-4 mr-2" />
-                {patient.email}
+              <div className="flex items-start text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                <Mail className="h-3 w-3 sm:h-4 sm:w-4 mr-2 mt-0.5 flex-shrink-0" />
+                <span className="truncate">{patient.email}</span>
               </div>
               {patient.phone && (
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                  <Phone className="h-4 w-4 mr-2" />
-                  {patient.phone}
+                <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                  <Phone className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+                  <span>{patient.phone}</span>
                 </div>
               )}
               {patient.dateOfBirth && (
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  {new Date(patient.dateOfBirth).toLocaleDateString()}
+                <div className="flex items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+                  <span>{new Date(patient.dateOfBirth).toLocaleDateString()}</span>
                 </div>
               )}
             </div>
 
-            <div className="flex space-x-2">
-              <button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded text-sm flex items-center justify-center space-x-1">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+              <button className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-3 rounded text-xs sm:text-sm flex items-center justify-center space-x-1 transition-colors">
                 <FileText className="h-3 w-3" />
-                <span>View Records</span>
+                <span className="hidden sm:inline">View Records</span>
+                <span className="sm:hidden">Records</span>
               </button>
-              <button className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-3 rounded text-sm">
+              <button className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-3 rounded text-xs sm:text-sm transition-colors">
                 Contact
               </button>
             </div>
@@ -131,10 +130,10 @@ export default function PatientsPage() {
       </div>
 
       {!loading && filteredPatients.length === 0 && (
-        <div className="text-center py-12 col-span-full">
-          <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No patients found</h3>
-          <p className="text-gray-600 dark:text-gray-400">
+        <div className="text-center py-12">
+          <User className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">No patients found</h3>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 px-4">
             {searchTerm ? 'Try adjusting your search terms' : 'No patients registered yet'}
           </p>
         </div>
@@ -142,38 +141,52 @@ export default function PatientsPage() {
 
       {/* Pagination */}
       {!loading && filteredPatients.length > 0 && totalPages > 1 && (
-        <div className="col-span-full flex items-center justify-between mt-6">
-          <div className="text-sm text-gray-700 dark:text-gray-300">
+        <div className="flex flex-col sm:flex-row items-center justify-between mt-6 space-y-4 sm:space-y-0">
+          <div className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 order-2 sm:order-1">
             Showing {startIndex + 1} to {Math.min(startIndex + patientsPerPage, filteredPatients.length)} of {filteredPatients.length} patients
           </div>
-          <div className="flex space-x-2">
+          <div className="flex space-x-1 sm:space-x-2 order-1 sm:order-2">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              Previous
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Prev</span>
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`px-3 py-2 text-sm rounded-md ${
-                  currentPage === page
-                    ? 'text-white'
-                    : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                }`}
-                style={currentPage === page ? { background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' } : {}}
-              >
-                {page}
-              </button>
-            ))}
+            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+              let page;
+              if (totalPages <= 5) {
+                page = i + 1;
+              } else if (currentPage <= 3) {
+                page = i + 1;
+              } else if (currentPage >= totalPages - 2) {
+                page = totalPages - 4 + i;
+              } else {
+                page = currentPage - 2 + i;
+              }
+              return (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-md transition-colors ${
+                    currentPage === page
+                      ? 'text-white'
+                      : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  }`}
+                  style={currentPage === page ? { background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' } : {}}
+                >
+                  {page}
+                </button>
+              );
+            })}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
+              <span className="sm:hidden">Next</span>
             </button>
           </div>
         </div>

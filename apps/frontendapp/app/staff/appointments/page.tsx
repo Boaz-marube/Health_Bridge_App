@@ -173,39 +173,40 @@ export default function StaffAppointmentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Appointment Management</h1>
-          <p className="text-gray-600 dark:text-gray-400">Book, reschedule, and manage patient appointments</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Appointment Management</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Book, reschedule, and manage patient appointments</p>
         </div>
         <button
           onClick={() => setShowBooking(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center space-x-2 text-sm sm:text-base"
         >
           <Plus className="h-4 w-4" />
-          <span>Book Appointment</span>
+          <span className="hidden sm:inline">Book Appointment</span>
+          <span className="sm:hidden">Book</span>
         </button>
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-        <div className="flex flex-col md:flex-row gap-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder="Search by patient or doctor name..."
+                placeholder="Search patients or doctors..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full pl-10 pr-4 py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
             </div>
           </div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -230,72 +231,72 @@ export default function StaffAppointmentsPage() {
           </div>
         ) : (
           paginatedAppointments.map((appointment) => (
-            <div key={appointment._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+            <div key={appointment._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <div className="space-y-2 flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                       {appointment.patientId?.name || 'Unknown Patient'}
                     </h3>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(appointment.status)}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-medium self-start ${getStatusColor(appointment.status)}`}>
                       {appointment.status}
                     </span>
                   </div>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                     Doctor: {appointment.doctorId?.name || 'Unknown Doctor'}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                     {appointment.doctorId?.specialization || 'General Practice'}
                   </p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center space-x-1">
-                      <Calendar className="h-4 w-4" />
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>{new Date(appointment.appointmentDate).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <Clock className="h-4 w-4" />
+                      <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                       <span>{appointment.appointmentTime}</span>
                     </div>
                   </div>
                   {appointment.notes && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       Notes: {appointment.notes}
                     </p>
                   )}
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:items-center sm:space-x-2">
                   {appointment.status === 'cancelled' ? (
                     <button 
                       onClick={() => handleDeleteAppointment(appointment._id)}
-                      className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                      className="bg-gray-500 hover:bg-gray-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex items-center space-x-1 min-w-0"
                     >
                       <Trash2 className="h-3 w-3" />
-                      <span>Delete</span>
+                      <span className="hidden sm:inline">Delete</span>
                     </button>
                   ) : (
                     <>
                       {appointment.status === 'pending' && (
                         <button 
                           onClick={() => handleConfirmAppointment(appointment._id)}
-                          className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                          className="bg-green-500 hover:bg-green-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex items-center space-x-1 min-w-0"
                         >
                           <span>✓</span>
-                          <span>Confirm</span>
+                          <span className="hidden sm:inline">Confirm</span>
                         </button>
                       )}
                       <button 
                         onClick={() => handleEditAppointment(appointment)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex items-center space-x-1 min-w-0"
                       >
                         <Edit className="h-3 w-3" />
-                        <span>Edit</span>
+                        <span className="hidden sm:inline">Edit</span>
                       </button>
                       <button 
                         onClick={() => handleCancelAppointment(appointment._id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 sm:px-3 py-1 rounded text-xs sm:text-sm flex items-center space-x-1 min-w-0"
                       >
                         <Trash2 className="h-3 w-3" />
-                        <span>Cancel</span>
+                        <span className="hidden sm:inline">Cancel</span>
                       </button>
                     </>
                   )}
@@ -308,25 +309,26 @@ export default function StaffAppointmentsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white dark:bg-gray-800 rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4">
+          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 text-center sm:text-left">
             Showing {startIndex + 1} to {Math.min(startIndex + appointmentsPerPage, filteredAppointments.length)} of {filteredAppointments.length} appointments
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-center space-x-2">
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-2 sm:px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              Previous
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Prev</span>
             </button>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              Page {currentPage} of {totalPages}
+            <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              {currentPage}/{totalPages}
             </span>
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="px-2 sm:px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Next
             </button>
@@ -336,15 +338,15 @@ export default function StaffAppointmentsPage() {
 
       {/* Booking/Edit Modal */}
       {(showBooking || showEdit) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm sm:max-w-md max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                 {editingAppointment ? 'Edit Appointment' : 'Book New Appointment'}
               </h2>
             </div>
             
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               {/* Patient Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -402,12 +404,12 @@ export default function StaffAppointmentsPage() {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Select Time
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {timeSlots.map((time) => (
                     <button
                       key={time}
                       onClick={() => setBookingData({ ...bookingData, time })}
-                      className={`py-2 px-3 rounded text-sm font-medium ${
+                      className={`py-2 px-2 sm:px-3 rounded text-xs sm:text-sm font-medium ${
                         bookingData.time === time
                           ? 'bg-blue-500 text-white'
                           : 'border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -451,7 +453,7 @@ export default function StaffAppointmentsPage() {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex space-x-3">
+            <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
               <button
                 onClick={() => {
                   setShowBooking(false)
@@ -459,16 +461,17 @@ export default function StaffAppointmentsPage() {
                   setEditingAppointment(null)
                   setBookingData({ patientId: '', doctorId: '', date: '', time: '', type: 'consultation', notes: '' })
                 }}
-                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="flex-1 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-sm sm:text-base"
               >
                 Cancel
               </button>
               <button
                 onClick={handleBookAppointment}
                 disabled={!bookingData.patientId || !bookingData.doctorId || !bookingData.date || !bookingData.time}
-                className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white py-2 rounded-lg"
+                className="flex-1 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white py-2 rounded-lg text-sm sm:text-base"
               >
-                {editingAppointment ? 'Update Appointment' : 'Book Appointment'}
+                <span className="hidden sm:inline">{editingAppointment ? 'Update Appointment' : 'Book Appointment'}</span>
+                <span className="sm:hidden">{editingAppointment ? 'Update' : 'Book'}</span>
               </button>
             </div>
           </div>

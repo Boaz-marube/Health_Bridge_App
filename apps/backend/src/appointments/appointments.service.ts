@@ -384,4 +384,27 @@ export class AppointmentsService {
       { new: true }
     );
   }
+
+  async getUpcomingReminders(userId: string, userType: string) {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    let filter: any = {
+      appointmentDate: { $gte: now, $lte: tomorrow },
+      status: { $in: [AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED] }
+    };
+    
+    if (userType === 'doctor') {
+      filter.doctorId = userId;
+    } else if (userType === 'patient') {
+      filter.patientId = userId;
+    }
+    
+    return this.appointmentModel
+      .find(filter)
+      .populate('patientId', 'name email')
+      .populate('doctorId', 'name email specialization')
+      .sort({ appointmentDate: 1, appointmentTime: 1 });
+  }
 }
