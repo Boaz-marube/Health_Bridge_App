@@ -728,7 +728,7 @@ function SpecialtiesPage() {
               </div>
               <button
                 onClick={() => {
-                  const details = {
+                  const details: { [key: string]: string } = {
                     'Cardiology': 'Heart Health Services:\n• ECG & Stress Testing\n• Cardiac Catheterization\n• Heart Surgery\n• Preventive Care\n\nDoctors: Dr. Robert Johnson, MD\nHours: 24/7 Emergency Care\nContact: (555) 123-4567',
                     'Dermatology': 'Skin Care Services:\n• Skin Cancer Screening\n• Cosmetic Procedures\n• Acne Treatment\n• Laser Therapy\n\nDoctors: Dr. Sarah Williams, MD\nHours: Mon-Fri 8AM-6PM\nContact: (555) 123-4568',
                     'Obstetrics & Gynecology': 'Women\'s Health Services:\n• Prenatal Care\n• Family Planning\n• Gynecological Exams\n• Fertility Treatment\n\nDoctors: Dr. Jessica Nguyen, OB/GYN\nHours: Mon-Fri 7AM-7PM\nContact: (555) 123-4569',
@@ -969,7 +969,7 @@ function WellnessTipsPage() {
               <div style={{ padding: "0 20px 8px 20px" }}>
                 <button
                   onClick={() => {
-                    const wellnessTips = {
+                    const wellnessTips: { [key: string]: string } = {
                       "Navigating the Wellness Landscape: Latest Insights in Medical Health": `🏥 WELLNESS LANDSCAPE INSIGHTS
 
 📊 Key Health Metrics to Track:
