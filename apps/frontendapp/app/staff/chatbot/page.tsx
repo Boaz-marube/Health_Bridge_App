@@ -80,94 +80,95 @@ export default function StaffChatbotPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-3">
-        <Bot className="h-8 w-8 text-blue-500" />
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">AI Assistant</h1>
-          <p className="text-gray-600 dark:text-gray-400">Chat with your administrative AI assistant</p>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow flex flex-col" style={{ height: 'calc(100vh - 200px)' }}>
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {messages.map((message) => (
-            <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div
-                className={`max-w-md rounded-lg p-4 ${
-                  message.type === 'user'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                }`}
-              >
-                <p className="text-sm">{message.content}</p>
-                <p className="text-xs opacity-70 mt-2">
-                  {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </p>
-              </div>
-            </div>
-          ))}
-
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 max-w-md">
-                <div className="flex items-center space-x-2">
-                  <Bot className="h-4 w-4" />
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Suggestions */}
-        <div className="px-6 py-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setInputValue('Show appointment statistics for today')}
-              className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
-            >
-              Today's stats
-            </button>
-            <button
-              onClick={() => setInputValue('Help me manage the patient queue')}
-              className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
-            >
-              Manage queue
-            </button>
-            <button
-              onClick={() => setInputValue('Schedule a new appointment')}
-              className="px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600"
-            >
-              New appointment
-            </button>
+    <div className="w-full max-w-full overflow-x-hidden">
+      <div className="space-y-4 sm:space-y-6 w-full">
+        <div className="flex items-center space-x-2 sm:space-x-3 w-full">
+          <Bot className="h-6 sm:h-8 w-6 sm:w-8 text-blue-500 flex-shrink-0" />
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white truncate">AI Assistant</h1>
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 truncate">Chat with your administrative AI assistant</p>
           </div>
         </div>
 
-        <div className="p-6 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <form onSubmit={handleSendMessage} className="flex space-x-3">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Ask about scheduling, patient management, or operations..."
-              className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2"
-              style={{ '--tw-ring-color': '#38B7FF' } as React.CSSProperties}
-            />
-            <button
-              type="submit"
-              disabled={!inputValue.trim() || isTyping}
-              className="text-white px-6 py-3 rounded-lg flex items-center disabled:opacity-50"
-              style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
-            >
-              <Send className="h-5 w-5" />
-            </button>
-          </form>
+        <div className="md:h-[70vh] bg-white dark:bg-gray-800 rounded-lg shadow flex flex-col w-full max-w-full" style={{ height: 'calc(100vh - 160px)' }}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 space-y-3 sm:space-y-4 w-full">
+            {messages.map((message) => (
+              <div key={message.id} className={`flex w-full ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div
+                  className={`max-w-[80%] sm:max-w-md rounded-lg p-3 sm:p-4 break-words overflow-wrap-anywhere ${
+                    message.type === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                  }`}
+                >
+                  <p className="text-xs sm:text-sm leading-relaxed break-words">{message.content}</p>
+                  <p className="text-xs opacity-70 mt-1 sm:mt-2">
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            {isTyping && (
+              <div className="flex justify-start w-full">
+                <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-3 sm:p-4 max-w-[80%] sm:max-w-md">
+                  <div className="flex items-center space-x-2">
+                    <Bot className="h-3 sm:h-4 w-3 sm:w-4 flex-shrink-0" />
+                    <div className="flex space-x-1">
+                      <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                      <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+
+          <div className="px-3 sm:px-6 py-2 sm:py-3 border-t border-gray-200 dark:border-gray-700 w-full overflow-x-hidden">
+            <div className="flex flex-wrap gap-1 sm:gap-2 w-full">
+              <button
+                onClick={() => setInputValue('Show appointment statistics for today')}
+                className="px-2 sm:px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex-shrink-0"
+              >
+                Today's stats
+              </button>
+              <button
+                onClick={() => setInputValue('Help me manage the patient queue')}
+                className="px-2 sm:px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex-shrink-0"
+              >
+                Manage queue
+              </button>
+              <button
+                onClick={() => setInputValue('Schedule a new appointment')}
+                className="px-2 sm:px-3 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 flex-shrink-0"
+              >
+                New appointment
+              </button>
+            </div>
+          </div>
+
+          <div className="p-3 sm:p-6 sm:pt-3 border-t border-gray-200 dark:border-gray-700 w-full">
+            <form onSubmit={handleSendMessage} className="flex space-x-2 sm:space-x-3 w-full">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Ask about scheduling, patient management, or operations..."
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 text-sm sm:text-base min-w-0 w-0"
+                style={{ '--tw-ring-color': '#38B7FF' } as React.CSSProperties}
+              />
+              <button
+                type="submit"
+                disabled={!inputValue.trim() || isTyping}
+                className="text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center disabled:opacity-50 flex-shrink-0"
+                style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
+              >
+                <Send className="h-4 sm:h-5 w-4 sm:w-5" />
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

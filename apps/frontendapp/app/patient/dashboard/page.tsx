@@ -131,7 +131,7 @@ export default function PatientDashboardPage() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-hidden">
       {/* Notifications */}
       {notifications.length > 0 && (
         <div className="fixed top-4 right-4 z-50 space-y-2">
@@ -145,14 +145,14 @@ export default function PatientDashboardPage() {
 
       {/* Welcome Section */}
       <div className="space-y-2 mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
           {getTimeBasedGreeting()}, {dashboardData?.patient ? formatPatientName(dashboardData.patient.name) : formatPatientName(user?.name || '')}!
         </h1>
-        <p className="text-gray-600 dark:text-gray-400">Here's your health overview for today</p>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Here's your health overview for today</p>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {loading ? (
           Array(4).fill(0).map((_, i) => <StatCardSkeleton key={i} />)
         ) : (
@@ -222,7 +222,7 @@ export default function PatientDashboardPage() {
           </div>
           <div className="space-y-3">
             {missedAppointments.map((appointment: any) => (
-              <div key={appointment.id} className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border">
+              <div key={appointment.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg border space-y-3 sm:space-y-0">
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">
                     Dr. {appointment.doctorName || 'Doctor'}
@@ -237,7 +237,7 @@ export default function PatientDashboardPage() {
                 <button
                   onClick={() => handleRescheduleRequest(appointment.id)}
                   disabled={appointment.rescheduleRequested || requestingReschedule === appointment.id}
-                  className="text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50 transition-opacity"
+                  className="text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50 transition-opacity w-full sm:w-auto"
                   style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
                 >
                   {appointment.rescheduleRequested ? 'Request Sent' : requestingReschedule === appointment.id ? 'Sending...' : 'Request Reschedule'}
@@ -253,16 +253,16 @@ export default function PatientDashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-6">
           {/* Upcoming Appointments */}
           {loading ? (
             <AppointmentSkeleton />
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2 mb-3 md:mb-0">
                   <Calendar className="h-5 w-5" />
                   <span>Upcoming Appointments</span>
                 </h3>
@@ -271,7 +271,8 @@ export default function PatientDashboardPage() {
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Book New</span>
+                  <span className="hidden sm:inline">Book New Appointment</span>
+                  <span className="sm:hidden">Book New</span>
                 </button>
               </div>
               <div className="space-y-4">
@@ -287,7 +288,7 @@ export default function PatientDashboardPage() {
                   </div>
                 ) : (
                   appointments.slice(0, 3).map((appointment: any) => (
-                    <div key={appointment._id} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div key={appointment._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2 sm:space-y-0">
                       <div className="space-y-1">
                         <p className="font-medium text-gray-900 dark:text-white">
                           {appointment.doctorId?.name || 'Doctor'}
@@ -329,7 +330,7 @@ export default function PatientDashboardPage() {
                 </div>
               ) : (
                 Array.from({ length: Math.min(dashboardData?.stats.prescriptions || 0, 3) }).map((_, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2 sm:space-y-0">
                     <div>
                       <p className="font-medium text-gray-900 dark:text-white">Medication {index + 1}</p>
                       <p className="text-sm text-gray-600 dark:text-gray-400">{index === 0 ? '8:00 AM' : index === 1 ? '2:00 PM' : '8:00 PM'}</p>

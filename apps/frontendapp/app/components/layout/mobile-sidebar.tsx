@@ -25,7 +25,6 @@ import {
   BarChart3,
   Activity,
   Upload,
-  Menu,
   X,
 } from "lucide-react"
 
@@ -36,13 +35,13 @@ interface User {
   userType: 'patient' | 'doctor' | 'staff'
 }
 
-interface SidebarProps {
+interface MobileSidebarProps {
   userType: 'patient' | 'doctor' | 'staff'
-  isOpen?: boolean
-  onToggle?: () => void
+  isOpen: boolean
+  onClose: () => void
 }
 
-export function Sidebar({ userType }: SidebarProps) {
+export function MobileSidebar({ userType, isOpen, onClose }: MobileSidebarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [doctorProfile, setDoctorProfile] = useState<any>(null)
   const [patientProfile, setPatientProfile] = useState<any>(null)
@@ -57,7 +56,6 @@ export function Sidebar({ userType }: SidebarProps) {
         const parsedUser = JSON.parse(userData)
         setUser(parsedUser)
         
-        // Fetch profile based on user type
         if (parsedUser.userType === 'doctor') {
           fetchDoctorProfile(parsedUser.id)
         } else if (parsedUser.userType === 'patient') {
@@ -90,7 +88,6 @@ export function Sidebar({ userType }: SidebarProps) {
     if (profile) {
       setStaffProfile(profile)
     } else {
-      // Fallback: use user data from localStorage if profile not found
       const userData = localStorage.getItem('user')
       if (userData) {
         const user = JSON.parse(userData)
@@ -141,12 +138,11 @@ export function Sidebar({ userType }: SidebarProps) {
 
   const menuItems = getMenuItems()
 
-
-
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     router.push('/')
+    onClose()
   }
 
   const getUserInfo = () => {
@@ -177,37 +173,34 @@ export function Sidebar({ userType }: SidebarProps) {
   const userInfo = getUserInfo()
   const UserIcon = userInfo.icon
 
+  if (!isOpen) return null
+
   return (
     <>
-      {/* Desktop/Tablet Sidebar */}
-      <div className="hidden md:flex w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen max-h-screen sticky top-0 flex-col overflow-hidden">
-        {/* User Profile Section */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          {userType === 'patient' ? (
-            <Link href="/patient/profile" className="flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg p-2 -m-2 transition-colors">
-              <div className="bg-blue-500 rounded-full p-2">
-                <UserIcon className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {userInfo.name}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{userType}</p>
-              </div>
-            </Link>
-          ) : (
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-500 rounded-full p-2">
-                <UserIcon className="h-5 w-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {userInfo.name}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{userType}</p>
-              </div>
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+        onClick={onClose}
+      />
+      <div className="fixed left-0 top-0 w-64 h-full bg-white dark:bg-gray-800 z-50 flex flex-col md:hidden">
+        {/* Header with Close Button */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-500 rounded-full p-2">
+              <UserIcon className="h-5 w-5 text-white" />
             </div>
-          )}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white">
+                {userInfo.name}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 capitalize">{userType}</p>
+            </div>
+          </div>
+          <button 
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* Navigation Menu */}
@@ -219,6 +212,7 @@ export function Sidebar({ userType }: SidebarProps) {
               <Link
                 key={item.id}
                 href={item.path}
+                onClick={onClose}
                 className={`w-full flex items-center justify-start px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
                     ? "bg-blue-500 text-white"
@@ -238,15 +232,10 @@ export function Sidebar({ userType }: SidebarProps) {
             <div className="flex items-center space-x-2 mb-3">
               <MessageCircle className="h-4 w-4 text-blue-500" />
               <span className="font-medium text-sm text-gray-900 dark:text-white">AI Assistant</span>
-              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded text-xs font-medium">
-                Online
-              </span>
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-              Ask me about appointments, medications, or health questions.
-            </p>
             <Link 
               href={`/${userType}/chatbot`}
+              onClick={onClose}
               className="w-full text-white py-2 px-3 rounded text-sm flex items-center justify-center space-x-2"
               style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
             >
@@ -268,55 +257,6 @@ export function Sidebar({ userType }: SidebarProps) {
           >
             <LogOut className="h-4 w-4 mr-3" />
             Sign Out
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Icons-Only Sidebar */}
-      <div className="md:hidden fixed left-0 top-0 w-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen flex flex-col items-center py-4 z-30">
-        {/* User Profile Icon */}
-        <div className="mb-6">
-          <div className="bg-blue-500 rounded-full p-2">
-            <UserIcon className="h-5 w-5 text-white" />
-          </div>
-        </div>
-
-        {/* Navigation Icons */}
-        <nav className="flex-1 space-y-4">
-          {menuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.path
-            return (
-              <Link
-                key={item.id}
-                href={item.path}
-                className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
-                  isActive
-                    ? "bg-blue-500 text-white"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
-                title={item.label}
-              >
-                <Icon className="h-5 w-5" />
-              </Link>
-            )
-          })}
-        </nav>
-
-        {/* Bottom Actions Icons */}
-        <div className="space-y-4">
-          <button 
-            className="flex items-center justify-center w-10 h-10 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
-            title="Settings"
-          >
-            <Settings className="h-5 w-5" />
-          </button>
-          <button 
-            onClick={handleLogout}
-            className="flex items-center justify-center w-10 h-10 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-            title="Sign Out"
-          >
-            <LogOut className="h-5 w-5" />
           </button>
         </div>
       </div>

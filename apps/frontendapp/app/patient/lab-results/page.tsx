@@ -76,15 +76,15 @@ export default function PatientLabResultsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Lab Results</h1>
-        <p className="text-gray-600 dark:text-gray-400">View your medical test results and reports</p>
+        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Lab Results</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">View your medical test results and reports</p>
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Your Lab Results ({labResults.length})
           </h2>
           
@@ -94,45 +94,45 @@ export default function PatientLabResultsPage() {
               <p className="text-gray-500 dark:text-gray-400">No lab results available</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {labResults.map((result) => (
                 <div
                   key={result._id}
-                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div className="bg-blue-500 rounded-full p-2">
-                        <FileText className="h-4 w-4 text-white" />
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+                    <div className="flex items-start space-x-3 min-w-0 flex-1">
+                      <div className="bg-blue-500 rounded-full p-2 flex-shrink-0">
+                        <FileText className="h-3 sm:h-4 w-3 sm:w-4 text-white" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate">
                           {formatTestType(result.testName)}
                         </h3>
-                        <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 mt-1 space-y-1 sm:space-y-0 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                           <div className="flex items-center space-x-1">
-                            <Calendar className="h-3 w-3" />
+                            <Calendar className="h-3 w-3 flex-shrink-0" />
                             <span>{new Date(result.testDate).toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <User className="h-3 w-3" />
-                            <span>Dr. {formatName(result.doctorId.name)}</span>
+                            <User className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">Dr. {formatName(result.doctorId.name)}</span>
                           </div>
                         </div>
                         {result.notes && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
                             {result.notes}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(result.status)}`}>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(result.status)} text-center`}>
                         {result.status.toUpperCase()}
                       </span>
                       <button
                         onClick={() => viewResult(result)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 sm:py-1 rounded text-xs sm:text-sm flex items-center justify-center space-x-1 w-full sm:w-auto"
                       >
                         <Eye className="h-3 w-3" />
                         <span>View</span>
@@ -148,73 +148,73 @@ export default function PatientLabResultsPage() {
 
       {/* Result Detail Modal */}
       {showModal && selectedResult && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="p-4 sm:p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white pr-4">
                   {formatTestType(selectedResult.testName)} Results
                 </h3>
                 <button
                   onClick={() => setShowModal(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl flex-shrink-0"
                 >
                   ✕
                 </button>
               </div>
 
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Test Date:</span>
-                    <p className="text-gray-900 dark:text-white">{new Date(selectedResult.testDate).toLocaleDateString()}</p>
+                    <span className="font-medium text-gray-700 dark:text-gray-300 text-xs sm:text-sm">Test Date:</span>
+                    <p className="text-gray-900 dark:text-white text-sm">{new Date(selectedResult.testDate).toLocaleDateString()}</p>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Doctor:</span>
-                    <p className="text-gray-900 dark:text-white">Dr. {formatName(selectedResult.doctorId.name)}</p>
+                    <span className="font-medium text-gray-700 dark:text-gray-300 text-xs sm:text-sm">Doctor:</span>
+                    <p className="text-gray-900 dark:text-white text-sm truncate">Dr. {formatName(selectedResult.doctorId.name)}</p>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Status:</span>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedResult.status)}`}>
+                    <span className="font-medium text-gray-700 dark:text-gray-300 text-xs sm:text-sm">Status:</span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(selectedResult.status)} inline-block mt-1`}>
                       {selectedResult.status.toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Reference Range:</span>
-                    <p className="text-gray-900 dark:text-white">{selectedResult.referenceRange || 'N/A'}</p>
+                    <span className="font-medium text-gray-700 dark:text-gray-300 text-xs sm:text-sm">Reference Range:</span>
+                    <p className="text-gray-900 dark:text-white text-sm break-words">{selectedResult.referenceRange || 'N/A'}</p>
                   </div>
                 </div>
 
                 <div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">Results:</span>
-                  <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{selectedResult.results}</p>
+                  <span className="font-medium text-gray-700 dark:text-gray-300 text-xs sm:text-sm">Results:</span>
+                  <div className="mt-2 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap text-sm break-words">{selectedResult.results}</p>
                     {selectedResult.units && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Units: {selectedResult.units}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">Units: {selectedResult.units}</p>
                     )}
                   </div>
                 </div>
 
                 {selectedResult.notes && (
                   <div>
-                    <span className="font-medium text-gray-700 dark:text-gray-300">Additional Notes:</span>
-                    <div className="mt-2 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                      <p className="text-gray-900 dark:text-white">{selectedResult.notes}</p>
+                    <span className="font-medium text-gray-700 dark:text-gray-300 text-xs sm:text-sm">Additional Notes:</span>
+                    <div className="mt-2 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <p className="text-gray-900 dark:text-white text-sm break-words">{selectedResult.notes}</p>
                     </div>
                   </div>
                 )}
 
                 {selectedResult.createdAt && (
-                  <div className="text-xs text-gray-500 dark:text-gray-400 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700">
                     Created on {new Date(selectedResult.createdAt).toLocaleString()}
                   </div>
                 )}
               </div>
 
-              <div className="flex justify-end mt-6">
+              <div className="flex justify-end mt-4 sm:mt-6">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                  className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm w-full sm:w-auto"
                 >
                   Close
                 </button>

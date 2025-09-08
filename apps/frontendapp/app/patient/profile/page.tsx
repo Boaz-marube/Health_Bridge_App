@@ -244,15 +244,15 @@ export default function PatientProfilePage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Profile</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your personal information</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">My Profile</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage your personal information</p>
         </div>
         {!isEditingProfile ? (
           <button 
             onClick={handleProfileEdit}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base w-full sm:w-auto justify-center"
           >
             <Edit className="h-4 w-4" />
             <span>Edit Profile</span>
@@ -261,14 +261,14 @@ export default function PatientProfilePage() {
           <div className="flex space-x-2">
             <button 
               onClick={handleProfileSave}
-              className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-lg flex items-center space-x-1"
+              className="bg-green-500 hover:bg-green-600 text-white px-2 py-2 sm:px-3 rounded-lg flex items-center space-x-1 text-xs sm:text-sm flex-1 sm:flex-none justify-center"
             >
               <Save className="h-3 w-3" />
               <span>Save</span>
             </button>
             <button 
               onClick={handleProfileCancel}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg flex items-center space-x-1"
+              className="bg-gray-500 hover:bg-gray-600 text-white px-2 py-2 sm:px-3 rounded-lg flex items-center space-x-1 text-xs sm:text-sm flex-1 sm:flex-none justify-center"
             >
               <X className="h-3 w-3" />
               <span>Cancel</span>
@@ -278,8 +278,8 @@ export default function PatientProfilePage() {
       </div>
 
       {/* Profile Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex items-center space-x-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
           {/* Profile Photo */}
           <div className="flex-shrink-0 relative">
             {(newProfileImage || profileImage) ? (
@@ -320,25 +320,25 @@ export default function PatientProfilePage() {
                 type="text"
                 value={profileData.name}
                 onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                className="text-2xl font-bold bg-transparent border-b-2 border-blue-500 text-gray-900 dark:text-white focus:outline-none mb-2"
+                className="text-lg sm:text-2xl font-bold bg-transparent border-b-2 border-blue-500 text-gray-900 dark:text-white focus:outline-none mb-2 w-full sm:w-auto"
                 placeholder="Enter your name"
               />
             ) : (
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white text-center sm:text-left">
                 {formatPatientName(patientProfile?.name || user?.name || '')}
               </h2>
             )}
-            <p className="text-gray-600 dark:text-gray-400">Patient</p>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 text-center sm:text-left">Patient</p>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 text-center sm:text-left">
               Patient ID: {user?.id?.slice(-8) || 'N/A'}
             </p>
           </div>
         </div>
 
         {/* Contact Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Contact Information</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Contact Information</h3>
             
             <div className="flex items-center space-x-3">
               <Mail className="h-5 w-5 text-gray-400" />
@@ -385,8 +385,8 @@ export default function PatientProfilePage() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Personal Information</h3>
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Personal Information</h3>
             
             <div className="flex items-center space-x-3">
               <Calendar className="h-5 w-5 text-gray-400" />
@@ -436,9 +436,9 @@ export default function PatientProfilePage() {
       </div>
 
       {/* Medical History Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Medical History</h3>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 space-y-2 sm:space-y-0">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Medical History</h3>
           {!isEditingMedical ? (
             <button 
               onClick={handleMedicalEdit}

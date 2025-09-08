@@ -120,17 +120,17 @@ export default function PatientNotificationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
-          <p className="text-gray-600 dark:text-gray-400">Stay updated with your health information</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Stay updated with your health information</p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            className="border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
           >
             <option value="all">All Notifications</option>
             <option value="unread">Unread</option>
@@ -138,24 +138,25 @@ export default function PatientNotificationsPage() {
           </select>
           <button
             onClick={handleMarkAllAsRead}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center space-x-2"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded flex items-center justify-center space-x-2 text-sm"
           >
             <CheckCircle className="h-4 w-4" />
-            <span>Mark All Read</span>
+            <span className="hidden sm:inline">Mark All Read</span>
+            <span className="sm:hidden">Mark Read</span>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
         {/* Notifications List */}
         <div className="lg:col-span-1">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="font-semibold text-gray-900 dark:text-white">
+            <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">
                 Your Notifications ({filteredNotifications.length})
               </h2>
             </div>
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-80 sm:max-h-96 overflow-y-auto">
               {filteredNotifications.length === 0 ? (
                 <div className="text-center py-8">
                   <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -171,18 +172,18 @@ export default function PatientNotificationsPage() {
                         handleMarkAsRead(notification._id)
                       }
                     }}
-                    className={`p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                    className={`p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 ${
                       selectedNotification?._id === notification._id ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                     } ${!notification.isRead ? 'border-l-4 border-l-blue-500' : ''}`}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        {getNotificationIcon(notification.type)}
-                        <h3 className="font-medium text-gray-900 dark:text-white text-sm">
+                      <div className="flex items-center space-x-2 min-w-0 flex-1">
+                        <div className="flex-shrink-0">{getNotificationIcon(notification.type)}</div>
+                        <h3 className="font-medium text-gray-900 dark:text-white text-xs sm:text-sm truncate">
                           {notification.title}
                         </h3>
                       </div>
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1 flex-shrink-0">
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -193,15 +194,16 @@ export default function PatientNotificationsPage() {
                         >
                           <Trash2 className="h-3 w-3" />
                         </button>
-                        <span className={`px-2 py-1 rounded text-xs ${getPriorityColor(notification.priority)}`}>
-                          {notification.priority}
+                        <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs ${getPriorityColor(notification.priority)}`}>
+                          <span className="hidden sm:inline">{notification.priority}</span>
+                          <span className="sm:hidden">{notification.priority.charAt(0).toUpperCase()}</span>
                         </span>
                         {!notification.isRead && (
-                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                          <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>
                         )}
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 truncate mb-2">
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate mb-2">
                       {notification.message}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-500">
@@ -218,56 +220,56 @@ export default function PatientNotificationsPage() {
         <div className="lg:col-span-2">
           {selectedNotification ? (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    {getNotificationIcon(selectedNotification.type)}
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0 mb-4">
+                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                    <div className="flex-shrink-0">{getNotificationIcon(selectedNotification.type)}</div>
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
                         {selectedNotification.title}
                       </h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         {new Date(selectedNotification.createdAt).toLocaleString()}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
                     <button
                       onClick={() => setDeleteModal({ isOpen: true, notificationId: selectedNotification._id })}
-                      className="text-red-500 hover:text-red-700 px-3 py-1 border border-red-300 rounded text-sm flex items-center space-x-1"
+                      className="text-red-500 hover:text-red-700 px-2 sm:px-3 py-1 border border-red-300 rounded text-xs sm:text-sm flex items-center space-x-1 w-full sm:w-auto justify-center"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3 sm:h-4 w-3 sm:w-4" />
                       <span>Delete</span>
                     </button>
-                    <span className={`px-3 py-1 rounded text-sm ${getPriorityColor(selectedNotification.priority)}`}>
+                    <span className={`px-2 sm:px-3 py-1 rounded text-xs sm:text-sm ${getPriorityColor(selectedNotification.priority)} text-center`}>
                       {selectedNotification.priority} priority
                     </span>
-                    <div className="flex items-center space-x-1 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex items-center space-x-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {selectedNotification.isRead ? (
-                        <><Eye className="h-4 w-4" /> Read</>
+                        <><Eye className="h-3 sm:h-4 w-3 sm:w-4" /> <span className="hidden sm:inline">Read</span></>
                       ) : (
-                        <><EyeOff className="h-4 w-4" /> Unread</>
+                        <><EyeOff className="h-3 sm:h-4 w-3 sm:w-4" /> <span className="hidden sm:inline">Unread</span></>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <div className="prose dark:prose-invert max-w-none">
-                  <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
+                  <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                     {selectedNotification.message}
                   </p>
                 </div>
 
                 {selectedNotification.metadata && Object.keys(selectedNotification.metadata).length > 0 && (
-                  <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <h3 className="font-medium text-gray-900 dark:text-white mb-2">Additional Information</h3>
-                    <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <h3 className="font-medium text-gray-900 dark:text-white mb-2 text-sm sm:text-base">Additional Information</h3>
+                    <div className="space-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                       {Object.entries(selectedNotification.metadata).map(([key, value]) => (
-                        <div key={key} className="flex justify-between">
-                          <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
-                          <span>{String(value)}</span>
+                        <div key={key} className="flex flex-col sm:flex-row sm:justify-between space-y-1 sm:space-y-0">
+                          <span className="capitalize font-medium">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                          <span className="break-words">{String(value)}</span>
                         </div>
                       ))}
                     </div>
@@ -276,12 +278,12 @@ export default function PatientNotificationsPage() {
               </div>
             </div>
           ) : (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-12 text-center">
-              <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 sm:p-12 text-center">
+              <Bell className="h-12 sm:h-16 w-12 sm:w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 Select a Notification
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 Choose a notification from the list to view details
               </p>
             </div>
