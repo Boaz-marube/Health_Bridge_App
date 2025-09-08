@@ -118,6 +118,11 @@ def _build_agents(agents_cfg: dict, db_path: str = None) -> Dict[str, Agent]:
         # Other agents can use the general RAG tool if needed
         # elif key in ["appointment_scheduler_agent", "queue_monitoring_agent", "analytics_agent"]:
         #     tools = [general_rag_tool]
+        elif key == "general_medical_agent":
+            # General medical agent uses guidelines RAG if relevant
+            tools = [guideline_rag_tool, general_rag_tool]
+
+
 
         agent = Agent(
             role=role or key,

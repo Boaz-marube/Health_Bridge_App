@@ -1,43 +1,63 @@
-# src/healthbridge/config/tasks.yaml
-
 symptom_check_task:
-  description: >
-    Analyze patient’s reported symptoms and suggest possible conditions.
-  expected_output: >
-    A short list of possible conditions with urgency recommendations.
+  description: |
+    Analyze the following patient symptoms and suggest possible diagnoses based on medical guidelines.
+
+    Context from medical knowledge base:
+    {context}
+
+    Use only the context above to answer. If unsure, say "Based on available guidelines, I cannot determine with certainty."
+  expected_output: "List of possible conditions with likelihood indicators and supporting evidence from guidelines."
   agent: symptom_checker_agent
 
 medical_history_task:
-  description: >
-    Retrieve patient medical history using RAG (Llama 3 + Chroma)
+  description: |
+    Retrieve patient medical history using the Patient Records Retrieval Tool.
+    Use the patient_id if available. Summarize the most relevant medical records
+    concisely and clearly for the user's query.
   expected_output: >
     Concise, readable answer for patient queries
   agent: medical_history_agent
 
 appointment_booking_task:
-  description: >
-    Schedule/reschedule patient appointments automatically.
+  description: |
+    Schedule or reschedule patient appointments automatically.
+    Provide confirmations once processed.
   expected_output: >
     Confirmation of scheduled/rescheduled appointments.
   agent: appointment_scheduler_agent
 
 treatment_guideline_task:
-  description: >
-    Suggest treatment guidelines based on patient history and symptoms.
-  expected_output: >
-    Step-by-step treatment recommendations.
+  description: |
+    Provide treatment recommendations based on medical guidelines.
+
+    Context from guidelines:
+    {context}
+
+    Base your answer ONLY on the context above. Include page references if available.
+  expected_output: "Step-by-step treatment protocol with dosage, duration, and precautions."
   agent: treatment_guideline_agent
 
 queue_monitoring_task:
-  description: >
+  description: |
     Monitor patient queue and generate alerts for priority patients.
+    Summarize queue status in real-time and highlight critical cases.
   expected_output: >
     Real-time queue status report.
   agent: queue_monitoring_agent
 
 analytics_task:
-  description: >
-    Generate hospital analytics including patient flow, most common conditions, KPIs.
+  description: |
+    Generate hospital analytics including patient flow, most common conditions, and KPIs.
+    Provide a concise report ready for admin review.
   expected_output: >
     Dashboard-ready report for admin review.
   agent: analytics_agent
+
+general_medical_task:
+  description: |
+    Answer general medical or health-related questions.
+    Use the Medical Guidelines Retrieval Tool if relevant.
+    If retrieval fails, provide an educational answer with a disclaimer.
+  expected_output: >
+    Clear, accurate, general medical explanation with disclaimer.
+  agent: general_medical_agent
