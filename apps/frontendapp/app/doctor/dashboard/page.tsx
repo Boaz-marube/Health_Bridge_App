@@ -69,59 +69,67 @@ export default function DoctorDashboardPage() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-hidden">
       {/* Welcome Section */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="space-y-2 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
           {getTimeBasedGreeting()}, {getDoctorDisplayName()}!
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        </h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           Manage your practice and patient care from your dashboard.
         </p>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Quick Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {loading ? (
           Array(4).fill(0).map((_, i) => <StatCardSkeleton key={i} />)
         ) : (
           <>
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <Calendar className="h-8 w-8 text-blue-500 mr-3" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex items-center space-x-2">
+                <Calendar className="h-5 w-5 text-blue-500" />
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.stats.todayAppointments || 0}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Today's Appointments</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {dashboardData?.stats.todayAppointments || 0}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <Users className="h-8 w-8 text-green-500 mr-3" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex items-center space-x-2">
+                <Users className="h-5 w-5 text-green-500" />
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.stats.totalPatients || 0}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Total Patients</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {dashboardData?.stats.totalPatients || 0}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <Clock className="h-8 w-8 text-yellow-500 mr-3" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-5 w-5 text-yellow-500" />
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.stats.pendingReviews || 0}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Pending Reviews</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {dashboardData?.stats.pendingReviews || 0}
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-center">
-                <FileText className="h-8 w-8 text-purple-500 mr-3" />
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-purple-500" />
                 <div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardData?.stats.queueLength || 0}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Queue Length</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    {dashboardData?.stats.queueLength || 0}
+                  </p>
                 </div>
               </div>
             </div>
@@ -130,163 +138,171 @@ export default function DoctorDashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link href="/doctor/appointments" className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-          <Calendar className="h-12 w-12 text-blue-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Link href="/doctor/appointments" className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <Calendar className="h-8 w-8 sm:h-12 sm:w-12 text-blue-500 mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Manage Schedule
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             View and manage your appointment schedule
           </p>
         </Link>
 
-        <Link href="/doctor/patients" className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-          <Users className="h-12 w-12 text-green-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <Link href="/doctor/patients" className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <Users className="h-8 w-8 sm:h-12 sm:w-12 text-green-500 mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Patient Records
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Access and update patient information
           </p>
         </Link>
 
-        <Link href="/doctor/queue" className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-          <Clock className="h-12 w-12 text-orange-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <Link href="/doctor/queue" className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <Clock className="h-8 w-8 sm:h-12 sm:w-12 text-orange-500 mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Patient Queue
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Manage patient queue and appointments
           </p>
         </Link>
 
-        <Link href="/doctor/lab-results" className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-          <Upload className="h-12 w-12 text-purple-500 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <Link href="/doctor/lab-results" className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6 hover:shadow-md transition-shadow">
+          <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-purple-500 mb-3 sm:mb-4" />
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Upload Lab Results
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             Upload and manage patient lab results
           </p>
         </Link>
       </div>
 
-      {/* Patient Queue */}
-      {loading ? (
-        <QueueSkeleton />
-      ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Current Queue ({dashboardData?.stats.queueLength || 0} patients)
-          </h3>
-          <div className="space-y-2">
-            {dashboardData?.currentQueue && dashboardData.currentQueue.length > 0 ? (
-              dashboardData.currentQueue.slice(0, 5).map((queueItem, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded">
-                  <div className="flex items-center space-x-3">
-                    <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm">
-                      {queueItem.position}
-                    </span>
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white text-sm">
-                        {queueItem.patientId?.name || 'Unknown Patient'}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {queueItem.priority === 'emergency' ? '🚨 Emergency' : 
-                         queueItem.priority === 'priority' ? '⚡ Priority' : '📋 Normal'}
-                      </p>
-                    </div>
-                  </div>
-                  <span className={`px-2 py-1 rounded text-xs ${
-                    queueItem.status === 'waiting' ? 'bg-yellow-100 text-yellow-800' :
-                    queueItem.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {queueItem.status.replace('_', ' ')}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                No patients in queue
-              </div>
-            )}
-            {dashboardData?.currentQueue && dashboardData.currentQueue.length > 5 && (
-              <div className="text-center py-2">
-                <Link href="/doctor/queue" className="text-blue-500 hover:underline text-sm">
-                  View full queue ({dashboardData.currentQueue.length - 5} more)
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="xl:col-span-2 space-y-6">
+          {/* Patient Queue */}
+          {loading ? (
+            <QueueSkeleton />
+          ) : (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2 mb-3 md:mb-0">
+                  <Clock className="h-5 w-5" />
+                  <span>Current Queue ({dashboardData?.stats.queueLength || 0} patients)</span>
+                </h3>
+                <Link 
+                  href="/doctor/queue"
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1"
+                >
+                  <span className="hidden sm:inline">Manage Queue</span>
+                  <span className="sm:hidden">Manage</span>
                 </Link>
               </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Today's Schedule */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Today's Schedule
-          </h3>
-          <div className="space-y-3">
-            {dashboardData?.todaySchedule && dashboardData.todaySchedule.length > 0 ? (
-              dashboardData.todaySchedule.slice(0, 3).map((appointment, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {appointment.patientId?.name || 'Unknown Patient'}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {appointment.appointmentType || 'Consultation'}
-                    </p>
+              <div className="space-y-3">
+                {dashboardData?.currentQueue && dashboardData.currentQueue.length > 0 ? (
+                  dashboardData.currentQueue.slice(0, 5).map((queueItem, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2 sm:space-y-0">
+                      <div className="flex items-center space-x-3">
+                        <span className="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm flex-shrink-0">
+                          {queueItem.position}
+                        </span>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white text-sm">
+                            {queueItem.patientId?.name || 'Unknown Patient'}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {queueItem.priority === 'emergency' ? '🚨 Emergency' : 
+                             queueItem.priority === 'priority' ? '⚡ Priority' : '📋 Normal'}
+                          </p>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        queueItem.status === 'waiting' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                        queueItem.status === 'in_progress' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                        'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      }`}>
+                        {queueItem.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-gray-500 dark:text-gray-400">No patients in queue</p>
                   </div>
-                  <span className="text-sm text-blue-600 dark:text-blue-400">
-                    {appointment.appointmentTime}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                No appointments scheduled for today
+                )}
               </div>
-            )}
-            <div className="text-center py-2">
-              <Link href="/doctor/appointments" className="text-blue-500 hover:underline text-sm">
-                View full schedule
-              </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Today's Schedule */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2 mb-4">
+              <Calendar className="h-5 w-5" />
+              <span>Today's Schedule</span>
+            </h3>
+            <div className="space-y-3">
+              {dashboardData?.todaySchedule && dashboardData.todaySchedule.length > 0 ? (
+                dashboardData.todaySchedule.slice(0, 3).map((appointment, index) => (
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2 sm:space-y-0">
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {appointment.patientId?.name || 'Unknown Patient'}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {appointment.appointmentType || 'Consultation'}
+                      </p>
+                    </div>
+                    <span className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                      {appointment.appointmentTime}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 dark:text-gray-400">No appointments scheduled for today</p>
+                  <Link 
+                    href="/doctor/appointments"
+                    className="mt-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm inline-block"
+                  >
+                    View Schedule
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Recent Patient Updates
-          </h3>
-          <div className="space-y-3">
-            {dashboardData?.recentUpdates && dashboardData.recentUpdates.length > 0 ? (
-              dashboardData.recentUpdates.slice(0, 3).map((update, index) => (
-                <div key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded">
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {update.status === 'completed' ? 'Appointment Completed' : 'Appointment Updated'}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Patient: {update.patientId?.name || 'Unknown'}
-                  </p>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(update.updatedAt).toLocaleDateString()}
-                  </span>
+          {/* Recent Patient Updates */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2 mb-4">
+              <Users className="h-5 w-5" />
+              <span>Recent Updates</span>
+            </h3>
+            <div className="space-y-3">
+              {dashboardData?.recentUpdates && dashboardData.recentUpdates.length > 0 ? (
+                dashboardData.recentUpdates.slice(0, 3).map((update, index) => (
+                  <div key={index} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">
+                      {update.status === 'completed' ? 'Appointment Completed' : 'Appointment Updated'}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Patient: {update.patientId?.name || 'Unknown'}
+                    </p>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(update.updatedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-gray-500 dark:text-gray-400">No recent updates</p>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                No recent updates
-              </div>
-            )}
-            <div className="text-center py-2">
-              <Link href="/doctor/patients" className="text-blue-500 hover:underline text-sm">
-                View all updates
-              </Link>
+              )}
             </div>
           </div>
         </div>

@@ -277,28 +277,29 @@ export default function StaffNotificationsPage() {
 
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage system notifications and alerts</p>
+    <div className="space-y-6 max-w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+        <div className="space-y-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Notifications</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage system notifications and alerts</p>
         </div>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center space-x-2"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 sm:px-4 sm:py-2 rounded flex items-center justify-center space-x-2 text-sm sm:text-base transition-colors"
         >
-          <Plus className="h-4 w-4" />
-          <span>Send Notification</span>
+          <Plus className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span className="hidden sm:inline">Send Notification</span>
+          <span className="sm:hidden">Send</span>
         </button>
       </div>
 
       {/* Create Notification Form */}
       {showCreateForm && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Send New Notification</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">Send New Notification</h2>
           <div className="space-y-4">
             {/* Recipient Selection - Moved to Top */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Recipient Type *
@@ -306,7 +307,7 @@ export default function StaffNotificationsPage() {
                 <select
                   value={newNotification.recipientType}
                   onChange={(e) => setNewNotification({...newNotification, recipientType: e.target.value as any, recipientId: ''})}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 >
                   <option value="patient">Patient</option>
                   <option value="doctor">Doctor</option>
@@ -319,7 +320,7 @@ export default function StaffNotificationsPage() {
                 <select
                   value={newNotification.recipientId}
                   onChange={(e) => setNewNotification({...newNotification, recipientId: e.target.value})}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                   disabled={loadingUsers}
                 >
                   <option value="">Choose {newNotification.recipientType}...</option>
@@ -348,7 +349,7 @@ export default function StaffNotificationsPage() {
                 type="text"
                 value={newNotification.title}
                 onChange={(e) => setNewNotification({...newNotification, title: e.target.value})}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 placeholder="Enter notification title"
               />
             </div>
@@ -361,14 +362,14 @@ export default function StaffNotificationsPage() {
               <textarea
                 value={newNotification.message}
                 onChange={(e) => setNewNotification({...newNotification, message: e.target.value})}
-                className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 rows={4}
                 placeholder="Enter your notification message"
               />
             </div>
 
             {/* Type and Priority */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Type
@@ -376,7 +377,7 @@ export default function StaffNotificationsPage() {
                 <select
                   value={newNotification.type}
                   onChange={(e) => setNewNotification({...newNotification, type: e.target.value as any})}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 >
                   <option value="system_alert">System Alert</option>
                   <option value="appointment_reminder">Appointment Reminder</option>
@@ -392,7 +393,7 @@ export default function StaffNotificationsPage() {
                 <select
                   value={newNotification.priority}
                   onChange={(e) => setNewNotification({...newNotification, priority: e.target.value as any})}
-                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -401,18 +402,18 @@ export default function StaffNotificationsPage() {
                 </select>
               </div>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <button
                 onClick={sendNotification}
                 disabled={!newNotification.recipientId || !newNotification.title || !newNotification.message || sendLoading}
-                className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded flex items-center space-x-2"
+                className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded flex items-center justify-center space-x-2 text-sm sm:text-base transition-colors"
               >
-                <Send className="h-4 w-4" />
+                <Send className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{sendLoading ? 'Sending...' : 'Send'}</span>
               </button>
               <button
                 onClick={() => setShowCreateForm(false)}
-                className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                className="border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 text-sm sm:text-base transition-colors"
               >
                 Cancel
               </button>
@@ -423,8 +424,8 @@ export default function StaffNotificationsPage() {
 
       {/* Edit Notification Form */}
       {showEditForm && editingNotification && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit & Resend Notification</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit & Resend Notification</h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -503,63 +504,66 @@ export default function StaffNotificationsPage() {
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
+          <nav className="flex space-x-4 sm:space-x-8 px-3 sm:px-6" aria-label="Tabs">
             <button
               onClick={() => setActiveTab('received')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm ${
                 activeTab === 'received'
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-2">
-                <Inbox className="h-4 w-4" />
-                <span>Received ({notifications.length})</span>
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <Inbox className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">Received ({notifications.length})</span>
+                <span className="sm:hidden">Inbox ({notifications.length})</span>
               </div>
             </button>
             <button
               onClick={() => setActiveTab('sent')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm ${
                 activeTab === 'sent'
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
-              <div className="flex items-center space-x-2">
-                <SendIcon className="h-4 w-4" />
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <SendIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>Sent ({sentNotifications.length})</span>
               </div>
             </button>
           </nav>
         </div>
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           {activeTab === 'received' ? (
             loading ? (
               <div className="text-center py-8">
                 <div className="text-lg text-gray-600 dark:text-gray-400">Loading notifications...</div>
               </div>
             ) : notifications.length === 0 ? (
-              <div className="text-center py-8">
-                <Inbox className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No received notifications</p>
+              <div className="text-center py-6 sm:py-8">
+                <Inbox className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No received notifications</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {notifications.map((notification) => (
                   <div
                     key={notification._id}
-                    className={`border rounded-lg p-4 ${getNotificationColor(notification.type)} ${
+                    className={`border rounded-lg p-3 sm:p-4 ${getNotificationColor(notification.type)} ${
                       !notification.read ? 'border-l-4' : ''
                     }`}
                   >
-                    <div className="flex items-start space-x-3">
-                      {getNotificationIcon(notification.type)}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <div className="flex items-start space-x-2 sm:space-x-3">
+                      <div className="flex-shrink-0">
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+                          <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate pr-2">
                             {notification.title}
                           </h3>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-2 flex-shrink-0">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               notification.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
                               notification.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
@@ -572,12 +576,12 @@ export default function StaffNotificationsPage() {
                             )}
                           </div>
                         </div>
-                        <p className="text-gray-700 dark:text-gray-300 mt-1">
+                        <p className="text-gray-700 dark:text-gray-300 mt-1 text-sm sm:text-base">
                           {notification.message}
                         </p>
-                        <div className="flex items-center justify-between mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          <span>From: {formatName(notification.sender)}</span>
-                          <span>{new Date(notification.createdAt).toLocaleString()}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 space-y-1 sm:space-y-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                          <span className="truncate">From: {formatName(notification.sender)}</span>
+                          <span className="text-xs">{new Date(notification.createdAt).toLocaleString()}</span>
                         </div>
                       </div>
                     </div>
@@ -591,25 +595,27 @@ export default function StaffNotificationsPage() {
                 <div className="text-lg text-gray-600 dark:text-gray-400">Loading sent notifications...</div>
               </div>
             ) : sentNotifications.length === 0 ? (
-              <div className="text-center py-8">
-                <SendIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No sent notifications</p>
+              <div className="text-center py-6 sm:py-8">
+                <SendIcon className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No sent notifications</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {sentNotifications.map((notification) => (
                   <div
                     key={notification._id}
-                    className={`border rounded-lg p-4 ${getNotificationColor(notification.type)}`}
+                    className={`border rounded-lg p-3 sm:p-4 ${getNotificationColor(notification.type)}`}
                   >
-                    <div className="flex items-start space-x-3">
-                      {getNotificationIcon(notification.type)}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                    <div className="flex items-start space-x-2 sm:space-x-3">
+                      <div className="flex-shrink-0">
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-2 sm:space-y-0">
+                          <h3 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base truncate pr-2">
                             {notification.title}
                           </h3>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex flex-wrap items-center gap-2 flex-shrink-0">
                             <span className={`px-2 py-1 rounded text-xs font-medium ${
                               notification.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
                               notification.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
@@ -627,38 +633,38 @@ export default function StaffNotificationsPage() {
                             </span>
                           </div>
                         </div>
-                        <p className="text-gray-700 dark:text-gray-300 mt-1">
+                        <p className="text-gray-700 dark:text-gray-300 mt-1 text-sm sm:text-base">
                           {notification.message}
                         </p>
-                        <div className="flex items-center justify-between mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          <span>To: {notification.recipientName || notification.recipientId}</span>
-                          <span>{new Date(notification.createdAt).toLocaleString()}</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 space-y-1 sm:space-y-0 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                          <span className="truncate">To: {notification.recipientName || notification.recipientId}</span>
+                          <span className="text-xs">{new Date(notification.createdAt).toLocaleString()}</span>
                         </div>
-                        <div className="flex items-center justify-between mt-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-2 space-y-2 sm:space-y-0">
                           <div className="text-xs text-gray-400 dark:text-gray-500">
                             Sent by: {notification.senderName || 'Staff Member'}
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center space-x-1 sm:space-x-2">
                             <button
                               onClick={() => resendNotification(notification)}
-                              className="text-blue-500 hover:text-blue-700 p-1 rounded"
+                              className="text-blue-500 hover:text-blue-700 p-1.5 sm:p-1 rounded transition-colors"
                               title="Resend"
                             >
-                              <RotateCcw className="h-4 w-4" />
+                              <RotateCcw className="h-3 w-3 sm:h-4 sm:w-4" />
                             </button>
                             <button
                               onClick={() => editNotification(notification)}
-                              className="text-green-500 hover:text-green-700 p-1 rounded"
+                              className="text-green-500 hover:text-green-700 p-1.5 sm:p-1 rounded transition-colors"
                               title="Edit"
                             >
-                              <Edit className="h-4 w-4" />
+                              <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteClick(notification._id)}
-                              className="text-red-500 hover:text-red-700 p-1 rounded"
+                              className="text-red-500 hover:text-red-700 p-1.5 sm:p-1 rounded transition-colors"
                               title="Delete"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                             </button>
                           </div>
                         </div>
