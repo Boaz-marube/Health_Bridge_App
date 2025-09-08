@@ -361,7 +361,7 @@ function DoctorsSection() {
           At Health Clinics, we take pride in offering you the highest standard of care, delivered by dedicated professionals committed to your well-being.
         </p>
         <div className={`${showMore ? 'overflow-x-auto' : 'overflow-hidden'} overflow-y-hidden my-4 sm:my-6 lg:my-8 px-4`}>
-          <div className="flex gap-3 sm:gap-4 lg:gap-12 min-w-max">
+          <div className="flex gap-3 sm:gap-4 lg:gap-12 min-w-max justify-center">
             {(showMore ? allDoctors : allDoctors.slice(0, 5)).map((doctor, idx) => (
               <div
                 key={doctor.name}
