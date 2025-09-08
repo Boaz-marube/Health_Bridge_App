@@ -193,10 +193,11 @@ export default function PatientAppointmentsPage() {
         </div>
         <button
           onClick={() => setShowBooking(true)}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-lg flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base"
         >
           <Plus className="h-4 w-4" />
-          <span>Book Appointment</span>
+          <span className="hidden sm:inline">Book Appointment</span>
+          <span className="sm:hidden">Book</span>
         </button>
       </div>
 
@@ -211,15 +212,15 @@ export default function PatientAppointmentsPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-4">Book your first appointment to get started</p>
             <button
               onClick={() => setShowBooking(true)}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base"
             >
               Book Appointment
             </button>
           </div>
         ) : (
           appointments.map((appointment) => (
-            <div key={appointment._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
+            <div key={appointment._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between space-y-4 sm:space-y-0">
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <h3 className="font-semibold text-gray-900 dark:text-white">
@@ -248,22 +249,22 @@ export default function PatientAppointmentsPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col sm:flex-row items-end sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                   {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
-                    <>
+                    <div className="flex space-x-2">
                       <button 
                         onClick={() => openRescheduleModal(appointment)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 sm:px-3 rounded text-xs sm:text-sm"
                       >
                         Reschedule
                       </button>
                       <button 
                         onClick={() => handleCancelAppointment(appointment._id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
+                        className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 sm:px-3 rounded text-xs sm:text-sm"
                       >
                         Cancel
                       </button>
-                    </>
+                    </div>
                   )}
                   {appointment.status === 'pending' && (
                     <span className="text-xs text-yellow-600 dark:text-yellow-400">

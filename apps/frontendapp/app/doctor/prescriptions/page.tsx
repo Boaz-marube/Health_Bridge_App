@@ -42,8 +42,8 @@ export default function PrescriptionsPage() {
   }
 
   const filteredPrescriptions = prescriptions.filter(prescription => {
-    const matchesSearch = prescription.patientId?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         prescription.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = prescription.patientId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         prescription.diagnosis?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || prescription.status === statusFilter
     return matchesSearch && matchesStatus
   })
@@ -117,7 +117,7 @@ export default function PrescriptionsPage() {
                     {prescription.patientId?.name || 'Unknown Patient'}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {prescription.diagnosis}
+                    {prescription.diagnosis || 'No diagnosis provided'}
                   </p>
                 </div>
               </div>
@@ -129,7 +129,7 @@ export default function PrescriptionsPage() {
             {/* Medications */}
             <div className="space-y-3 mb-4">
               <h4 className="font-medium text-gray-900 dark:text-white">Medications:</h4>
-              {prescription.medications.map((med, index) => (
+              {prescription.medications?.map((med, index) => (
                 <div key={index} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-medium text-gray-900 dark:text-white">{med.name}</span>
@@ -140,7 +140,9 @@ export default function PrescriptionsPage() {
                     {med.instructions && <p className="mt-1 italic">{med.instructions}</p>}
                   </div>
                 </div>
-              ))}
+              )) || (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No medications listed</p>
+              )}
             </div>
 
             {/* Notes */}

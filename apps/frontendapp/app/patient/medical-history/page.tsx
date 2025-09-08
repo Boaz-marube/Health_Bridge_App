@@ -78,16 +78,16 @@ export default function MedicalHistoryPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Medical History</h1>
-        <p className="text-gray-600 dark:text-gray-400">View your medical records, prescriptions, and lab results</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Medical History</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">View your medical records, prescriptions, and lab results</p>
       </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200 dark:border-gray-700">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="-mb-px flex space-x-2 sm:space-x-8 overflow-x-auto">
           {[
             { id: 'all', label: 'All Records', count: records.length },
             { id: 'prescriptions', label: 'Prescriptions', count: records.filter(r => r.recordType === 'prescription').length },
@@ -97,25 +97,26 @@ export default function MedicalHistoryPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap flex-shrink-0 ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                   : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
               }`}
             >
-              {tab.label} ({tab.count})
+              <span className="hidden sm:inline">{tab.label} ({tab.count})</span>
+              <span className="sm:hidden">{tab.label.split(' ')[0]} ({tab.count})</span>
             </button>
           ))}
         </nav>
       </div>
 
       {/* Records List */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {filteredRecords.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-8 text-center">
-            <FileText className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-            <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">No records found</h3>
-            <p className="text-gray-600 dark:text-gray-400">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 sm:p-8 text-center">
+            <FileText className="h-10 sm:h-12 w-10 sm:w-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+            <h3 className="font-semibold mb-2 text-gray-900 dark:text-white text-sm sm:text-base">No records found</h3>
+            <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
               {activeTab === 'all' 
                 ? 'No medical records available yet' 
                 : `No ${activeTab.replace('_', ' ')} found`}
@@ -123,46 +124,46 @@ export default function MedicalHistoryPage() {
           </div>
         ) : (
           filteredRecords.map((record) => (
-            <div key={record._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-4">
+            <div key={record._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-3 sm:space-y-0">
+                <div className="flex items-start space-x-3 sm:space-x-4 min-w-0 flex-1">
                   <div className="flex-shrink-0 mt-1">
                     {getRecordIcon(record.recordType)}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 mb-2">
+                      <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white truncate">
                         {record.title}
                       </h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRecordTypeColor(record.recordType)}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRecordTypeColor(record.recordType)} self-start`}>
                         {record.recordType.replace('_', ' ')}
                       </span>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-400 mb-3">
+                    <p className="text-gray-600 dark:text-gray-400 mb-3 text-sm break-words">
                       {record.description}
                     </p>
-                    <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {record.doctorName && (
                         <div className="flex items-center space-x-1">
-                          <User className="h-4 w-4" />
-                          <span>{record.doctorName}</span>
+                          <User className="h-3 sm:h-4 w-3 sm:w-4 flex-shrink-0" />
+                          <span className="truncate">{record.doctorName}</span>
                         </div>
                       )}
                       <div className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-3 sm:h-4 w-3 sm:w-4 flex-shrink-0" />
                         <span>{new Date(record.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 flex-shrink-0">
                   {record.fileUrl && (
-                    <button className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm flex items-center space-x-1">
+                    <button className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 sm:py-1 rounded text-xs sm:text-sm flex items-center justify-center space-x-1">
                       <Download className="h-3 w-3" />
                       <span>Download</span>
                     </button>
                   )}
-                  <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                  <button className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 sm:py-1 rounded text-xs sm:text-sm">
                     View Details
                   </button>
                 </div>
@@ -174,26 +175,26 @@ export default function MedicalHistoryPage() {
 
       {/* Prescriptions Section */}
       {prescriptions.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
-            <Pill className="h-5 w-5" />
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center space-x-2">
+            <Pill className="h-4 sm:h-5 w-4 sm:w-5" />
             <span>Active Prescriptions</span>
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {prescriptions.slice(0, 4).map((prescription, index) => (
-              <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-900 dark:text-white">
+              <div key={index} className="border border-gray-200 dark:border-gray-600 rounded-lg p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 space-y-1 sm:space-y-0">
+                  <h4 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate">
                     {prescription.medicationName || `Medication ${index + 1}`}
                   </h4>
-                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+                  <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium self-start">
                     Active
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">
                   Dosage: {prescription.dosage || '10mg daily'}
                 </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   Duration: {prescription.duration || '30 days'}
                 </p>
               </div>
