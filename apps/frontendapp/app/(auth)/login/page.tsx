@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaArrowLeft } from "react-icons/fa";
+import { ModeToggle } from "@/app/components/theme/mode-toggle";
 
 const LoginPage: React.FC = () => {
   const router = useRouter();
@@ -87,26 +88,29 @@ const LoginPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center px-4 py-3 bg-white shadow-sm dark:bg-gray-800">
-        <Link href="/" className="mr-4 text-blue-500">
-          <FaArrowLeft size={20} />
-        </Link>
+      <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm dark:bg-gray-800">
         <div className="flex items-center">
-          <div className="w-10 h-10 mr-3 flex items-center justify-center">
-            <Image
-              src="/logo.jpg"
-              alt="Health Bridge Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10 object-contain rounded-full"
-            />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Health Bridge
-            </h1>
+          <Link href="/" className="mr-4 text-blue-500">
+            <FaArrowLeft size={20} />
+          </Link>
+          <div className="flex items-center">
+            <div className="w-10 h-10 mr-3 flex items-center justify-center">
+              <Image
+                src="/logo.jpg"
+                alt="Health Bridge Logo"
+                width={40}
+                height={40}
+                className="w-10 h-10 object-contain rounded-full"
+              />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Health Bridge
+              </h1>
+            </div>
           </div>
         </div>
+        <ModeToggle />
       </div>
 
       {/* Main Content */}
