@@ -45,11 +45,11 @@ const SignupPage: React.FC = () => {
     }
 
     try {
-      let endpoint = "http://localhost:5002/auth/patient-signup"
+      let endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002'}/auth/patient-signup`
       if (formData.userType === "doctor") {
-        endpoint = "http://localhost:5002/auth/doctor-signup"
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002'}/auth/doctor-signup`
       } else if (formData.userType === "staff") {
-        endpoint = "http://localhost:5002/auth/staff-signup"
+        endpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002'}/auth/staff-signup`
       }
 
       const requestBody = {
@@ -119,7 +119,7 @@ const SignupPage: React.FC = () => {
   }
 
   const handleGoogleSignup = () => {
-    window.location.href = "http://localhost:5002/auth/google"
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002'}/auth/google`
   }
 
   return (
