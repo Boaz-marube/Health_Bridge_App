@@ -1,15 +1,17 @@
-import { FaFacebookF, FaYoutube, FaXTwitter, FaLinkedinIn, FaInstagram, FaGooglePlay, FaApple } from "react-icons/fa6";
+import { FaFacebookF, FaYoutube, FaLinkedinIn, FaInstagram, FaEnvelope, FaPhoneAlt, FaMapMarkerAlt } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 
 export function Footer() {
   return (
     <footer
       style={{
-        background: "#0a0a0a",
+        background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
         color: "#fff",
         fontFamily: "sans-serif",
-        padding: "0",
         fontSize: "1rem",
-        marginTop: "-40px",
+        borderTop: "2px solid #45a4fa",
+        marginTop: "-60px",
+        paddingTop: "60px"
       }}
     >
       <div
@@ -18,99 +20,104 @@ export function Footer() {
           flexWrap: "wrap",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          maxWidth: 1180,
+          maxWidth: 1100,
           margin: "0 auto",
-          padding: "38px 0 24px 0",
+          padding: "5px 0 40px 0",
         }}
       >
-        {/* Menu */}
-        <div style={{ minWidth: 160, marginBottom: 18 }}>
-          <div style={{ color: "#3870FF", fontWeight: 700, marginBottom: 12, fontSize: "1.08rem" }}>Menu</div>
-          <div style={{ lineHeight: 2.12 }}>
-            <div>Home</div>
-            <div>About Us</div>
-            <div>Clinics</div>
-            <div>Medical Services</div>
-            <div>Dental Services</div>
-            <div>Mobile Services</div>
-            <div>Our Doctors</div>
-            <div>Offers</div>
-            <div>Contact Us</div>
+        {/* Logo & Brand */}
+        <div style={{ display: "flex", alignItems: "center", minWidth: 230 }}>
+          <div style={{ marginRight: 18 }}>
+            <div
+              style={{
+                width: 72,
+                height: 72,
+                background: "#fff",
+                borderRadius: 6,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+              }}
+            >
+              {/* Image placeholder for logo */}
+              <img
+                src="/logo.jpg"
+                alt="Health Bridge Logo"
+                style={{ width: 58, height: 58, borderRadius: "8px", objectFit: "cover" }}
+              />
+            </div>
+          </div>
+          <div style={{ fontWeight: 700, fontSize: "1.22rem", letterSpacing: ".03em", lineHeight: 1.1 }}>
+            Health<br />Bridge
           </div>
         </div>
-        {/* Useful Links */}
-        <div style={{ minWidth: 200, marginBottom: 18 }}>
-          <div style={{ color: "#3870FF", fontWeight: 700, marginBottom: 12, fontSize: "1.08rem" }}>Useful Links</div>
-          <div style={{ lineHeight: 2.12 }}>
-            <div>Health Tips</div>
-            <div>FAQs</div>
-            <div>Insurance Information</div>
-            <div>Patient Resources</div>
-            <div>Testimonials</div>
-            <div>Careers</div>
-            <div>Laboratory</div>
-            <div>Terms & Conditions</div>
-            <div>Privacy Policy</div>
-            <div>Refund & Cancellation Policy</div>
+        {/* Contact Section */}
+        <div style={{ minWidth: 210, marginRight: 0 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Contact</div>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+            <FaEnvelope style={{ marginRight: 8, fontSize: 15 }} />
+            <span>Healthbridge.com</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
+            <FaPhoneAlt style={{ marginRight: 8, fontSize: 15 }} />
+            <span>+251912345678</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <FaMapMarkerAlt style={{ marginRight: 8, fontSize: 15 }} />
+            <span>Somewhere in the World</span>
           </div>
         </div>
-        {/* Get to Know Us */}
-        <div style={{ minWidth: 220, marginBottom: 18 }}>
-          <div style={{ color: "#3870FF", fontWeight: 700, marginBottom: 12, fontSize: "1.08rem" }}>Get to Know Us</div>
-          <div style={{ lineHeight: 2.12 }}>
-            <div>Telehealth Services</div>
-            <div>Events</div>
-            <div>Wellness Programs</div>
-            <div>Accessibility Statement</div>
-            <div>Events</div>
-            <div>Wellness Programs</div>
-            <div>Online Bill Pay</div>
-            <div>Accessibility Statement</div>
-          </div>
+        {/* QuickLinks */}
+        <div style={{ minWidth: 160, marginRight: 0 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>QuickLinks</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => window.location.href = "#home"}>Home</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => window.location.href = "#about"}>About Us</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => window.location.href = "#doctors"}>Our doctors</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => window.location.href = "#testimonials"}>Testimonials</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Wellness Tips - Coming Soon!')}>Wellness Tips</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Contact Us - Coming Soon!')}>Contact Us</div>
         </div>
-        {/* Connect With Us & Download the App */}
-        <div style={{ minWidth: 240, marginBottom: 18 }}>
-          <div style={{ color: "#3870FF", fontWeight: 700, marginBottom: 12, fontSize: "1.08rem" }}>Connect With Us</div>
-          <div style={{ display: "flex", gap: 16, marginBottom: 18 }}>
-            <a href="#" style={{ color: "#3870FF", background: "#fff", borderRadius: "50%", width: 34, height: 34, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 21 }}>
+        {/* Support & Resources */}
+        <div style={{ minWidth: 170 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8 }}>Support &<br />Resources</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('FAQs - Coming Soon!')}>FAQs</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Privacy Policy - Coming Soon!')}>Privacy Policy</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Terms & Conditions - Coming Soon!')}>Terms & Conditions</div>
+          <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Help Center - Coming Soon!')}>Help Center</div>
+        </div>
+        {/* Social Media */}
+        <div style={{ minWidth: 110, textAlign: "right" }}>
+          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginBottom: 10 }}>
+            <a href="https://facebook.com/healthbridge" target="_blank" rel="noopener noreferrer" style={{ color: "#fff", background: "#3870FF", borderRadius: "50%", width: 32, height: 32, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, transition: "transform 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.1)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>
               <FaFacebookF />
             </a>
-            <a href="#" style={{ color: "#3870FF", background: "#fff", borderRadius: "50%", width: 34, height: 34, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 21 }}>
+            <a href="https://youtube.com/@healthbridge" target="_blank" rel="noopener noreferrer" style={{ color: "#fff", background: "#ff3b2f", borderRadius: "50%", width: 32, height: 32, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, transition: "transform 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.1)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>
               <FaYoutube />
             </a>
-            <a href="#" style={{ color: "#3870FF", background: "#fff", borderRadius: "50%", width: 34, height: 34, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 21 }}>
+            <a href="https://twitter.com/healthbridge" target="_blank" rel="noopener noreferrer" style={{ color: "#fff", background: "#222", borderRadius: "50%", width: 32, height: 32, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, transition: "transform 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.1)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>
               <FaXTwitter />
             </a>
-            <a href="#" style={{ color: "#3870FF", background: "#fff", borderRadius: "50%", width: 34, height: 34, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 21 }}>
+            <a href="https://linkedin.com/company/healthbridge" target="_blank" rel="noopener noreferrer" style={{ color: "#fff", background: "#0a66c2", borderRadius: "50%", width: 32, height: 32, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, transition: "transform 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.1)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>
               <FaLinkedinIn />
             </a>
-            <a href="#" style={{ color: "#3870FF", background: "#fff", borderRadius: "50%", width: 34, height: 34, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 21 }}>
+            <a href="https://instagram.com/healthbridge" target="_blank" rel="noopener noreferrer" style={{ color: "#fff", background: "linear-gradient(135deg,#fdc468 0%,#df4996 100%)", borderRadius: "50%", width: 32, height: 32, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, transition: "transform 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.1)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>
               <FaInstagram />
-            </a>
-          </div>
-          <div style={{ color: "#3870FF", fontWeight: 700, marginBottom: 10, fontSize: "1.08rem" }}>Download the App</div>
-          <div style={{ display: "flex", gap: 14 }}>
-            <a href="#" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#3870FF", padding: "8px 16px", borderRadius: 8, textDecoration: "none", fontSize: "0.9rem", fontWeight: 600 }}>
-              <FaGooglePlay size={20} />
-              Google Play
-            </a>
-            <a href="#" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", color: "#3870FF", padding: "8px 16px", borderRadius: 8, textDecoration: "none", fontSize: "0.9rem", fontWeight: 600 }}>
-              <FaApple size={20} />
-              App Store
             </a>
           </div>
         </div>
       </div>
       <div
         style={{
-          borderTop: "1.5px solid #222",
-          padding: "15px 0",
+          borderTop: "1px solid #45a4fa",
+          padding: "20px 0",
           textAlign: "left",
-          color: "#ccc",
-          fontSize: "0.98rem",
-          maxWidth: 1180,
+          color: "#f8f8f8",
+          fontSize: "0.97rem",
+          maxWidth: 1100,
           margin: "0 auto",
-          letterSpacing: "0.02em",
+          opacity: 0.87,
+          letterSpacing: "0.01em",
         }}
       >
         ©2025 Health Bridge  All Rights Reserved.
@@ -118,5 +125,3 @@ export function Footer() {
     </footer>
   );
 }
-
-export default Footer;

@@ -5,6 +5,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { ModeToggle } from "@/app/components/theme/mode-toggle"
 
 const SignupPage: React.FC = () => {
   const router = useRouter()
@@ -123,26 +124,29 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="flex items-center px-4 py-3 bg-white shadow-sm dark:bg-gray-800">
-        <Link href="/" className="mr-4 text-blue-500">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z" />
-          </svg>
-        </Link>
+      <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm dark:bg-gray-800">
         <div className="flex items-center">
-          <div className="mr-3">
-            <Image
-              src="/logo.jpg"
-              alt="Health Bridge Logo"
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Health Bridge</h1>
+          <Link href="/" className="mr-4 text-blue-500">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.42-1.41L7.83 13H20v-2z" />
+            </svg>
+          </Link>
+          <div className="flex items-center">
+            <div className="mr-3">
+              <Image
+                src="/logo.jpg"
+                alt="Health Bridge Logo"
+                width={40}
+                height={40}
+                className="rounded-full"
+              />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">Health Bridge</h1>
+            </div>
           </div>
         </div>
+        <ModeToggle />
       </div>
 
       <div className="flex-1 px-6 py-8">

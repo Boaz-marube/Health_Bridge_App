@@ -2,17 +2,65 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Card, CardContent } from "./components/ui/card"
 import { Navbar } from "./components/layout/nav"
 import { Footer } from "./components/layout/footer"
 import { FaSmile, FaHeartbeat, FaCheck } from "react-icons/fa"
 import { MdLocalHospital } from "react-icons/md"
 
+// Constants for better maintainability
+const GRADIENT_STYLE = "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)"
+const PRIMARY_COLOR = "#3870FF"
+
+// Utility function to sanitize user input
+const sanitizeInput = (input: string): string => {
+  return input.replace(/[\n\r\t]/g, ' ').replace(/[<>"'&]/g, (char) => {
+    const entities: { [key: string]: string } = {
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      '&': '&amp;'
+    }
+    return entities[char] || char
+  })
+}
+
 export default function HomePage() {
+  const [isVisible, setIsVisible] = useState(false)
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    const checkTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'))
+    }
+    checkTheme()
+    const observer = new MutationObserver(checkTheme)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 300)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#home' || window.location.hash === '') {
+        setIsVisible(false)
+        setTimeout(() => setIsVisible(true), 100)
+      }
+    }
+
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
   const gradientButtonStyle = {
     backgroundColor: "#3870FF", // Fallback solid color
-    backgroundImage: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
+    backgroundImage: GRADIENT_STYLE,
     color: "#ffffff",
     border: "none",
     outline: "none",
@@ -21,9 +69,9 @@ export default function HomePage() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background dark:bg-gray-900">
       {/* Main Content */}
-      <main id="home" className="relative h-[80vh]">
+      <main id="home" className="relative h-[60vh] sm:h-[70vh] lg:h-[80vh]">
         {/* Hero Background Area - Ready for your background image */}
         <div className="absolute inset-0 bg-gray-100">
           <Image
@@ -38,74 +86,113 @@ export default function HomePage() {
         </div>
 
         {/* Welcome Card - Positioned as overlay on the right */}
-        <div className="relative z-10 flex items-center justify-end p-8 lg:p-12 h-[80vh]">
-          <Card className="w-full max-w-sm border-0 shadow-lg mr-8 lg:mr-16 animate-slide-in" style={{ backgroundColor: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(10px)" }}>
-            <CardContent className="p-6 space-y-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Welcome to</p>
-                <h1 className="text-2xl font-bold text-foreground">Health Bridge</h1>
+        <div className="relative z-10 flex items-center justify-center sm:justify-end p-4 sm:p-6 lg:p-12 h-[60vh] sm:h-[70vh] lg:h-[80vh]">
+          <Card 
+            className="w-full max-w-xs sm:max-w-sm border-0 sm:mr-4 lg:mr-16 transition-all duration-1000 ease-out cursor-pointer" 
+            style={{ 
+              backgroundColor: isDark ? "rgba(31, 41, 55, 0.8)" : "rgba(255, 255, 255, 0.3)", 
+              backdropFilter: "blur(10px)",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
+              transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(100px) scale(0.9)',
+              opacity: isVisible ? 0.85 : 0
+            }}
+
+            onClick={() => {
+              const card = document.querySelector('.hero-card') as HTMLElement
+              if (card) {
+                card.style.transform = 'scale(0.95)'
+                setTimeout(() => {
+                  card.style.transform = 'scale(1)'
+                }, 150)
+              }
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = isVisible ? 'translateX(0) scale(1.02)' : 'translateX(100px) scale(0.9)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = isVisible ? 'translateX(0) scale(1)' : 'translateX(100px) scale(0.9)'
+            }}
+          >
+            <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4 hero-card">
+              <div className="space-y-1" style={{
+                transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                opacity: isVisible ? 1 : 0,
+                transition: 'all 0.8s ease-out 0.2s'
+              }}>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Welcome to</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Health Bridge</h1>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground leading-relaxed">
+              <div className="space-y-2 sm:space-y-3" style={{
+                transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                opacity: isVisible ? 1 : 0,
+                transition: 'all 0.8s ease-out 0.4s'
+              }}>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                   Your digital bridge to better healthcare. Easily book appointments, track your queue, access medical
                   records, and get AI-powered reminders and wellness tips—all in one secure place.
                 </p>
               </div>
 
-              <Link href="/signup">
-                <button
-                  className="w-full font-medium py-2 px-4 rounded-md hover:opacity-90 transition-opacity cursor-pointer text-center text-white"
-                  style={gradientButtonStyle}
-                >
-                  Get Started
-                </button>
-              </Link>
+              <div style={{
+                transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                opacity: isVisible ? 1 : 0,
+                transition: 'all 0.8s ease-out 0.6s'
+              }}>
+                <Link href="/signup">
+                  <button
+                    className="w-full font-medium py-2 px-4 rounded-md hover:opacity-90 hover:scale-105 transition-all duration-300 cursor-pointer text-center text-white text-sm sm:text-base"
+                    style={gradientButtonStyle}
+                  >
+                    Get Started
+                  </button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
       </main>
 
       {/* About Us Section */}
-      <section id="about" className="relative min-h-[70vh] bg-gradient-to-br from-blue-50 to-blue-100">
-        <div className="container mx-auto px-4 py-12">
-          <div className="text-center mb-8">
-            <h2 className="text-4xl font-bold mb-4" style={{ background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>About Us</h2>
-            <div className="w-24 h-1 mx-auto rounded-full" style={{ background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)" }}></div>
+      <section id="about" className="relative min-h-[50vh] sm:min-h-[60vh] lg:min-h-[70vh] bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700">
+        <div className="container mx-auto px-4 py-8 sm:py-12">
+          <div className="text-center mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4" style={{ background: GRADIENT_STYLE, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>About Us</h2>
+            <div className="w-16 sm:w-20 lg:w-24 h-1 mx-auto rounded-full" style={{ background: GRADIENT_STYLE }}></div>
           </div>
           
           <div className="max-w-7xl mx-auto">
-            <div className="rounded-2xl shadow-xl overflow-hidden" style={{ backgroundColor: "rgba(255, 255, 255, 0.7)" }}>
+            <div className="rounded-xl sm:rounded-2xl shadow-xl overflow-hidden" style={{ backgroundColor: "rgba(255, 255, 255, 0.7)" }}>
               <div className="flex flex-col lg:flex-row">
                 <div className="lg:w-2/5">
-                  <div className="h-64 lg:h-full relative">
+                  <div className="h-48 sm:h-64 lg:h-full relative">
                     <Image
-                      src="/about.jpg"
+                      src="/about.jpg?v=2"
                       alt="Health Bridge Team"
                       fill
                       className="object-cover"
                     />
                   </div>
                 </div>
-                <div className="lg:w-3/5 p-8 lg:p-12">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                <div className="lg:w-3/5 p-4 sm:p-6 lg:p-12">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
                     Welcome to Health Bridge
                   </h3>
-                  <p className="text-gray-600 leading-relaxed mb-8 text-lg">
+                  <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6 sm:mb-8 text-sm sm:text-base lg:text-lg">
                     Welcome to Health Clinics, where your well-being is our priority. Our mission is to provide exceptional healthcare services with a focus on compassion, expertise, and personalized care. At Health Clinics, we understand that your health is invaluable, and we are committed to ensuring that you receive the highest standard of medical attention.
                   </p>
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-4 flex-shrink-0" style={{ background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)" }}></div>
-                      <span className="text-gray-700 text-lg">24/7 Medical Services through online and offline</span>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full mr-3 sm:mr-4 flex-shrink-0" style={{ background: GRADIENT_STYLE }}></div>
+                      <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg">24/7 Medical Services through online and offline</span>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-4 flex-shrink-0" style={{ background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)" }}></div>
-                      <span className="text-gray-700 text-lg">Using Modern technology to diagnostic disease</span>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full mr-3 sm:mr-4 flex-shrink-0" style={{ background: GRADIENT_STYLE }}></div>
+                      <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg">Using Modern technology to diagnostic disease</span>
                     </div>
                     <div className="flex items-center">
-                      <div className="w-3 h-3 rounded-full mr-4 flex-shrink-0" style={{ background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)" }}></div>
-                      <span className="text-gray-700 text-lg">Easy and flexible to appoint a doctor</span>
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full mr-3 sm:mr-4 flex-shrink-0" style={{ background: GRADIENT_STYLE }}></div>
+                      <span className="text-gray-700 dark:text-gray-300 text-sm sm:text-base lg:text-lg">Easy and flexible to appoint a doctor</span>
                     </div>
                   </div>
                 </div>
@@ -116,22 +203,24 @@ export default function HomePage() {
       </section>
 
       {/* Doctors Section */}
-      <DoctorsSection />
+      <div id="doctors">
+        <DoctorsSection />
+      </div>
       
       {/* Section Divider */}
       <div style={{ 
         height: "2px", 
-        background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)", 
+        background: GRADIENT_STYLE, 
         margin: "0 auto", 
-        maxWidth: "600px",
-        marginTop: "-10px",
-        marginBottom: "20px"
+        maxWidth: "800px",
+        marginTop: "-30px",
+        marginBottom: "40px"
       }}></div>
       
       {/* Testimonials Header */}
-      <div id="testimonials" style={{ textAlign: "center", padding: "0px 0 20px 0", background: "#fff", marginTop: "-20px" }}>
+      <div id="testimonials" className="text-center py-0 pb-5 bg-white dark:bg-gray-900 -mt-5">
         <h1 style={{
-          color: "#3870FF",
+          color: PRIMARY_COLOR,
           fontWeight: 600,
           fontSize: "2.2rem",
           marginBottom: "8px",
@@ -221,72 +310,28 @@ function DoctorsSection() {
     },
   ];
   const doctors = showMore ? allDoctors : allDoctors.slice(0, 5);
-  const maxIndex = doctors.length - visible;
+  const maxIndex = useMemo(() => doctors.length - visible, [doctors.length, visible]);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#fff",
-        fontFamily: "sans-serif",
-        padding: "40px 0 0px 0",
-      }}
-    >
-        <h1
-          style={{
-            textAlign: "center",
-            color: "#3870FF",
-            fontWeight: 600,
-            fontSize: "2.2rem",
-            marginBottom: "8px",
-          }}
-        >
+    <div className="min-h-screen bg-white dark:bg-gray-900 font-sans pt-6 sm:pt-8 lg:pt-10 px-4">
+        <h1 className="text-center text-[#3870FF] dark:text-blue-400 font-semibold text-2xl sm:text-3xl lg:text-4xl mb-2">
           Doctors
         </h1>
-        <h2
-          style={{
-            textAlign: "center",
-            fontWeight: 700,
-            fontSize: "1.24rem",
-            margin: 0,
-            marginBottom: 6,
-          }}
-        >
+        <h2 className="text-center font-bold text-lg sm:text-xl m-0 mb-1.5 text-gray-900 dark:text-white">
           Our Best Doctors At Your Service
         </h2>
-        <p
-          style={{
-            textAlign: "center",
-            margin: "0 auto",
-            marginBottom: 12,
-            maxWidth: 850,
-            fontSize: "1rem",
-            color: "#333",
-            lineHeight: 1.6,
-          }}
-        >
+        <p className="text-center mx-auto mb-3 sm:mb-4 lg:mb-6 max-w-xs sm:max-w-2xl lg:max-w-4xl text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed px-4">
           Experience unparalleled medical expertise with our team of best-in-class doctors.<br />
           At Health Clinics, we take pride in offering you the highest standard of care, delivered by dedicated professionals committed to your well-being.
         </p>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            margin: "30px 0 16px 0",
-            position: "relative",
-            maxWidth: "1200px",
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
+        <div className="flex justify-center items-center my-4 sm:my-6 lg:my-8 relative max-w-xs sm:max-w-4xl lg:max-w-6xl mx-auto overflow-x-auto lg:overflow-x-visible">
           <button
             aria-label="Previous"
             disabled={start <= 0}
             style={{
-              border: "2px solid #3870FF",
+              border: `2px solid ${PRIMARY_COLOR}`,
               background: "#fff",
-              color: "#3870FF",
+              color: PRIMARY_COLOR,
               borderRadius: "50%",
               width: 50,
               height: 50,
@@ -303,18 +348,18 @@ function DoctorsSection() {
             onClick={() => setStart(Math.max(start - 1, 0))}
             onMouseEnter={e => {
               if (start > 0) {
-                e.currentTarget.style.background = "#3870FF";
+                e.currentTarget.style.background = PRIMARY_COLOR;
                 e.currentTarget.style.color = "#fff";
               }
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = "#fff";
-              e.currentTarget.style.color = "#3870FF";
+              e.currentTarget.style.color = PRIMARY_COLOR;
             }}
           >
             &lt;
           </button>
-          <div style={{ display: "flex", gap: 24 }}>
+          <div className="flex gap-3 sm:gap-4 lg:gap-12 min-w-max px-2 sm:px-0">
             {doctors.slice(start, start + visible).map((doctor, idx) => (
               <div
                 key={doctor.name}
@@ -323,7 +368,8 @@ function DoctorsSection() {
                   borderRadius: 18,
                   boxShadow: "0 2px 12px rgba(56,112,255,0.12)",
                   padding: "22px 18px 16px 18px",
-                  width: 210,
+                  width: "180px",
+                  minWidth: "180px",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -476,24 +522,8 @@ function DoctorsSection() {
 
 function StatsPanel() {
   return (
-    <div
-      style={{
-        width: "100%",
-        background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "28px 0",
-        marginTop: "0px",
-      }}
-    >
-      <div style={{
-        display: "flex",
-        width: "100%",
-        maxWidth: 1260,
-        justifyContent: "space-between",
-        gap: "0px"
-      }}>
+    <div className="w-full flex justify-center items-center py-6 sm:py-8 lg:py-10 px-4" style={{ background: GRADIENT_STYLE }}>
+      <div className="flex flex-col sm:flex-row w-full max-w-6xl justify-between gap-4 sm:gap-0">
         <StatBox
           icon={<FaSmile size={44} color="white" />}
           value="135k+"
@@ -529,21 +559,14 @@ function StatBox({
   label: string;
 }) {
   return (
-    <div style={{
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "white",
-      minWidth: 0,
-      borderRight: "1px solid rgba(255,255,255,0.13)"
-    }}>
-      <div style={{ marginBottom: 10 }}>{icon}</div>
-      <div style={{ fontSize: "2.3rem", fontWeight: 600, marginBottom: 6 }}>
+    <div className="flex-1 flex flex-col items-center justify-center text-white min-w-0 sm:border-r border-white/20 last:border-r-0 cursor-pointer transition-transform duration-300 hover:scale-105 py-4 sm:py-0">
+      <div className="mb-2 sm:mb-3">
+        <div className="text-2xl sm:text-3xl lg:text-4xl">{icon}</div>
+      </div>
+      <div className="text-xl sm:text-2xl lg:text-4xl font-semibold mb-1 sm:mb-2">
         {value}
       </div>
-      <div style={{ fontSize: "1.08rem", fontWeight: 400, opacity: 0.92 }}>
+      <div className="text-xs sm:text-sm lg:text-base font-normal opacity-90 text-center px-2">
         {label}
       </div>
     </div>
@@ -583,94 +606,29 @@ function SpecialtiesPage() {
       link: "#",
     },
   ];
-  const maxIndex = specialties.length - visible;
+  const maxIndex = useMemo(() => specialties.length - visible, [specialties.length, visible]);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#fff",
-        fontFamily: "sans-serif",
-        padding: "0",
-      }}
-    >
-      <div
-        style={{
-          margin: "0 auto",
-          maxWidth: 1300,
-          padding: "44px 0 60px 0",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: 4 }}>
-          <div
-            style={{
-              background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              fontWeight: 500,
-              fontSize: "1rem",
-              marginBottom: 6,
-            }}
-          >
+    <div className="min-h-screen bg-white dark:bg-gray-900 font-sans p-0">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 lg:py-16">
+        <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+          <div className="text-sm sm:text-base lg:text-lg font-medium mb-2 sm:mb-3" style={{
+            background: GRADIENT_STYLE,
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text"
+          }}>
             Health Clinics Services
           </div>
-          <h2
-            style={{
-              fontWeight: 700,
-              fontSize: "1.34rem",
-              margin: 0,
-              marginBottom: 6,
-            }}
-          >
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
             Medical Services of The Specialties
           </h2>
-          <p
-            style={{
-              color: "#444",
-              fontSize: "1.04rem",
-              margin: 0,
-              marginBottom: 32,
-            }}
-          >
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 mx-auto max-w-2xl px-4">
             Our commitment to your health extends beyond routine care.
           </p>
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "stretch",
-            gap: 24,
-            marginBottom: "22px",
-            position: "relative",
-          }}
-        >
-          <button
-            aria-label="Previous"
-            disabled={start <= 0}
-            style={{
-              border: "none",
-              background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
-              color: "#fff",
-              borderRadius: "50%",
-              width: 36,
-              height: 36,
-              fontSize: 26,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
-              position: "absolute",
-              left: -52,
-              top: "50%",
-              transform: "translateY(-50%)",
-              cursor: start > 0 ? "pointer" : "not-allowed",
-              opacity: start > 0 ? 1 : 0.4,
-              zIndex: 2,
-            }}
-            onClick={() => setStart(Math.max(start - 1, 0))}
-          >
-            &#60;
-          </button>
-          {specialties.slice(start, start + visible).map((item, idx) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          {specialties.map((item, idx) => (
             <div
               key={item.title}
               style={{
@@ -678,8 +636,7 @@ function SpecialtiesPage() {
                 borderRadius: 20,
                 boxShadow: "0 2px 14px rgba(56,112,255,0.11)",
                 padding: "38px 18px 22px 18px",
-                width: 287,
-                minHeight: 340,
+                minHeight: "300px",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -724,11 +681,10 @@ function SpecialtiesPage() {
                     transform: "scale(1.1)",
                   }}
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (nextSibling) {
-                      nextSibling.style.display = 'flex';
-                    }
+                    const target = e.currentTarget as HTMLImageElement;
+                    const nextElement = target.nextElementSibling as HTMLElement;
+                    target.style.display = 'none';
+                    if (nextElement) nextElement.style.display = 'flex';
                   }}
                 />
                 <div
@@ -770,8 +726,16 @@ function SpecialtiesPage() {
               >
                 {item.description}
               </div>
-              <a
-                href={item.link}
+              <button
+                onClick={() => {
+                  const details = {
+                    'Cardiology': 'Heart Health Services:\n• ECG & Stress Testing\n• Cardiac Catheterization\n• Heart Surgery\n• Preventive Care\n\nDoctors: Dr. Robert Johnson, MD\nHours: 24/7 Emergency Care\nContact: (555) 123-4567',
+                    'Dermatology': 'Skin Care Services:\n• Skin Cancer Screening\n• Cosmetic Procedures\n• Acne Treatment\n• Laser Therapy\n\nDoctors: Dr. Sarah Williams, MD\nHours: Mon-Fri 8AM-6PM\nContact: (555) 123-4568',
+                    'Obstetrics & Gynecology': 'Women\'s Health Services:\n• Prenatal Care\n• Family Planning\n• Gynecological Exams\n• Fertility Treatment\n\nDoctors: Dr. Jessica Nguyen, OB/GYN\nHours: Mon-Fri 7AM-7PM\nContact: (555) 123-4569',
+                    'Internal Medicine': 'Comprehensive Care:\n• Annual Physicals\n• Chronic Disease Management\n• Preventive Care\n• Health Screenings\n\nDoctors: Dr. Samantha Miller, MD\nHours: Mon-Fri 8AM-5PM\nContact: (555) 123-4570'
+                  }
+                  alert(details[item.title] || `Learn more about ${item.title}`)
+                }}
                 style={{
                   display: "inline-block",
                   background: "#fff",
@@ -785,8 +749,8 @@ function SpecialtiesPage() {
                   textDecoration: "none",
                   marginTop: "auto",
                   transition: "background 0.18s, color 0.18s",
+                  cursor: "pointer"
                 }}
-                onClick={() => alert(`Learn more about ${item.title}`)}
                 onMouseEnter={e => {
                   e.currentTarget.style.background = "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)";
                   e.currentTarget.style.color = "#fff";
@@ -797,58 +761,55 @@ function SpecialtiesPage() {
                 }}
               >
                 Learn More &rarr;
-              </a>
+              </button>
             </div>
           ))}
-          <button
-            aria-label="Next"
-            disabled={start >= maxIndex}
-            style={{
-              border: "none",
-              background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
-              color: "#fff",
-              borderRadius: "50%",
-              width: 36,
-              height: 36,
-              fontSize: 26,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
-              position: "absolute",
-              right: -52,
-              top: "50%",
-              transform: "translateY(-50%)",
-              cursor: start < maxIndex ? "pointer" : "not-allowed",
-              opacity: start < maxIndex ? 1 : 0.4,
-              zIndex: 2,
-            }}
-            onClick={() => setStart(Math.min(start + 1, maxIndex))}
-          >
-            &#62;
-          </button>
         </div>
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          {Array.from({ length: specialties.length - visible + 1 }).map((_, i) => (
-            <span
-              key={i}
-              style={{
-                display: "inline-block",
-                width: 12,
-                height: 12,
-                background: start === i ? "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)" : "#e2e6f2",
-                borderRadius: "50%",
-                margin: "0 6px",
-                transition: "background 0.2s",
-              }}
-            ></span>
-          ))}
-        </div>
+
         <div style={{ textAlign: "center" }}>
-          <a
-            href="/more-services"
+          <button
+            onClick={() => {
+              const moreServices = `Additional Medical Services Available:
+
+🏥 EMERGENCY SERVICES
+• 24/7 Emergency Room
+• Trauma Care
+• Ambulance Services
+
+🧠 NEUROLOGY
+• Brain & Spine Care
+• Stroke Treatment
+• Neurological Disorders
+
+👶 PEDIATRICS
+• Child Healthcare
+• Vaccinations
+• Growth Monitoring
+
+🦴 ORTHOPEDICS
+• Bone & Joint Care
+• Sports Medicine
+• Physical Therapy
+
+👁️ OPHTHALMOLOGY
+• Eye Exams
+• Vision Correction
+• Eye Surgery
+
+🦷 DENTAL SERVICES
+• General Dentistry
+• Oral Surgery
+• Cosmetic Dentistry
+
+📞 Contact: (555) 123-HEALTH
+🌐 Visit: healthbridge.com/services`
+              alert(moreServices)
+            }}
             style={{
               display: "inline-block",
               background: "#fff",
-              color: "#3870FF",
-              border: "2px solid #3870FF",
+              color: PRIMARY_COLOR,
+              border: `2px solid ${PRIMARY_COLOR}`,
               borderRadius: 28,
               padding: "10px 30px",
               fontWeight: 600,
@@ -856,19 +817,19 @@ function SpecialtiesPage() {
               boxShadow: "0 2px 8px rgba(56,112,255,0.09)",
               textDecoration: "none",
               transition: "background 0.18s, color 0.18s",
+              cursor: "pointer"
             }}
-            onClick={() => alert('Find More Services - Coming Soon!')}
             onMouseEnter={e => {
-              e.currentTarget.style.background = "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)";
+              e.currentTarget.style.background = GRADIENT_STYLE;
               e.currentTarget.style.color = "#fff";
             }}
             onMouseLeave={e => {
               e.currentTarget.style.background = "#fff";
-              e.currentTarget.style.color = "#3870FF";
+              e.currentTarget.style.color = PRIMARY_COLOR;
             }}
           >
             Find More Services &rarr;
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -901,41 +862,12 @@ function WellnessTipsPage() {
   ];
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#eaf0fa",
-        fontFamily: "sans-serif",
-        padding: "0",
-        marginTop: "-40px",
-      }}
-    >
-      <div
-        style={{
-          margin: "0 auto",
-          maxWidth: 1400,
-          padding: "40px 0 0px 0",
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: 0,
-            marginBottom: 20,
-            fontWeight: 700,
-            fontSize: "1.32rem",
-          }}
-        >
+    <div className="min-h-screen bg-blue-50 dark:bg-gray-800 font-sans p-0">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-12 lg:py-16">
+        <div className="text-center mt-0 mb-6 sm:mb-8 lg:mb-12 font-bold text-lg sm:text-xl lg:text-2xl text-gray-900 dark:text-white">
           Our Latest & Most Popular Wellness Tips For You
         </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: 60,
-            flexWrap: "wrap",
-          }}
-        >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12 justify-items-center">
           {tips.map((tip, idx) => (
             <div
               key={tip.title}
@@ -943,8 +875,9 @@ function WellnessTipsPage() {
                 background: "#fff",
                 borderRadius: 18,
                 boxShadow: "0 2px 14px rgba(56,112,255,0.13)",
-                width: 355,
-                minHeight: 440,
+                width: "100%",
+                maxWidth: "355px",
+                minHeight: "400px",
                 display: "flex",
                 flexDirection: "column",
                 marginBottom: 0,
@@ -974,12 +907,10 @@ function WellnessTipsPage() {
                     height: "100%",
                   }}
                   onError={(e) => {
-                    console.log('Image failed to load:', tip.img);
-                    e.currentTarget.style.display = 'none';
-                    const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
-                    if (nextSibling) {
-                      nextSibling.style.display = 'flex';
-                    }
+                    const target = e.currentTarget as HTMLImageElement;
+                    const nextElement = target.nextElementSibling as HTMLElement;
+                    target.style.display = 'none';
+                    if (nextElement) nextElement.style.display = 'flex';
                   }}
                 />
                 <div
@@ -1001,7 +932,7 @@ function WellnessTipsPage() {
                     position: "absolute",
                     top: 14,
                     left: 14,
-                    background: "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)",
+                    background: GRADIENT_STYLE,
                     color: "#fff",
                     borderRadius: 8,
                     padding: "7px 15px",
@@ -1036,13 +967,87 @@ function WellnessTipsPage() {
                 </div>
               </div>
               <div style={{ padding: "0 20px 8px 20px" }}>
-                <a
-                  href={tip.link}
+                <button
+                  onClick={() => {
+                    const wellnessTips = {
+                      "Navigating the Wellness Landscape: Latest Insights in Medical Health": `🏥 WELLNESS LANDSCAPE INSIGHTS
+
+📊 Key Health Metrics to Track:
+• Blood pressure & heart rate
+• BMI and body composition
+• Sleep quality (7-9 hours nightly)
+• Stress levels and mental health
+
+🥗 Nutrition Guidelines:
+• 5-9 servings fruits/vegetables daily
+• Limit processed foods
+• Stay hydrated (8+ glasses water)
+• Balance macronutrients
+
+💡 Latest Medical Insights:
+• Regular health screenings save lives
+• Preventive care reduces costs by 40%
+• Mental health affects physical health
+• Technology aids health monitoring
+
+📞 Schedule your wellness check: (555) 123-HEALTH`,
+                      
+                      "Healthy Habits 101: A Guide to Boosting Your Immune System": `🛡️ IMMUNE SYSTEM BOOSTING GUIDE
+
+🍎 Immune-Boosting Foods:
+• Citrus fruits (Vitamin C)
+• Leafy greens (antioxidants)
+• Yogurt (probiotics)
+• Nuts & seeds (Vitamin E)
+• Garlic & ginger (natural antibiotics)
+
+💪 Lifestyle Habits:
+• Regular exercise (30 min daily)
+• Quality sleep (7-9 hours)
+• Stress management techniques
+• Hand hygiene practices
+• Avoid smoking & excess alcohol
+
+🧬 Supplements to Consider:
+• Vitamin D3 (immune regulation)
+• Zinc (wound healing)
+• Probiotics (gut health)
+• Vitamin C (antioxidant)
+
+📅 Book immune health consultation today!`,
+                      
+                      "Mind-Body Harmony: The Power of Holistic Health Practices": `🧘 MIND-BODY HARMONY PRACTICES
+
+🧠 Mental Wellness Techniques:
+• Daily meditation (10-20 minutes)
+• Deep breathing exercises
+• Mindfulness practices
+• Gratitude journaling
+• Progressive muscle relaxation
+
+🏃 Physical Activities:
+• Yoga (flexibility + mindfulness)
+• Tai Chi (balance + calm)
+• Walking in nature
+• Swimming (low-impact cardio)
+• Strength training (confidence boost)
+
+🌱 Holistic Approaches:
+• Acupuncture for pain relief
+• Massage therapy for stress
+• Aromatherapy for relaxation
+• Music therapy for mood
+• Art therapy for expression
+
+🤝 Connect with our wellness team: (555) 123-WELLNESS`
+                    }
+                    alert(wellnessTips[tip.title] || `Learn more about: ${tip.title}`)
+                  }}
                   style={{
                     display: "inline-block",
                     background: "#fff",
-                    color: "#3870FF",
-                    border: "2px solid #3870FF",
+                    color: PRIMARY_COLOR,
+                    border: `2px solid ${PRIMARY_COLOR}`,
                     borderRadius: 28,
                     padding: "8px 22px",
                     fontWeight: 600,
@@ -1050,20 +1055,19 @@ function WellnessTipsPage() {
                     boxShadow: "0 2px 8px rgba(56,112,255,0.09)",
                     textDecoration: "none",
                     transition: "background 0.18s, color 0.18s",
+                    cursor: "pointer"
                   }}
-                  onClick={() => alert(`Learn more about: ${tip.title}`)}
                   onMouseEnter={e => {
-                    e.currentTarget.style.background =
-                      "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)";
+                    e.currentTarget.style.background = GRADIENT_STYLE;
                     e.currentTarget.style.color = "#fff";
                   }}
                   onMouseLeave={e => {
                     e.currentTarget.style.background = "#fff";
-                    e.currentTarget.style.color = "#3870FF";
+                    e.currentTarget.style.color = PRIMARY_COLOR;
                   }}
                 >
                   Learn More &rarr;
-                </a>
+                </button>
               </div>
             </div>
           ))}
