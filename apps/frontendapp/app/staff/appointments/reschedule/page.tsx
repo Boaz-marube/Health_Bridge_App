@@ -119,23 +119,23 @@ export default function RescheduleAppointmentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-start space-x-3 sm:space-x-4">
         <button
           onClick={() => router.back()}
-          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+          className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg flex-shrink-0 mt-1"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
         </button>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Reschedule Missed Appointments</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage and reschedule missed patient appointments</p>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">Reschedule Missed Appointments</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Manage and reschedule missed patient appointments</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Missed Appointments List */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Missed Appointments ({missedAppointments.length})
           </h2>
           
@@ -148,22 +148,22 @@ export default function RescheduleAppointmentsPage() {
               missedAppointments.map((appointment) => (
                 <div
                   key={appointment.id}
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  className={`p-3 sm:p-4 border rounded-lg cursor-pointer transition-colors ${
                     selectedAppointment?.id === appointment.id
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                       : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                   onClick={() => setSelectedAppointment(appointment)}
                 >
-                  <div className="flex items-center space-x-3">
-                    <User className="h-8 w-8 text-gray-400" />
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-medium text-gray-900 dark:text-white">
+                  <div className="flex items-start space-x-3">
+                    <User className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400 flex-shrink-0 mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-2">
+                        <h3 className="font-medium text-sm sm:text-base text-gray-900 dark:text-white truncate">
                           {appointment.patientName}
                         </h3>
                         {appointment.priority && (
-                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium self-start ${
                             appointment.priority === 'urgent' ? 'bg-red-100 text-red-800' :
                             appointment.priority === 'high' ? 'bg-orange-100 text-orange-800' :
                             'bg-blue-100 text-blue-800'
@@ -172,10 +172,10 @@ export default function RescheduleAppointmentsPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
                         {appointment.patientEmail}
                       </p>
-                      <div className="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center space-y-1 sm:space-y-0 sm:space-x-4 text-xs text-gray-500 dark:text-gray-400 mt-1">
                         <span className="flex items-center space-x-1">
                           <Calendar className="h-3 w-3" />
                           <span>{new Date(appointment.originalDate).toLocaleDateString()}</span>
@@ -185,7 +185,7 @@ export default function RescheduleAppointmentsPage() {
                           <span>{appointment.originalTime}</span>
                         </span>
                         {appointment.missedReason && (
-                          <span className="text-red-600">
+                          <span className="text-red-600 text-xs">
                             Reason: {appointment.missedReason.replace('_', ' ')}
                           </span>
                         )}
@@ -199,18 +199,18 @@ export default function RescheduleAppointmentsPage() {
         </div>
 
         {/* Reschedule Form */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 sm:p-6">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Reschedule Appointment
           </h2>
           
           {selectedAppointment ? (
             <div className="space-y-4">
-              <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                <h3 className="font-medium text-gray-900 dark:text-white">
+              <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <h3 className="font-medium text-sm sm:text-base text-gray-900 dark:text-white">
                   {selectedAppointment.patientName}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   Dr. {selectedAppointment.doctorName} • {selectedAppointment.appointmentType}
                 </p>
                 <p className="text-xs text-red-600 dark:text-red-400 mt-1">
@@ -263,14 +263,15 @@ export default function RescheduleAppointmentsPage() {
               <button
                 onClick={handleReschedule}
                 disabled={!newDate || !newTime || loading}
-                className="w-full text-white py-2 px-4 rounded-lg disabled:opacity-50"
+                className="w-full text-white py-2 px-4 rounded-lg disabled:opacity-50 text-sm sm:text-base"
                 style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
               >
-                {loading ? 'Rescheduling...' : 'Reschedule Appointment'}
+                <span className="hidden sm:inline">{loading ? 'Rescheduling...' : 'Reschedule Appointment'}</span>
+                <span className="sm:hidden">{loading ? 'Rescheduling...' : 'Reschedule'}</span>
               </button>
             </div>
           ) : (
-            <p className="text-gray-600 dark:text-gray-400 text-center py-8">
+            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 text-center py-6 sm:py-8">
               Select a missed appointment to reschedule
             </p>
           )}
