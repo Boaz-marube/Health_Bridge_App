@@ -172,20 +172,19 @@ export default function LabResultsPage() {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Upload Lab Results</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">Upload Lab Results</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Upload lab results for your patients
           </p>
         </div>
-
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
-        <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="p-4 sm:p-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Patient Selection Dropdown */}
             <div className="relative">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -224,14 +223,14 @@ export default function LabResultsPage() {
                             setShowDropdown(false)
                             setSearchTerm('')
                           }}
-                          className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center space-x-2"
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-start space-x-2"
                         >
-                          <User className="h-4 w-4 text-gray-400" />
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white text-sm">
+                          <User className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-gray-900 dark:text-white text-sm truncate">
                               {formatName(patient.name)}
                             </div>
-                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                            <div className="text-xs text-gray-600 dark:text-gray-400 truncate">
                               {patient.email}
                             </div>
                           </div>
@@ -244,7 +243,7 @@ export default function LabResultsPage() {
             </div>
 
             {/* Test Type and Date */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Test Type *
@@ -285,11 +284,11 @@ export default function LabResultsPage() {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Result Format *
               </label>
-              <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
                 <button
                   type="button"
                   onClick={() => setResultFormat('upload')}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded border ${
+                  className={`flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 rounded border text-sm sm:text-base ${
                     resultFormat === 'upload'
                       ? 'bg-blue-500 text-white border-blue-500'
                       : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
@@ -301,7 +300,7 @@ export default function LabResultsPage() {
                 <button
                   type="button"
                   onClick={() => setResultFormat('text')}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded border ${
+                  className={`flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 rounded border text-sm sm:text-base ${
                     resultFormat === 'text'
                       ? 'bg-blue-500 text-white border-blue-500'
                       : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
@@ -320,7 +319,7 @@ export default function LabResultsPage() {
                   Upload Results File
                 </label>
                 <div
-                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+                  className={`border-2 border-dashed rounded-lg p-4 sm:p-8 text-center transition-colors ${
                     isDragOver
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                       : 'border-gray-300 dark:border-gray-600 hover:border-blue-400'
@@ -331,25 +330,25 @@ export default function LabResultsPage() {
                 >
                   {uploadedFile ? (
                     <div className="space-y-2">
-                      <FileText className="h-12 w-12 text-blue-500 mx-auto" />
-                      <p className="font-medium text-gray-900 dark:text-white">{uploadedFile.name}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <FileText className="h-8 w-8 sm:h-12 sm:w-12 text-blue-500 mx-auto" />
+                      <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base truncate px-2">{uploadedFile.name}</p>
+                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                         {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                       <button
                         type="button"
                         onClick={() => setUploadedFile(null)}
-                        className="text-red-500 hover:text-red-700 text-sm"
+                        className="text-red-500 hover:text-red-700 text-xs sm:text-sm"
                       >
                         Remove file
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <Upload className="h-12 w-12 text-gray-400 mx-auto" />
+                    <div className="space-y-3 sm:space-y-4">
+                      <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto" />
                       <div>
-                        <p className="font-medium text-gray-900 dark:text-white">Click to upload or drag and drop</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">PDF, JPG, PNG, DOC up to 10MB</p>
+                        <p className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">Click to upload or drag and drop</p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">PDF, JPG, PNG, DOC up to 10MB</p>
                       </div>
                       <input
                         type="file"
@@ -361,7 +360,7 @@ export default function LabResultsPage() {
                       <button
                         type="button"
                         onClick={() => document.getElementById('file-upload')?.click()}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 sm:px-4 py-2 rounded text-sm sm:text-base"
                       >
                         Choose File
                       </button>
@@ -406,14 +405,15 @@ export default function LabResultsPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 rounded font-medium"
+              className="w-full bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-2.5 sm:py-3 rounded font-medium text-sm sm:text-base"
             >
-              {loading ? 'Uploading...' : 'Upload Lab Results'}
+              <span className="hidden sm:inline">{loading ? 'Uploading...' : 'Upload Lab Results'}</span>
+              <span className="sm:hidden">{loading ? 'Uploading...' : 'Upload Results'}</span>
             </button>
 
             {/* Footer Note */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-200 text-center">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 rounded-lg">
+              <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 text-center">
                 The patient will be automatically notified when this lab result is uploaded and can view it in their dashboard.
               </p>
             </div>
