@@ -698,7 +698,9 @@ function SpecialtiesPage() {
               </div>
               <button
                 onClick={() => {
+
                   window.location.href = '/login'
+
                 }}
                 style={{
                   display: "inline-block",
@@ -899,7 +901,9 @@ function WellnessTipsPage() {
               <div style={{ padding: "0 20px 8px 20px" }}>
                 <button
                   onClick={() => {
+
                     window.location.href = '/login'
+
                   }}
                   style={{
                     display: "inline-block",
