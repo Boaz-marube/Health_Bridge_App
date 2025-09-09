@@ -13,19 +13,30 @@ import uuid
 from collections import defaultdict
 import jwt
 from jwt.exceptions import InvalidTokenError
+from dotenv import load_dotenv
+import os
+
 
 # ---- CONFIG ----
 # PERSIST_DIRECTORY = r"C:\Users\IdeaPad-320\Desktop\health_bridge_second\Health_Bridge_App\healthbridge_genai\real_medical_db"
 
 # # print("📂 BASE_DIR:", BASE_DIR)
 # print("📂 PERSIST_DIRECTORY:", PERSIST_DIRECTORY)
-BASE_DIR = Path(__file__).parent.parent.parent.resolve()  # Go up to project root
-PERSIST_DIRECTORY = BASE_DIR / "real_medical_db"
+BASE_DIR = Path(__file__).parent.parent.parent.resolve()  
+load_dotenv(BASE_DIR / ".env")
 
-# ---- AUTH CONFIG ----
-SECRET_KEY = "healthbridge-secret-key-2024-change-in-production"
+SECRET_KEY = os.getenv("JWT_SECRET")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+print("SECRET KEY:",SECRET_KEY)
+
+# Go up to project root
+PERSIST_DIRECTORY = BASE_DIR / "real_medical_db"
+
+# # ---- AUTH CONFIG ----
+# SECRET_KEY = "healthbridge-secret-key-2024-change-in-production"
+# ALGORITHM = "HS256"
+# ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 # Add the path to your crew module
 # sys.path.append(r"C:\Users\IdeaPad-320\Desktop\health_bridge_second\Health_Bridge_App\healthbridge_genai\real_medical_db")
