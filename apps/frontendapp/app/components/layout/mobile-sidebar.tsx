@@ -82,8 +82,8 @@ export function MobileSidebar({ userType, isOpen, onClose }: MobileSidebarProps)
       setPatientProfile(profile)
     }
   }
-
-  const fetchStaffProfile = async (staffId: string) => {
+// Staff Profile
+  const fetchStaffProfile = async (staffId: string) => { 
     const profile = await staffService.getProfile(staffId)
     if (profile) {
       setStaffProfile(profile)
