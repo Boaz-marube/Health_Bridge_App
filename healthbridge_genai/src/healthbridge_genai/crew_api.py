@@ -15,6 +15,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from dotenv import load_dotenv
 import os
+from .langchain_workflows1 import LangChainOrchestrator, LangChainConfig, integrate_with_fastapi
 
 
 # ---- CONFIG ----
@@ -58,6 +59,12 @@ security = HTTPBearer()
 
 # ---- GLOBAL CHROMA CLIENT ----
 chroma_client = PersistentClient(path=str(PERSIST_DIRECTORY))
+
+
+
+cfg = LangChainConfig(persist_directory=str(PERSIST_DIRECTORY))
+orchestrator = LangChainOrchestrator(cfg, chroma_client=chroma_client)
+integrate_with_fastapi(app, orchestrator)
 
 # Global variables for CrewAI
 crew = None
@@ -236,22 +243,23 @@ def get_conversation_summary(user_id: str, conversation_id: str) -> str:
     return summary
 
 def format_response_for_role(response: str, role: str, query: str) -> str:
-    """Format the response based on user role"""
-    if role.lower() == "doctor":
-        formatted = f"**Clinical Analysis for Healthcare Professional:**\n\n"
-        formatted += f"**Query:** {query}\n\n"
-        formatted += f"**Evidence-Based Response:**\n{response}\n\n"
-        formatted += "**Clinical Considerations:**\n- Always verify with current guidelines\n- Consider patient-specific factors\n- Review contraindications\n\n"
-        formatted += "*This information is based on available medical literature and should be integrated with clinical judgment.*"
-    else:
-        formatted = f"**Medical Information for You:**\n\n"
-        formatted += f"**Regarding your question about {query.lower()}:**\n\n"
-        formatted += f"{response}\n\n"
-        formatted += "**Important Notes:**\n- This is general information, not medical advice\n- Always consult your healthcare provider\n- Individual cases may vary\n\n"
-        formatted += "*I'm here to provide information, but please see a doctor for personal medical concerns.*"
+    """Format the AI response with role-based closing notes and tailored tone."""
+    query_lower = query.lower()
     
-    return formatted
+    # Handle greetings
+    if any(greeting in query_lower for greeting in ["hello", "hi", "hey", "greetings"]):
+        return "How can I assist you with your medical query today?"
 
+    if role.lower() == "doctor":
+        return (
+            f"{response}\n\n"
+            "**Clinical Recommendations:** Review the patient’s full medical history, including allergies, current medications, and comorbidities, before prescribing. Consider evidence-based guidelines (e.g., NICE, CDC, WHO) for treatment protocols. Document all clinical decisions and monitor for adverse effects or the need for specialist referral."
+        )
+    else:  # patient
+        return (
+            f"{response}\n\n"
+            "**Important Note:** This information is for educational purposes only and does not replace professional medical advice. Please consult a qualified healthcare provider for personalized diagnosis and treatment."
+        )
 # ---- TASK SELECTION LOGIC ----
 def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
     """Advanced query analysis to determine the most appropriate task type."""
@@ -414,7 +422,31 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
             task_key = "general_medical_task"
             confidence = 0.5
 
-        # Enhanced query with memory and role context
+        # Role-specific instruction sets — this shapes the AI's thinking
+        if role.lower() == "doctor":
+            role_instructions = """
+            You are a clinical decision support AI for licensed medical professionals.
+            - Use precise medical terminology (e.g., "beta-agonists", "FEV1", "GINA guidelines").
+            - Reference clinical guidelines, drug classes, dosing ranges, contraindications, and differential diagnoses.
+            - Prioritize evidence-based recommendations from authoritative sources.
+            - Suggest diagnostic workups, lab tests, or imaging if relevant.
+            - Mention drug interactions, side effects, or monitoring parameters.
+            - Avoid oversimplification — the user is medically trained.
+            - Do NOT include basic explanations (e.g., "Asthma is a condition where...") unless explicitly asked.
+            """
+        else:  # patient
+            role_instructions = """
+            You are a compassionate patient education assistant.
+            - Use simple, non-technical language. Avoid medical jargon. If you must use it, explain it.
+            - Focus on reassurance, practical steps, and when to seek help.
+            - Emphasize that this is not a diagnosis or treatment — always consult a real doctor.
+            - Use empathetic tone: "It’s understandable to feel worried..." or "Many people experience..."
+            - Break information into short, digestible points.
+            - Avoid alarming language. Use phrases like "usually", "often", "may help".
+            - Never suggest specific medications or dosages — say "your doctor may prescribe..." instead.
+            """
+
+        # Enhanced query with memory, role context, and role-specific instructions
         enhanced_query = f"""
         USER QUERY: {query_text}
         USER ROLE: {role.upper()}
@@ -427,18 +459,21 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
 
         TASK CONTEXT: You are a specialized medical AI assistant focused on {task_key.replace('_', ' ').replace('task', '').title()}.
 
+        ROLE-SPECIFIC INSTRUCTIONS:
+        {role_instructions}
+
         INSTRUCTIONS:
-        1. Analyze the user's query in context of their role ({role}) and conversation history
-        2. Provide a comprehensive, professional medical response appropriate for {role}
-        3. If the context is insufficient, acknowledge limitations and provide general guidance
-        4. Always include appropriate medical disclaimers
-        5. Maintain continuity with previous conversation if relevant
+        1. Analyze the user's query in context of their role ({role}) and conversation history.
+        2. Generate a response strictly following the ROLE-SPECIFIC INSTRUCTIONS above.
+        3. If the context is insufficient, acknowledge limitations and provide general guidance.
+        4. Maintain continuity with previous conversation if relevant.
+        5. Do NOT add disclaimers here — they will be appended later by the system.
         """
 
         # Run the selected task
         raw_result = run_single_task(enhanced_query, task_key)
         
-        # Format response based on role
+        # Format response based on role (now minimal — just greetings + short disclaimer)
         formatted_response = format_response_for_role(raw_result, role, query_text)
         
         # Store in memory
@@ -474,7 +509,6 @@ I found {len(rag_documents)} relevant medical documents but encountered an error
             "error": str(e),
             "response": fallback_response
         }
-
 # ---- USER PROFILE MANAGEMENT ----
 @app.post("/user/profile")
 async def set_user_profile(request: UserProfileRequest, current_user: TokenData = Depends(get_current_user)):
@@ -518,16 +552,30 @@ async def get_user_conversations(current_user: TokenData = Depends(get_current_u
     }
 
 # ---- SINGLE TASK EXECUTION ----
-def run_single_task(query: str, task_key: str) -> str:
-    """Execute a single CrewAI task with the given query"""
+def run_single_task(query: str, task_key: str, user_id: str = None) -> str:
+    """
+    Unified task runner:
+    - CrewAI tasks (from tasks_map)
+    - LangChain workflows (basic, intermediate, advanced)
+    """
+
+    # 1) Check if this is a LangChain workflow
+    orch = getattr(app.state, "langchain_orchestrator", None)
+    if orch and task_key in ("advanced_workflow", "intermediate_workflow", "basic_workflow"):
+        if task_key == "advanced_workflow":
+            return str(orch.run_advanced_workflow(query, user_id))
+        elif task_key == "intermediate_workflow":
+            return str(orch.run_intermediate_workflow(query, user_id))
+        else:
+            return str(orch.run_basic_workflow(query, user_id))
+
+    # 2) Otherwise, check CrewAI tasks
     if task_key not in tasks_map:
         raise ValueError(f"Unknown task: {task_key}")
-    
+
     task = tasks_map[task_key]
-    
-    # Create a mini crew for single task execution
+
     from crewai import Task, Crew, Process
-    
     mini_crew = Crew(
         agents=[task.agent],
         tasks=[Task(
@@ -538,7 +586,7 @@ def run_single_task(query: str, task_key: str) -> str:
         verbose=True,
         process=Process.sequential,
     )
-    
+
     result = mini_crew.kickoff()
     return str(result)
 
