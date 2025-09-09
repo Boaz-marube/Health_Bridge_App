@@ -17,7 +17,7 @@ export function AboutUs() {
               <div className="w-full lg:w-2/5">
                 <div className="h-64 sm:h-80 lg:h-full min-h-[300px] relative">
                   <Image
-                    src="/about-us.jpg?v=2"
+                    src="/about-us.jpg"
                     alt="Health Bridge Team"
                     fill
                     className="object-cover"

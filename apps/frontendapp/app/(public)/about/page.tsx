@@ -10,13 +10,13 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background dark:bg-gray-900">
         {/* Hero Section */}
-        <section className="relative py-20 sm:py-24 lg:py-32 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700">
+        <section className="relative py-8 sm:py-10 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] bg-clip-text text-transparent">
+            <div className="text-center">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-4 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] bg-clip-text text-transparent">
                 About Health Bridge
               </h1>
-              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 Connecting patients with quality healthcare through innovative technology and compassionate care.
               </p>
             </div>
@@ -79,7 +79,7 @@ export default function AboutPage() {
                   <div className="w-full lg:w-1/2">
                     <div className="h-64 sm:h-80 lg:h-full min-h-[400px] relative">
                       <Image
-                        src="/about-us.jpg?v=2"
+                        src="/about-us.jpg"
                         alt="Health Bridge Team"
                         fill
                         className="object-cover"
@@ -88,7 +88,7 @@ export default function AboutPage() {
                     </div>
                   </div>
                   <div className="w-full lg:w-1/2 p-8 sm:p-10 lg:p-12">
-                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6">
                       Our Story
                     </h2>
                     <div className="space-y-4 text-gray-700 dark:text-gray-200 leading-relaxed">
@@ -113,7 +113,7 @@ export default function AboutPage() {
         <section className="py-16 sm:py-20 lg:py-24">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] bg-clip-text text-transparent">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] bg-clip-text text-transparent">
                 What Drives Us
               </h2>
               <div className="w-16 sm:w-20 lg:w-24 h-1 mx-auto rounded-full mb-6" style={{ background: GRADIENT_STYLE }}></div>
@@ -194,7 +194,7 @@ export default function AboutPage() {
         {/* Call to Action */}
         <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] dark:from-gray-800 dark:to-gray-900">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 px-4">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6 px-4">
               Join Our Healthcare Revolution
             </h2>
             <p className="text-base sm:text-lg lg:text-xl text-white/90 mb-6 sm:mb-8 max-w-2xl mx-auto px-4 leading-relaxed">
