@@ -96,7 +96,7 @@ export class AuthController {
   async googleAuthRedirect(@Req() req) {
     const result = req.user;
     // Redirect to patient dashboard with authentication data
-    const redirectUrl = `http://localhost:3000/auth/google/success?token=${result.accessToken}&refreshToken=${result.refreshToken}&userId=${result.userId}`;
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/google/success?token=${result.accessToken}&refreshToken=${result.refreshToken}&userId=${result.userId}`;
     return `<script>window.location.href='${redirectUrl}'</script>`;
   }
 }
