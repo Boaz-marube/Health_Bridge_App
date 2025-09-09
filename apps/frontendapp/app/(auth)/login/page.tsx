@@ -88,26 +88,22 @@ const LoginPage: React.FC = () => {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white shadow-sm dark:bg-gray-800">
+      <div className="flex items-center justify-between px-4 py-2 bg-white shadow-sm dark:bg-gray-800">
         <div className="flex items-center">
           <Link href="/" className="mr-4 text-blue-500">
             <FaArrowLeft size={20} />
           </Link>
-          <div className="flex items-center">
-            <div className="w-10 h-10 mr-3 flex items-center justify-center">
-              <Image
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gradient-to-r from-blue-500 to-blue-600 p-0.5">
+              <img
                 src="/logo.jpg"
                 alt="Health Bridge Logo"
-                width={40}
-                height={40}
-                className="w-10 h-10 object-contain rounded-full"
+                className="w-full h-full object-cover rounded-full bg-white"
               />
             </div>
-            <div>
-              <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Health Bridge
-              </h1>
-            </div>
+            <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+              Health Bridge
+            </span>
           </div>
         </div>
         <ModeToggle />
@@ -117,7 +113,7 @@ const LoginPage: React.FC = () => {
       <div className="flex-1 px-6 py-8">
         <div className="max-w-md mx-auto">
           <div className="mb-8 text-center">
-            <h2 className="mb-2 text-2xl font-bold text-blue-500">Login</h2>
+            <h2 className="mb-2 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Login</h2>
             <p className="text-gray-600 dark:text-gray-300">
               Welcome back to Health bridge
             </p>
