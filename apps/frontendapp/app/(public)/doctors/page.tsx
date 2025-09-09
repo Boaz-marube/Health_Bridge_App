@@ -87,7 +87,7 @@ export default function DoctorsPage() {
         <section className="relative py-8 sm:py-10 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-4 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] bg-clip-text text-transparent">
                 Our Doctors
               </h1>
               <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
