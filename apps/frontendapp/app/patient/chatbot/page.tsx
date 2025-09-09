@@ -83,7 +83,17 @@ export default function ChatbotPage() {
     e.preventDefault()
     if (!inputValue.trim()) return
 
-    // Check rate limiting
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: inputValue,
+      timestamp: new Date(),
+    }
+
+    setMessages(prev => [...prev, userMessage])
+    setInputValue('')
+    setIsTyping(true)
+
     if (isRateLimited()) {
       const timeUntilReset = getTimeUntilReset()
       const minutes = Math.ceil(timeUntilReset / (60 * 1000))
@@ -96,26 +106,11 @@ export default function ChatbotPage() {
       return
     }
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: inputValue,
-      timestamp: new Date(),
-    }
-
-    setMessages(prev => [...prev, userMessage])
-    setInputValue('')
-    setIsTyping(true)
     setError(null)
     addRequest()
 
     let response: Response | undefined
     try {
-      // Ensure we're on client-side before accessing localStorage
-      if (typeof window === 'undefined') {
-        throw new Error('Client-side only operation');
-      }
-      
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const userRole = localStorage.getItem('userRole') || 'patient';
       const aiApiUrl = process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com';
@@ -195,18 +190,6 @@ export default function ChatbotPage() {
           </div>
         </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className={`p-3 mb-4 rounded-lg flex items-center space-x-2 ${
-            error.type === 'rate_limit' ? 'bg-yellow-100 border border-yellow-400 text-yellow-700' :
-            error.type === 'auth' ? 'bg-red-100 border border-red-400 text-red-700' :
-            'bg-red-100 border border-red-400 text-red-700'
-          }`}>
-            {error.type === 'rate_limit' ? <Clock className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-            <span className="text-sm">{error.message}</span>
-          </div>
-        )}
-
         {/* Chat Container */}
         <div className="md:h-[70vh] bg-white dark:bg-gray-800 rounded-lg shadow flex flex-col w-full max-w-full" style={{ height: 'calc(100vh - 160px)' }}>
           {/* Messages */}
@@ -282,10 +265,9 @@ export default function ChatbotPage() {
               />
               <button
                 type="submit"
-                disabled={!inputValue.trim() || isTyping || isRateLimited()}
+                disabled={!inputValue.trim() || isTyping}
                 className="text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center disabled:opacity-50 flex-shrink-0"
                 style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
-                title={isRateLimited() ? `Rate limited. Wait ${Math.ceil(getTimeUntilReset() / (60 * 1000))} minutes` : ''}
               >
                 <Send className="h-4 sm:h-5 w-4 sm:w-5" />
               </button>
