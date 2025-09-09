@@ -35,22 +35,22 @@ export function Testimonials() {
          {/* Stats Section */}
         <div className="mb-12 sm:mb-16 lg:mb-20 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] rounded-2xl p-6 sm:p-8 lg:p-12">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 text-center text-white">
-            <div className="space-y-2">
+            <div className="space-y-2 cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-white/10 rounded-lg p-4 hover:-translate-y-1">
               <FaSmile className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
               <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">135k+</div>
               <div className="text-sm sm:text-base opacity-90">Satisfied Patients</div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-white/10 rounded-lg p-4 hover:-translate-y-1">
               <FaHeartbeat className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
               <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">24</div>
               <div className="text-sm sm:text-base opacity-90">Health Departments</div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-white/10 rounded-lg p-4 hover:-translate-y-1">
               <MdLocalHospital className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
               <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">19</div>
               <div className="text-sm sm:text-base opacity-90">Facilities</div>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 cursor-pointer transition-all duration-300 hover:scale-105 hover:bg-white/10 rounded-lg p-4 hover:-translate-y-1">
               <FaCheck className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
               <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">25+</div>
               <div className="text-sm sm:text-base opacity-90">Insurance Partners</div>
