@@ -96,7 +96,7 @@ export default function ChatbotPage() {
       const token = localStorage.getItem('token');
       const userRole = localStorage.getItem('userRole');
 
-      response = await fetch(process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com', {
+      response = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com'}/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
