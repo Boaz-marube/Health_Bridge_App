@@ -12,6 +12,7 @@ import requests
 import json
 import logging
 from datetime import datetime
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ class N8nAppointmentTool(BaseTool):
         desired_time: str,
         desired_doctor: str,
         user_message: str,
-        session_id: Optional[str] = None
+        session_id: str
     ) -> str:
         """
         Execute the appointment booking request via n8n webhook.
@@ -78,7 +79,8 @@ class N8nAppointmentTool(BaseTool):
                 "email": email,
                 "desired_time": desired_time,
                 "desired_doctor": desired_doctor,
-                "user_message": user_message
+                "user_message": user_message,
+                "session_id": session_id
             }
             
             # Add session_id if provided
@@ -205,5 +207,5 @@ class N8nAppointmentTool(BaseTool):
             desired_time=desired_time,
             desired_doctor=doctor_name,
             user_message=f"Checking availability for Dr. {doctor_name} at {desired_time}",
-            session_id="availability-check"
+            session_id = str(uuid.uuid4())
         )
