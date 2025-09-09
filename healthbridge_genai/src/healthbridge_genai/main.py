@@ -36,12 +36,19 @@ def parse_args():
         default=str(default_config_dir),
         help="Directory containing agents.yaml and tasks.yaml",
     )
+    
+    parser.add_argument(
+        "--input",
+        type=str,
+        help="Input text/query to provide to the agent(s)",
+    )
+    
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument("--all", action="store_true", help="Run all tasks sequentially")
     group.add_argument(
         "--task",
         type=str,
-        help="Run a single task by its key from tasks.yaml (e.g., symptom_check_task)",
+        help="Run a single task by its key from tasks.yaml (e.g., appointment_booking_task)",
     )
     args = parser.parse_args()
 
@@ -65,14 +72,14 @@ def main() -> int:
     try:
         if args.all:
             logger.info("Running all tasks sequentially…")
-            results = run_all_tasks_sequentially(tasks_map)
+            results = run_all_tasks_sequentially(tasks_map, user_input=args.input)
             print("\n=== RESULTS (All Tasks) ===")
             for key, res in results.items():
                 print(f"\n--- {key} ---\n{res}\n")
         else:
             task_key = args.task.strip()
             logger.info("Running single task: %s", task_key)
-            res = run_single_task_by_key(crew, tasks_map, task_key)
+            res = run_single_task_by_key(crew, tasks_map, task_key, user_input=args.input)
             print(f"\n=== RESULT ({task_key}) ===\n{res}\n")
 
         return 0

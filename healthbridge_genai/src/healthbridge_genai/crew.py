@@ -42,7 +42,7 @@ except ImportError as e:
     ) from e
 
 # Import our custom RAG tools
-from .tools import PatientRAGTool, GuidelineRAGTool, create_rag_tool
+from .tools import PatientRAGTool, GuidelineRAGTool, create_rag_tool, N8nAppointmentTool
 
 logger = logging.getLogger("healthbridge.crew")
 
@@ -99,6 +99,9 @@ def _build_agents(agents_cfg: dict, db_path: str = None) -> Dict[str, Agent]:
     guideline_rag_tool = GuidelineRAGTool(db_path=db_path)
     general_rag_tool = create_rag_tool("general", db_path=db_path)
     
+    # Initialize N8n appointment tool
+    n8n_appointment_tool = N8nAppointmentTool()
+    
     for key, spec in agents_cfg.items():
         role = (spec.get("role") or "").strip()
         goal = (spec.get("goal") or "").strip()
@@ -115,8 +118,11 @@ def _build_agents(agents_cfg: dict, db_path: str = None) -> Dict[str, Agent]:
         elif key == "symptom_checker_agent":
             # Symptom checker might need both patient records and guidelines
             tools = [patient_rag_tool, guideline_rag_tool]
+        elif key == "appointment_scheduler_agent":
+            # Appointment scheduler gets the n8n appointment booking tool
+            tools = [n8n_appointment_tool]
         # Other agents can use the general RAG tool if needed
-        # elif key in ["appointment_scheduler_agent", "queue_monitoring_agent", "analytics_agent"]:
+        # elif key in ["queue_monitoring_agent", "analytics_agent"]:
         #     tools = [general_rag_tool]
         elif key == "general_medical_agent":
             # General medical agent uses guidelines RAG if relevant
@@ -205,12 +211,25 @@ def create_healthbridge_crew(config_dir: Path, db_path: str = None) -> Tuple[Cre
     return crew, agents_map, tasks_map
 
 
-def run_single_task_by_key(crew: Crew, tasks_map: Dict[str, Task], task_key: str) -> str:
+def run_single_task_by_key(crew: Crew, tasks_map: Dict[str, Task], task_key: str, user_input: str = None) -> str:
     """Execute a single task by its key from tasks.yaml."""
     if task_key not in tasks_map:
         raise KeyError(f"Unknown task key: {task_key}. Available: {list(tasks_map.keys())}")
 
     single_task = tasks_map[task_key]
+    
+    # If user input is provided, modify the task description to include it
+    if user_input:
+        original_description = single_task.description
+        enhanced_description = f"""
+User Request: "{user_input}"
+
+{original_description}
+
+Please process the above user request according to your role and responsibilities.
+"""
+        single_task.description = enhanced_description
+    
     mini = Crew(
         agents=[single_task.agent],
         tasks=[single_task],
@@ -221,11 +240,23 @@ def run_single_task_by_key(crew: Crew, tasks_map: Dict[str, Task], task_key: str
     return str(result)
 
 
-def run_all_tasks_sequentially(tasks_map: Dict[str, Task]) -> Dict[str, str]:
+def run_all_tasks_sequentially(tasks_map: Dict[str, Task], user_input: str = None) -> Dict[str, str]:
     """Execute all tasks one by one, return outputs keyed by task name."""
     outputs: Dict[str, str] = {}
     for key, task in tasks_map.items():
         try:
+            # If user input is provided, modify the task description to include it
+            if user_input:
+                original_description = task.description
+                enhanced_description = f"""
+User Request: "{user_input}"
+
+{original_description}
+
+Please process the above user request according to your role and responsibilities.
+"""
+                task.description = enhanced_description
+            
             mini = Crew(
                 agents=[task.agent],
                 tasks=[task],

@@ -20,10 +20,28 @@ medical_history_task:
 
 appointment_booking_task:
   description: |
-    Schedule or reschedule patient appointments automatically.
-    Provide confirmations once processed.
+    Handle doctor appointment booking requests using the Appointment Booking Tool.
+    
+    Your responsibilities include:
+    1. Extract appointment details from user requests (email, desired doctor, preferred time)
+    2. Use the Appointment Booking Tool to check availability and book appointments
+    3. Handle responses from the booking system appropriately:
+       - For successful bookings: Confirm details and mention confirmation emails
+       - For unavailable slots: Present alternative options clearly
+       - For errors: Explain the issue and suggest next steps
+    
+    Key guidelines:
+    - Always verify you have the required information (email, doctor name, preferred time)
+    - Convert time references to ISO format (e.g., "Monday 10am" → "2025-09-16T10:00")
+    - If information is missing, ask the user politely for clarification
+    - Present appointment options in a user-friendly format
+    - Maintain a professional and helpful tone throughout
+    
+    Remember: The booking system automatically handles availability checking, 
+    conflict prevention, and email confirmations.
   expected_output: >
-    Confirmation of scheduled/rescheduled appointments.
+    Clear confirmation of scheduled appointments with details, or presentation 
+    of alternative options if the requested time is unavailable.
   agent: appointment_scheduler_agent
 
 treatment_guideline_task:
