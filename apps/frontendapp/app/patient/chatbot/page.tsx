@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Send, Bot, AlertCircle, Clock } from 'lucide-react'
-import { useRateLimit } from '../../hooks/useRateLimit'
-import { handleApiError, ApiError } from '../../utils/errorHandler'
+import { useRateLimit } from '@/app/hooks/useRateLimit'
+import { handleApiError, ApiError } from '@/app/utils/errorHandler'
 
 interface Message {
   id: string
