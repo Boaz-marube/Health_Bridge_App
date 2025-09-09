@@ -5,6 +5,9 @@ import { ThemeProvider } from "@/app/components/theme/theme-provider";
 export const metadata: Metadata = {
   title: 'Health Bridge App',
   description: 'Healthcare management application',
+  icons: {
+    icon: '/logo.jpg',
+  },
 };
 
 export default function RootLayout({
