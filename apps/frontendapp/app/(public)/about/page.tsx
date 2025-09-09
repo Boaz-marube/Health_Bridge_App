@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { FaHeart, FaEye, FaStar, FaUsers, FaShieldAlt, FaHandsHelping } from "react-icons/fa";
 
+// Brand gradient style for consistent theming across pages
 const GRADIENT_STYLE = "linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)";
 
 export default function AboutPage() {
@@ -78,7 +79,7 @@ export default function AboutPage() {
                   <div className="w-full lg:w-1/2">
                     <div className="h-64 sm:h-80 lg:h-full min-h-[400px] relative">
                       <Image
-                        src="/about.jpg?v=2"
+                        src="/about-us.jpg?v=2"
                         alt="Health Bridge Team"
                         fill
                         className="object-cover"
