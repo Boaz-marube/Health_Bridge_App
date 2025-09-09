@@ -125,7 +125,7 @@ export default function DoctorChatbotPage() {
         },
         body: JSON.stringify({
           message: inputValue,
-          context: `You are a healthcare AI assistant for a ${userRole}. Provide professional medical insights, patient management advice, and clinical decision support while maintaining medical ethics and standards.`
+          context: `You are a professional healthcare AI assistant for a ${userRole}. Provide clear, actionable medical insights and clinical guidance. Keep responses focused and practical (2-3 paragraphs). Avoid overly formal formatting. Focus on differential diagnosis, treatment options, and clinical considerations that help with patient care decisions.`
         })
       });
 
