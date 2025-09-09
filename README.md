@@ -44,26 +44,12 @@
 
 **🌐 [Visit Health Bridge Live](https://health-bridge-app-frontendapp.vercel.app/)**
 
-### Demo Credentials
-```
-Patient Login:
-Email: patient@demo.com
-Password: demo123
-
-Doctor Login:
-Email: doctor@demo.com
-Password: demo123
-
-Staff Login:
-Email: staff@demo.com
-Password: demo123
-```
-
 ---
 
 ## 🛠️ Technology Stack
 
 ### Frontend
+
 - **Framework:** Next.js 14 (App Router)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS + Shadcn/ui
@@ -73,6 +59,7 @@ Password: demo123
 - **Deployment:** Vercel
 
 ### Backend
+
 - **Framework:** NestJS
 - **Language:** TypeScript
 - **Database:** MongoDB Atlas
@@ -83,6 +70,7 @@ Password: demo123
 - **Deployment:** Render.com
 
 ### Development Tools
+
 - **Monorepo:** Turborepo
 - **Testing:** Jest + Playwright
 - **Code Quality:** ESLint + Prettier
@@ -93,16 +81,16 @@ Password: demo123
 
 ## 👥 Team Members
 
-| Name | Role | GitHub |
-|------|------|--------|
-| **Boaz Marube** | Full Stack Developer | [@boazmarube](https://github.com/boazmarube) |
-| **Bereket Eshete** | Full Stack Developer | [@bereketeshete](https://github.com/bereketeshete) |
-| **Mahder Hawaz** | Full Stack Developer | [@mahderhawaz](https://github.com/mahderhawaz) |
-| **Nuhamin Wondoson** | UI/UX Designer | [@nuhaminwondoson](https://github.com/nuhaminwondoson) |
-| **June Kwamboka** | UI/UX Designer | [@junekwamboka](https://github.com/junekwamboka) |
-| **Finlay Ndung'u** | UI/UX Designer | [@finlayndungu](https://github.com/finlayndungu) |
-| **Sena Kebede** | GenAI Developer | [@senakebede](https://github.com/senakebede) |
-| **Solomon** | GenAI Developer | [@solomon](https://github.com/solomon) |
+| Name                 | Role                 | GitHub                                                 |
+| -------------------- | -------------------- | ------------------------------------------------------ |
+| **Boaz Marube**      | Full Stack Developer | [@boazmarube](https://github.com/boazmarube)           |
+| **Bereket Eshete**   | Full Stack Developer | [@bereketeshete](https://github.com/bereketeshete)     |
+| **Mahder Hawaz**     | Full Stack Developer | [@mahderhawaz](https://github.com/mahderhawaz)         |
+| **Nuhamin Wondoson** | UI/UX Designer       | [@nuhaminwondoson](https://github.com/nuhaminwondoson) |
+| **June Kwamboka**    | UI/UX Designer       | [@junekwamboka](https://github.com/junekwamboka)       |
+| **Finlay Ndung'u**   | UI/UX Designer       | [@finlayndungu](https://github.com/finlayndungu)       |
+| **Sena Kebede**      | GenAI Developer      | [@senakebede](https://github.com/senakebede)           |
+| **Solomon**          | GenAI Developer      | [@solomon](https://github.com/solomon)                 |
 
 ---
 
@@ -155,6 +143,7 @@ health-bridge-app/
 ### Prerequisites
 
 Ensure you have the following installed:
+
 - **Node.js** (v18 or higher)
 - **npm** (v8 or higher)
 - **Git**
@@ -162,27 +151,31 @@ Ensure you have the following installed:
 ### 📥 Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/your-username/health-bridge-app.git
    cd health-bridge-app
    ```
 
 2. **Install dependencies:**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables:**
-   
+
    **Frontend (.env.local):**
+
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:5002
    NEXT_PUBLIC_AI_API_URL=https://health-bridge-app-3.onrender.com
    NEXTAUTH_SECRET=your-nextauth-secret
    NEXTAUTH_URL=http://localhost:3000
    ```
-   
+
    **Backend (.env):**
+
    ```env
    MONGODB_URI=your-mongodb-connection-string
    JWT_SECRET=your-jwt-secret
@@ -195,10 +188,11 @@ Ensure you have the following installed:
    ```
 
 4. **Start development servers:**
+
    ```bash
    # Start both frontend and backend
    npm run dev
-   
+
    # Or start individually
    npm run dev:frontend  # Frontend: http://localhost:3000
    npm run dev:backend   # Backend: http://localhost:5002
@@ -208,23 +202,24 @@ Ensure you have the following installed:
 
 ## 📜 Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start both frontend and backend in development mode |
-| `npm run dev:frontend` | Start only Next.js frontend |
-| `npm run dev:backend` | Start only NestJS backend |
-| `npm run build` | Build both applications for production |
-| `npm run start` | Start production builds |
-| `npm run test` | Run all tests |
-| `npm run test:e2e` | Run end-to-end tests |
-| `npm run lint` | Lint all code |
-| `npm run type-check` | Type check TypeScript code |
+| Command                | Description                                         |
+| ---------------------- | --------------------------------------------------- |
+| `npm run dev`          | Start both frontend and backend in development mode |
+| `npm run dev:frontend` | Start only Next.js frontend                         |
+| `npm run dev:backend`  | Start only NestJS backend                           |
+| `npm run build`        | Build both applications for production              |
+| `npm run start`        | Start production builds                             |
+| `npm run test`         | Run all tests                                       |
+| `npm run test:e2e`     | Run end-to-end tests                                |
+| `npm run lint`         | Lint all code                                       |
+| `npm run type-check`   | Type check TypeScript code                          |
 
 ---
 
 ## 🏗️ Architecture Overview
 
 ### Frontend Architecture
+
 - **App Router:** Next.js 14 with file-based routing
 - **Component Structure:** Modular, reusable components with Shadcn/ui
 - **State Management:** React Context API for global state
@@ -232,6 +227,7 @@ Ensure you have the following installed:
 - **Styling:** Tailwind CSS with custom design system
 
 ### Backend Architecture
+
 - **Modular Design:** NestJS modules for each feature domain
 - **Database:** MongoDB with Mongoose ODM
 - **Authentication:** JWT tokens with Passport.js strategies
@@ -239,6 +235,7 @@ Ensure you have the following installed:
 - **Security:** CORS, rate limiting, input validation
 
 ### Database Schema
+
 - **Users:** Patient, Doctor, Staff profiles
 - **Appointments:** Scheduling and management
 - **Health Records:** Medical history and records
@@ -278,11 +275,13 @@ npm run test:coverage
 ## 🚀 Deployment
 
 ### Frontend (Vercel)
+
 1. Connect your GitHub repository to Vercel
 2. Configure environment variables
 3. Deploy automatically on push to main branch
 
 ### Backend (Render.com)
+
 1. Connect your GitHub repository to Render
 2. Configure environment variables
 3. Set build and start commands
@@ -301,6 +300,7 @@ We welcome contributions! Please follow these steps:
 5. **Open a Pull Request**
 
 ### Development Guidelines
+
 - Follow TypeScript best practices
 - Write tests for new features
 - Follow the existing code style
@@ -317,6 +317,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 If you have any questions or need support, please:
+
 - 📧 Email: support@healthbridge.com
 - 🐛 Report issues: [GitHub Issues](https://github.com/your-username/health-bridge-app/issues)
 - 💬 Join our community: [Discord](https://discord.gg/healthbridge)
