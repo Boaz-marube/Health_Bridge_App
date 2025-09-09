@@ -35,7 +35,7 @@ const LoginPage: React.FC = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:5002/auth/login", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -52,20 +52,23 @@ const LoginPage: React.FC = () => {
       if (response.ok) {
         // Store token
         localStorage.setItem("token", data.accessToken);
+        
+        // Store the role that's now returned in the response
+        localStorage.setItem("userRole", data.role);
 
         // Decode user info from JWT token
         const tokenPayload = JSON.parse(atob(data.accessToken.split(".")[1]));
         const user = {
           id: data.userId,
-          name: tokenPayload.email.split("@")[0], // Use email prefix as name for now
+          name: tokenPayload.email.split("@")[0],
           email: tokenPayload.email,
-          userType: tokenPayload.userType,
+          userType: data.role, // Use the role from response instead of token
         };
 
         localStorage.setItem("user", JSON.stringify(user));
 
-        console.log("Stored user:", user); // Debug log
-        console.log("Redirecting to dashboard..."); // Debug log
+        console.log("Stored user:", user);
+        console.log("Redirecting to dashboard...");
 
         // Redirect to dashboard
         router.push("/dashboard");
@@ -80,7 +83,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = 'http://localhost:5002/auth/google';
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
   };
 
 
