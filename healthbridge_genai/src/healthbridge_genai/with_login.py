@@ -141,39 +141,25 @@ async def get_current_user_info(current_user: TokenData = Depends(get_current_us
 @app.on_event("startup")
 async def startup_event():
     """Runs once when FastAPI starts — check DB status and initialize CrewAI."""
-    # Cross-platform paths
-    BASE_DIR = Path(__file__).parent.resolve()
-    PERSIST_DIRECTORY = BASE_DIR / "real_medical_db"
-    CONFIG_DIR = BASE_DIR / "config"
-
     print(f"📂 Loading ChromaDB from: {PERSIST_DIRECTORY}")
 
-    # Ensure the DB folder exists
-    if not PERSIST_DIRECTORY.exists():
-        print(f"⚠️ ChromaDB directory not found at {PERSIST_DIRECTORY}.")
-    else:
-        collections = chroma_client.list_collections()
-        print(f"✅ Collections found: {[c.name for c in collections]}")
+    collections = chroma_client.list_collections()
+    print(f"✅ Collections found: {[c.name for c in collections]}")
 
-        if collections:
-            for c in collections:
-                stats = c.count()
-                print(f"📄 Number of documents in collection '{c.name}': {stats}")
-
+    if collections:
+        for c in collections:
+            stats = c.count()
+            print(f"📄 Number of documents in collection '{c.name}': {stats}")
+    
     # Initialize CrewAI
     try:
-        if not CONFIG_DIR.exists():
-            print(f"⚠️ CrewAI config directory not found at {CONFIG_DIR}. Skipping Crew initialization.")
-            return
-
         from .crew import create_healthbridge_crew
+        config_dir = Path(r"C:\Users\IdeaPad-320\Desktop\health_bridge_second\Health_Bridge_App\healthbridge_genai\src\healthbridge_genai\config")
         global crew, agents_map, tasks_map
-        crew, agents_map, tasks_map = create_healthbridge_crew(CONFIG_DIR)
-
+        crew, agents_map, tasks_map = create_healthbridge_crew(config_dir)
         print("✅ CrewAI initialized successfully")
         print(f"🤖 Available agents: {list(agents_map.keys())}")
         print(f"📋 Available tasks: {list(tasks_map.keys())}")
-
     except Exception as e:
         print(f"⚠️ CrewAI initialization failed: {e}")
 
