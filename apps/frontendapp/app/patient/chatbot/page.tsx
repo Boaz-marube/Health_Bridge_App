@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot } from 'lucide-react'
+import { Send, Bot, AlertCircle, Clock } from 'lucide-react'
+import { useRateLimit } from '../../hooks/useRateLimit'
+import { handleApiError, ApiError } from '../../utils/errorHandler'
 
 interface Message {
   id: string
@@ -14,7 +16,14 @@ export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [error, setError] = useState<ApiError | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Rate limiting: 10 requests per 5 minutes
+  const { isRateLimited, addRequest, getTimeUntilReset } = useRateLimit({
+    maxRequests: 10,
+    windowMs: 5 * 60 * 1000
+  })
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -56,6 +65,19 @@ export default function ChatbotPage() {
     e.preventDefault()
     if (!inputValue.trim()) return
 
+    // Check rate limiting
+    if (isRateLimited()) {
+      const timeUntilReset = getTimeUntilReset()
+      const minutes = Math.ceil(timeUntilReset / (60 * 1000))
+      setError({
+        type: 'rate_limit',
+        message: `Rate limit exceeded. Please wait ${minutes} minute(s) before sending another message.`,
+        retryable: true,
+        retryAfter: timeUntilReset
+      })
+      return
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
@@ -66,18 +88,54 @@ export default function ChatbotPage() {
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
     setIsTyping(true)
+    setError(null)
+    addRequest()
 
-    // Simulate API call
-    setTimeout(() => {
+    let response: Response | undefined
+    try {
+      const token = localStorage.getItem('token');
+      const userRole = localStorage.getItem('userRole');
+
+      response = await fetch(process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          message: inputValue,
+          context: `You are a healthcare AI assistant for a ${userRole || 'patient'}. Provide helpful, accurate medical information while emphasizing the importance of consulting healthcare professionals.`
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        content: 'Thank you for your message. I\'m here to help with your healthcare needs.',
+        content: data.response || data.message || 'I apologize, but I cannot process your request right now.',
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, botResponse])
+      
+    } catch (err) {
+      const apiError = handleApiError(err, response)
+      setError(apiError)
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: apiError.message,
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
       setIsTyping(false)
-    }, 1000)
+    }
   }
 
   return (
@@ -92,8 +150,20 @@ export default function ChatbotPage() {
           </div>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className={`p-3 mb-4 rounded-lg flex items-center space-x-2 ${
+            error.type === 'rate_limit' ? 'bg-yellow-100 border border-yellow-400 text-yellow-700' :
+            error.type === 'auth' ? 'bg-red-100 border border-red-400 text-red-700' :
+            'bg-red-100 border border-red-400 text-red-700'
+          }`}>
+            {error.type === 'rate_limit' ? <Clock className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+            <span className="text-sm">{error.message}</span>
+          </div>
+        )}
+
         {/* Chat Container */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow flex flex-col w-full max-w-full" style={{ height: 'calc(100vh - 160px)' }} className="md:h-[70vh] bg-white dark:bg-gray-800 rounded-lg shadow flex flex-col w-full max-w-full">
+        <div className="md:h-[70vh] bg-white dark:bg-gray-800 rounded-lg shadow flex flex-col w-full max-w-full" style={{ height: 'calc(100vh - 160px)' }}>
           {/* Messages */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 space-y-3 sm:space-y-4 w-full">
             {messages.map((message) => (
@@ -167,9 +237,10 @@ export default function ChatbotPage() {
               />
               <button
                 type="submit"
-                disabled={!inputValue.trim() || isTyping}
+                disabled={!inputValue.trim() || isTyping || isRateLimited()}
                 className="text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg flex items-center justify-center disabled:opacity-50 flex-shrink-0"
                 style={{ background: 'linear-gradient(276.68deg, #38B7FF 20.18%, #3870FF 94.81%)' }}
+                title={isRateLimited() ? `Rate limited. Wait ${Math.ceil(getTimeUntilReset() / (60 * 1000))} minutes` : ''}
               >
                 <Send className="h-4 sm:h-5 w-4 sm:w-5" />
               </button>

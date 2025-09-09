@@ -128,6 +128,7 @@ export class AuthService {
     return {
       ...tokens,
       userId: user._id,
+      role: user.userType,
     };
   }
 
@@ -321,6 +322,7 @@ export class AuthService {
     return {
       ...tokens,
       userId: user._id,
+      role: user.userType,
       user: {
         id: user._id,
         name: user.name,

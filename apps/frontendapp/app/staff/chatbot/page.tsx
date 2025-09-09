@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot } from 'lucide-react'
+import { Send, Bot, AlertCircle, Clock } from 'lucide-react'
+import { useRateLimit } from '../../hooks/useRateLimit'
+import { handleApiError, ApiError } from '../../utils/errorHandler'
 
 interface Message {
   id: string
@@ -14,7 +16,13 @@ export default function StaffChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [error, setError] = useState<ApiError | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  const { isRateLimited, addRequest, getTimeUntilReset } = useRateLimit({
+    maxRequests: 12, // Staff get moderate limit
+    windowMs: 5 * 60 * 1000
+  })
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -67,16 +75,66 @@ export default function StaffChatbotPage() {
     setInputValue('')
     setIsTyping(true)
 
-    setTimeout(() => {
+    if (isRateLimited()) {
+      const timeUntilReset = getTimeUntilReset()
+      const minutes = Math.ceil(timeUntilReset / (60 * 1000))
+      setError({
+        type: 'rate_limit',
+        message: `Rate limit exceeded. Please wait ${minutes} minute(s) before sending another message.`,
+        retryable: true,
+        retryAfter: timeUntilReset
+      })
+      return
+    }
+
+    setError(null)
+    addRequest()
+
+    let response: Response | undefined
+    try {
+      const token = localStorage.getItem('token');
+      const userRole = localStorage.getItem('userRole');
+
+      response = await fetch(process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          message: inputValue,
+          context: `You are a healthcare AI assistant for a ${userRole || 'staff'} member. Provide administrative support, scheduling assistance, and operational guidance for healthcare facility management.`
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        content: 'I\'m here to help with administrative and operational tasks.',
+        content: data.response || data.message || 'I apologize, but I cannot process your request right now.',
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, botResponse])
+      
+    } catch (err) {
+      const apiError = handleApiError(err, response)
+      setError(apiError)
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: apiError.message,
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
       setIsTyping(false)
-    }, 1000)
+    }
   }
 
   return (

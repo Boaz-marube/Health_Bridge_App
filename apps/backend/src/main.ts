@@ -11,7 +11,7 @@ async function bootstrap() {
 
   // Enable CORS
   app.enableCors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'https://health-bridge-app-frontendapp.vercel.app'],
+    origin: [process.env.FRONTEND_URL || 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
