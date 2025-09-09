@@ -14,26 +14,16 @@ export function Footer() {
         paddingTop: "60px"
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          maxWidth: 1100,
-          margin: "0 auto",
-          padding: "5px 0 40px 0",
-        }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 max-w-6xl mx-auto px-4 py-8 sm:py-12 items-start">
         {/* Logo & Brand */}
-        <div style={{ display: "flex", alignItems: "center", minWidth: 230 }}>
+        <div className="lg:col-span-2 flex flex-col sm:flex-row items-center gap-2 self-start -mt-2">
           <div style={{ marginRight: 18 }}>
             <div
               style={{
-                width: 72,
-                height: 72,
+                width: 110,
+                height: 110,
                 background: "#fff",
-                borderRadius: 6,
+                borderRadius: 10,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -44,32 +34,32 @@ export function Footer() {
               <img
                 src="/logo.jpg"
                 alt="Health Bridge Logo"
-                style={{ width: 58, height: 58, borderRadius: "8px", objectFit: "cover" }}
+                style={{ width: 95, height: 95, borderRadius: "10px", objectFit: "cover" }}
               />
             </div>
           </div>
-          <div style={{ fontWeight: 700, fontSize: "1.22rem", letterSpacing: ".03em", lineHeight: 1.1 }}>
+          <div style={{ fontWeight: 700, fontSize: "1.5rem", letterSpacing: ".03em", lineHeight: 1.1 }}>
             Health<br />Bridge
           </div>
         </div>
         {/* Contact Section */}
-        <div style={{ minWidth: 210, marginRight: 0 }}>
+        <div className="text-center sm:text-left -ml-6 lg:-ml-12">
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Contact</div>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
-            <FaEnvelope style={{ marginRight: 8, fontSize: 15 }} />
-            <span>Healthbridge.com</span>
+          <div className="flex items-center justify-center sm:justify-start mb-2">
+            <FaEnvelope className="mr-2 text-sm" />
+            <span className="text-sm">info@healthbridge.com</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
-            <FaPhoneAlt style={{ marginRight: 8, fontSize: 15 }} />
-            <span>+251912345678</span>
+          <div className="flex items-center justify-center sm:justify-start mb-2">
+            <FaPhoneAlt className="mr-2 text-sm" />
+            <span className="text-sm">+1 (555) 123-4567</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <FaMapMarkerAlt style={{ marginRight: 8, fontSize: 15 }} />
-            <span>Somewhere in the World</span>
+          <div className="flex items-center justify-center sm:justify-start">
+            <FaMapMarkerAlt className="mr-2 text-sm" />
+            <span className="text-sm">123 Health St, Medical City</span>
           </div>
         </div>
         {/* QuickLinks */}
-        <div style={{ minWidth: 160, marginRight: 0 }}>
+        <div className="text-center sm:text-left">
           <div style={{ fontWeight: 700, marginBottom: 8 }}>QuickLinks</div>
           <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => window.location.href = "#home"}>Home</div>
           <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => window.location.href = "#about"}>About Us</div>
@@ -79,16 +69,15 @@ export function Footer() {
           <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Contact Us - Coming Soon!')}>Contact Us</div>
         </div>
         {/* Support & Resources */}
-        <div style={{ minWidth: 170 }}>
+        <div className="text-center sm:text-left">
           <div style={{ fontWeight: 700, marginBottom: 8 }}>Support &<br />Resources</div>
           <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('FAQs - Coming Soon!')}>FAQs</div>
           <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Privacy Policy - Coming Soon!')}>Privacy Policy</div>
           <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Terms & Conditions - Coming Soon!')}>Terms & Conditions</div>
           <div style={{ cursor: "pointer", transition: "color 0.2s", marginBottom: 4 }} onMouseEnter={e => e.target.style.color = "#f0f0f0"} onMouseLeave={e => e.target.style.color = "#fff"} onClick={() => alert('Help Center - Coming Soon!')}>Help Center</div>
-        </div>
-        {/* Social Media */}
-        <div style={{ minWidth: 110, textAlign: "right" }}>
-          <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginBottom: 10 }}>
+          
+          {/* Social Media */}
+          <div className="flex gap-3 justify-center sm:justify-start mt-4">
             <a href="https://facebook.com/healthbridge" target="_blank" rel="noopener noreferrer" style={{ color: "#fff", background: "#3870FF", borderRadius: "50%", width: 32, height: 32, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 18, transition: "transform 0.2s" }} onMouseEnter={e => e.target.style.transform = "scale(1.1)"} onMouseLeave={e => e.target.style.transform = "scale(1)"}>
               <FaFacebookF />
             </a>

@@ -71,77 +71,113 @@ export default function HomePage() {
       <Navbar />
       <div className="min-h-screen bg-background dark:bg-gray-900">
       {/* Main Content */}
-      <main id="home" className="relative h-[60vh] sm:h-[70vh] lg:h-[80vh]">
-        {/* Hero Background Area - Ready for your background image */}
-        <div className="absolute inset-0 bg-gray-100">
-          <Image
-            src="/herosection.png"
-            alt="Hero Background"
-            fill
-            className="object-cover"
-            quality={100}
-            priority
-            unoptimized
-          />
+      <main id="home" className="relative">
+        {/* Hero Background Area */}
+        <div className="h-[40vh] sm:h-[70vh] lg:h-[80vh] relative">
+          <div className="absolute inset-0 bg-gray-100">
+            <Image
+              src="/herosection.png"
+              alt="Hero Background"
+              fill
+              className="object-cover"
+              quality={100}
+              priority
+              unoptimized
+            />
+          </div>
+          
+          {/* Welcome Card - Desktop only */}
+          <div className="hidden sm:flex relative z-10 items-center justify-end p-6 lg:p-12 h-full">
+            <Card 
+              className="w-full max-w-sm border-0 mr-4 lg:mr-16 transition-all duration-1000 ease-out cursor-pointer" 
+              style={{ 
+                backgroundColor: isDark ? "rgba(31, 41, 55, 0.8)" : "rgba(255, 255, 255, 0.3)", 
+                backdropFilter: "blur(10px)",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
+                transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(100px) scale(0.9)',
+                opacity: isVisible ? 0.85 : 0
+              }}
+              onClick={() => {
+                const card = document.querySelector('.hero-card') as HTMLElement
+                if (card) {
+                  card.style.transform = 'scale(0.95)'
+                  setTimeout(() => {
+                    card.style.transform = 'scale(1)'
+                  }, 150)
+                }
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = isVisible ? 'translateX(0) scale(1.02)' : 'translateX(100px) scale(0.9)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = isVisible ? 'translateX(0) scale(1)' : 'translateX(100px) scale(0.9)'
+              }}
+            >
+              <CardContent className="p-6 space-y-4 hero-card">
+                <div className="space-y-1" style={{
+                  transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                  opacity: isVisible ? 1 : 0,
+                  transition: 'all 0.8s ease-out 0.2s'
+                }}>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Welcome to</p>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Health Bridge</h1>
+                </div>
+                <div className="space-y-3" style={{
+                  transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                  opacity: isVisible ? 1 : 0,
+                  transition: 'all 0.8s ease-out 0.4s'
+                }}>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Your digital bridge to better healthcare. Easily book appointments, track your queue, access medical
+                    records, and get AI-powered reminders and wellness tips—all in one secure place.
+                  </p>
+                </div>
+                <div style={{
+                  transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
+                  opacity: isVisible ? 1 : 0,
+                  transition: 'all 0.8s ease-out 0.6s'
+                }}>
+                  <Link href="/signup">
+                    <button
+                      className="w-full font-medium py-2 px-4 rounded-md hover:opacity-90 hover:scale-105 transition-all duration-300 cursor-pointer text-center text-white"
+                      style={gradientButtonStyle}
+                    >
+                      Get Started
+                    </button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        {/* Welcome Card - Positioned as overlay on the right */}
-        <div className="relative z-10 flex items-center justify-center sm:justify-end p-4 sm:p-6 lg:p-12 h-[60vh] sm:h-[70vh] lg:h-[80vh]">
+        
+        {/* Mobile Welcome Card - Below hero image */}
+        <div className="sm:hidden px-4 py-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700">
           <Card 
-            className="w-full max-w-xs sm:max-w-sm border-0 sm:mr-4 lg:mr-16 transition-all duration-1000 ease-out cursor-pointer" 
+            className="w-full max-w-sm mx-auto border-0 transition-all duration-1000 ease-out cursor-pointer" 
             style={{ 
-              backgroundColor: isDark ? "rgba(31, 41, 55, 0.8)" : "rgba(255, 255, 255, 0.3)", 
+              backgroundColor: isDark ? "rgba(31, 41, 55, 0.8)" : "rgba(255, 255, 255, 0.9)", 
               backdropFilter: "blur(10px)",
               boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
-              transform: isVisible ? 'translateX(0) scale(1)' : 'translateX(100px) scale(0.9)',
-              opacity: isVisible ? 0.85 : 0
-            }}
-
-            onClick={() => {
-              const card = document.querySelector('.hero-card') as HTMLElement
-              if (card) {
-                card.style.transform = 'scale(0.95)'
-                setTimeout(() => {
-                  card.style.transform = 'scale(1)'
-                }, 150)
-              }
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.transform = isVisible ? 'translateX(0) scale(1.02)' : 'translateX(100px) scale(0.9)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.transform = isVisible ? 'translateX(0) scale(1)' : 'translateX(100px) scale(0.9)'
+              transform: isVisible ? 'translateY(0) scale(1)' : 'translateY(20px) scale(0.95)',
+              opacity: isVisible ? 1 : 0
             }}
           >
-            <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4 hero-card">
-              <div className="space-y-1" style={{
-                transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-                opacity: isVisible ? 1 : 0,
-                transition: 'all 0.8s ease-out 0.2s'
-              }}>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">Welcome to</p>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Health Bridge</h1>
+            <CardContent className="p-4 space-y-3 hero-card">
+              <div className="space-y-1">
+                <p className="text-xs text-gray-600 dark:text-gray-300">Welcome to</p>
+                <h1 className="text-xl font-bold text-gray-900 dark:text-white">Health Bridge</h1>
               </div>
-
-              <div className="space-y-2 sm:space-y-3" style={{
-                transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-                opacity: isVisible ? 1 : 0,
-                transition: 'all 0.8s ease-out 0.4s'
-              }}>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+              <div className="space-y-2">
+                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
                   Your digital bridge to better healthcare. Easily book appointments, track your queue, access medical
                   records, and get AI-powered reminders and wellness tips—all in one secure place.
                 </p>
               </div>
-
-              <div style={{
-                transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-                opacity: isVisible ? 1 : 0,
-                transition: 'all 0.8s ease-out 0.6s'
-              }}>
+              <div>
                 <Link href="/signup">
                   <button
-                    className="w-full font-medium py-2 px-4 rounded-md hover:opacity-90 hover:scale-105 transition-all duration-300 cursor-pointer text-center text-white text-sm sm:text-base"
+                    className="w-full font-medium py-2 px-4 rounded-md hover:opacity-90 hover:scale-105 transition-all duration-300 cursor-pointer text-center text-white text-sm"
                     style={gradientButtonStyle}
                   >
                     Get Started
@@ -213,7 +249,7 @@ export default function HomePage() {
         background: GRADIENT_STYLE, 
         margin: "0 auto", 
         maxWidth: "800px",
-        marginTop: "-30px",
+        marginTop: "10px",
         marginBottom: "40px"
       }}></div>
       
@@ -324,43 +360,9 @@ function DoctorsSection() {
           Experience unparalleled medical expertise with our team of best-in-class doctors.<br />
           At Health Clinics, we take pride in offering you the highest standard of care, delivered by dedicated professionals committed to your well-being.
         </p>
-        <div className="flex justify-center items-center my-4 sm:my-6 lg:my-8 relative max-w-xs sm:max-w-4xl lg:max-w-6xl mx-auto overflow-x-auto lg:overflow-x-visible">
-          <button
-            aria-label="Previous"
-            disabled={start <= 0}
-            style={{
-              border: `2px solid ${PRIMARY_COLOR}`,
-              background: "#fff",
-              color: PRIMARY_COLOR,
-              borderRadius: "50%",
-              width: 50,
-              height: 50,
-              fontSize: 20,
-              fontWeight: "bold",
-              boxShadow: "0 4px 12px rgba(56,112,255,0.2)",
-              cursor: start > 0 ? "pointer" : "not-allowed",
-              opacity: start > 0 ? 1 : 0.4,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: "20px",
-            }}
-            onClick={() => setStart(Math.max(start - 1, 0))}
-            onMouseEnter={e => {
-              if (start > 0) {
-                e.currentTarget.style.background = PRIMARY_COLOR;
-                e.currentTarget.style.color = "#fff";
-              }
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "#fff";
-              e.currentTarget.style.color = PRIMARY_COLOR;
-            }}
-          >
-            &lt;
-          </button>
-          <div className="flex gap-3 sm:gap-4 lg:gap-12 min-w-max px-2 sm:px-0">
-            {doctors.slice(start, start + visible).map((doctor, idx) => (
+        <div className={`${showMore ? 'overflow-x-auto' : 'overflow-hidden'} overflow-y-hidden my-4 sm:my-6 lg:my-8 px-4`}>
+          <div className="flex gap-3 sm:gap-4 lg:gap-12 min-w-max justify-center">
+            {(showMore ? allDoctors : allDoctors.slice(0, 5)).map((doctor, idx) => (
               <div
                 key={doctor.name}
                 style={{
@@ -436,41 +438,9 @@ function DoctorsSection() {
               </div>
             ))}
           </div>
-          <button
-            aria-label="Next"
-            disabled={start >= maxIndex}
-            style={{
-              border: "2px solid #3870FF",
-              background: "#fff",
-              color: "#3870FF",
-              borderRadius: "50%",
-              width: 50,
-              height: 50,
-              fontSize: 20,
-              fontWeight: "bold",
-              boxShadow: "0 4px 12px rgba(56,112,255,0.2)",
-              cursor: start < maxIndex ? "pointer" : "not-allowed",
-              opacity: start < maxIndex ? 1 : 0.4,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginLeft: "20px",
-            }}
-            onClick={() => setStart(Math.min(start + 1, maxIndex))}
-            onMouseEnter={e => {
-              if (start < maxIndex) {
-                e.currentTarget.style.background = "#3870FF";
-                e.currentTarget.style.color = "#fff";
-              }
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "#fff";
-              e.currentTarget.style.color = "#3870FF";
-            }}
-          >
-            &gt;
-          </button>
         </div>
+
+        
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           {Array.from({ length: doctors.length - visible + 1 }).map((_, i) => (
             <span
@@ -487,7 +457,7 @@ function DoctorsSection() {
             ></span>
           ))}
         </div>
-        <div style={{ textAlign: "center", marginBottom: "0px" }}>
+        <div style={{ textAlign: "center", marginBottom: "40px" }}>
           <button
             onClick={() => setShowMore(!showMore)}
             style={{
@@ -728,13 +698,9 @@ function SpecialtiesPage() {
               </div>
               <button
                 onClick={() => {
-                  const details = {
-                    'Cardiology': 'Heart Health Services:\n• ECG & Stress Testing\n• Cardiac Catheterization\n• Heart Surgery\n• Preventive Care\n\nDoctors: Dr. Robert Johnson, MD\nHours: 24/7 Emergency Care\nContact: (555) 123-4567',
-                    'Dermatology': 'Skin Care Services:\n• Skin Cancer Screening\n• Cosmetic Procedures\n• Acne Treatment\n• Laser Therapy\n\nDoctors: Dr. Sarah Williams, MD\nHours: Mon-Fri 8AM-6PM\nContact: (555) 123-4568',
-                    'Obstetrics & Gynecology': 'Women\'s Health Services:\n• Prenatal Care\n• Family Planning\n• Gynecological Exams\n• Fertility Treatment\n\nDoctors: Dr. Jessica Nguyen, OB/GYN\nHours: Mon-Fri 7AM-7PM\nContact: (555) 123-4569',
-                    'Internal Medicine': 'Comprehensive Care:\n• Annual Physicals\n• Chronic Disease Management\n• Preventive Care\n• Health Screenings\n\nDoctors: Dr. Samantha Miller, MD\nHours: Mon-Fri 8AM-5PM\nContact: (555) 123-4570'
-                  }
-                  alert(details[item.title] || `Learn more about ${item.title}`)
+
+                  window.location.href = '/login'
+
                 }}
                 style={{
                   display: "inline-block",
@@ -769,41 +735,7 @@ function SpecialtiesPage() {
         <div style={{ textAlign: "center" }}>
           <button
             onClick={() => {
-              const moreServices = `Additional Medical Services Available:
-
-🏥 EMERGENCY SERVICES
-• 24/7 Emergency Room
-• Trauma Care
-• Ambulance Services
-
-🧠 NEUROLOGY
-• Brain & Spine Care
-• Stroke Treatment
-• Neurological Disorders
-
-👶 PEDIATRICS
-• Child Healthcare
-• Vaccinations
-• Growth Monitoring
-
-🦴 ORTHOPEDICS
-• Bone & Joint Care
-• Sports Medicine
-• Physical Therapy
-
-👁️ OPHTHALMOLOGY
-• Eye Exams
-• Vision Correction
-• Eye Surgery
-
-🦷 DENTAL SERVICES
-• General Dentistry
-• Oral Surgery
-• Cosmetic Dentistry
-
-📞 Contact: (555) 123-HEALTH
-🌐 Visit: healthbridge.com/services`
-              alert(moreServices)
+              window.location.href = '/login'
             }}
             style={{
               display: "inline-block",
@@ -969,79 +901,9 @@ function WellnessTipsPage() {
               <div style={{ padding: "0 20px 8px 20px" }}>
                 <button
                   onClick={() => {
-                    const wellnessTips = {
-                      "Navigating the Wellness Landscape: Latest Insights in Medical Health": `🏥 WELLNESS LANDSCAPE INSIGHTS
 
-📊 Key Health Metrics to Track:
-• Blood pressure & heart rate
-• BMI and body composition
-• Sleep quality (7-9 hours nightly)
-• Stress levels and mental health
+                    window.location.href = '/login'
 
-🥗 Nutrition Guidelines:
-• 5-9 servings fruits/vegetables daily
-• Limit processed foods
-• Stay hydrated (8+ glasses water)
-• Balance macronutrients
-
-💡 Latest Medical Insights:
-• Regular health screenings save lives
-• Preventive care reduces costs by 40%
-• Mental health affects physical health
-• Technology aids health monitoring
-
-📞 Schedule your wellness check: (555) 123-HEALTH`,
-                      
-                      "Healthy Habits 101: A Guide to Boosting Your Immune System": `🛡️ IMMUNE SYSTEM BOOSTING GUIDE
-
-🍎 Immune-Boosting Foods:
-• Citrus fruits (Vitamin C)
-• Leafy greens (antioxidants)
-• Yogurt (probiotics)
-• Nuts & seeds (Vitamin E)
-• Garlic & ginger (natural antibiotics)
-
-💪 Lifestyle Habits:
-• Regular exercise (30 min daily)
-• Quality sleep (7-9 hours)
-• Stress management techniques
-• Hand hygiene practices
-• Avoid smoking & excess alcohol
-
-🧬 Supplements to Consider:
-• Vitamin D3 (immune regulation)
-• Zinc (wound healing)
-• Probiotics (gut health)
-• Vitamin C (antioxidant)
-
-📅 Book immune health consultation today!`,
-                      
-                      "Mind-Body Harmony: The Power of Holistic Health Practices": `🧘 MIND-BODY HARMONY PRACTICES
-
-🧠 Mental Wellness Techniques:
-• Daily meditation (10-20 minutes)
-• Deep breathing exercises
-• Mindfulness practices
-• Gratitude journaling
-• Progressive muscle relaxation
-
-🏃 Physical Activities:
-• Yoga (flexibility + mindfulness)
-• Tai Chi (balance + calm)
-• Walking in nature
-• Swimming (low-impact cardio)
-• Strength training (confidence boost)
-
-🌱 Holistic Approaches:
-• Acupuncture for pain relief
-• Massage therapy for stress
-• Aromatherapy for relaxation
-• Music therapy for mood
-• Art therapy for expression
-
-🤝 Connect with our wellness team: (555) 123-WELLNESS`
-                    }
-                    alert(wellnessTips[tip.title] || `Learn more about: ${tip.title}`)
                   }}
                   style={{
                     display: "inline-block",
