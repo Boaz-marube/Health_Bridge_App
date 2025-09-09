@@ -30,23 +30,37 @@ export default function ChatbotPage() {
   }
 
   useEffect(() => {
-    // Load messages from localStorage
-    const savedMessages = localStorage.getItem('patient_chatbot_messages')
-    if (savedMessages) {
-      const parsedMessages = JSON.parse(savedMessages).map((msg: any) => ({
-        ...msg,
-        timestamp: new Date(msg.timestamp)
-      }))
-      setMessages(parsedMessages)
-    } else {
-      // Set initial message if no saved messages
-      const initialMessage = {
-        id: '1',
-        type: 'bot' as const,
-        content: 'Hello! I\'m your HealthBridge AI assistant. How can I help you today?',
-        timestamp: new Date(),
+    // Load messages from localStorage (client-side only)
+    if (typeof window !== 'undefined') {
+      const savedMessages = localStorage.getItem('patient_chatbot_messages')
+      if (savedMessages) {
+        try {
+          const parsedMessages = JSON.parse(savedMessages).map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }))
+          setMessages(parsedMessages)
+        } catch (error) {
+          console.error('Error parsing saved messages:', error)
+          // Set initial message if parsing fails
+          const initialMessage = {
+            id: '1',
+            type: 'bot' as const,
+            content: 'Hello! I\'m your HealthBridge AI assistant. How can I help you today?',
+            timestamp: new Date(),
+          }
+          setMessages([initialMessage])
+        }
+      } else {
+        // Set initial message if no saved messages
+        const initialMessage = {
+          id: '1',
+          type: 'bot' as const,
+          content: 'Hello! I\'m your HealthBridge AI assistant. How can I help you today?',
+          timestamp: new Date(),
+        }
+        setMessages([initialMessage])
       }
-      setMessages([initialMessage])
     }
   }, [])
 
@@ -55,9 +69,13 @@ export default function ChatbotPage() {
   }, [messages])
 
   useEffect(() => {
-    // Save messages to localStorage whenever messages change
-    if (messages.length > 0) {
-      localStorage.setItem('patient_chatbot_messages', JSON.stringify(messages))
+    // Save messages to localStorage whenever messages change (client-side only)
+    if (typeof window !== 'undefined' && messages.length > 0) {
+      try {
+        localStorage.setItem('patient_chatbot_messages', JSON.stringify(messages))
+      } catch (error) {
+        console.error('Error saving messages:', error)
+      }
     }
   }, [messages])
 
@@ -93,6 +111,11 @@ export default function ChatbotPage() {
 
     let response: Response | undefined
     try {
+      // Ensure we're on client-side before accessing localStorage
+      if (typeof window === 'undefined') {
+        throw new Error('Client-side only operation');
+      }
+      
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       const userRole = localStorage.getItem('userRole') || 'patient';
       const aiApiUrl = process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com';
