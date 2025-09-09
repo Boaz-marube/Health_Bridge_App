@@ -81,16 +81,16 @@
 
 ## 👥 Team Members
 
-| Name                 | Role                 | GitHub                                                 |
-| -------------------- | -------------------- | ------------------------------------------------------ |
-| **Boaz Marube**      | Full Stack Developer | [@boazmarube](https://github.com/boazmarube)           |
-| **Bereket Eshete**   | Full Stack Developer | [@bereketeshete](https://github.com/bereketeshete)     |
-| **Mahder Hawaz**     | Full Stack Developer | [@mahderhawaz](https://github.com/mahderhawaz)         |
-| **Nuhamin Wondoson** | UI/UX Designer       | [@nuhaminwondoson](https://github.com/nuhaminwondoson) |
-| **June Kwamboka**    | UI/UX Designer       | [@junekwamboka](https://github.com/junekwamboka)       |
-| **Finlay Ndung'u**   | UI/UX Designer       | [@finlayndungu](https://github.com/finlayndungu)       |
-| **Sena Kebede**      | GenAI Developer      | [@senakebede](https://github.com/senakebede)           |
-| **Solomon**          | GenAI Developer      | [@solomon](https://github.com/solomon)                 |
+| Name                 | Role                 |
+| -------------------- | -------------------- |
+| **Boaz Marube**      | Full Stack Developer |
+| **Bereket Eshete**   | Full Stack Developer |
+| **Mahder Hawaz**     | Full Stack Developer |
+| **Nuhamin Wondoson** | UI/UX Designer       |
+| **June Kwamboka**    | UI/UX Designer       |
+| **Finlay Ndung'u**   | UI/UX Designer       |
+| **Sena Kebede**      | GenAI Developer      |
+| **Solomon**          | GenAI Developer      |
 
 ---
 
