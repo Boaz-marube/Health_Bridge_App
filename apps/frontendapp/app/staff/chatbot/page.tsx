@@ -125,7 +125,7 @@ export default function StaffChatbotPage() {
         },
         body: JSON.stringify({
           message: inputValue,
-          context: `You are a healthcare AI assistant for a ${userRole} member. Provide administrative support, scheduling assistance, and operational guidance for healthcare facility management.`
+          context: `You are a helpful healthcare AI assistant for a ${userRole} member. Provide clear, practical guidance for administrative tasks, scheduling, and facility operations. Keep responses concise and actionable (2-3 paragraphs). Focus on step-by-step solutions and best practices for healthcare administration.`
         })
       });
 
