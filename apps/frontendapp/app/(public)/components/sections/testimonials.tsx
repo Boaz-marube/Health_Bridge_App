@@ -1,4 +1,3 @@
-//june kwamboka
 import { FaSmile, FaHeartbeat, FaCheck } from "react-icons/fa";
 import { MdLocalHospital } from "react-icons/md";
 
