@@ -31,6 +31,35 @@ export function Testimonials() {
   return (
     <section id="testimonials" className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+         {/* Stats Section */}
+        <div className="mb-12 sm:mb-16 lg:mb-20 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] rounded-2xl p-6 sm:p-8 lg:p-12">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 text-center text-white">
+            <div className="space-y-2">
+              <FaSmile className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">135k+</div>
+              <div className="text-sm sm:text-base opacity-90">Satisfied Patients</div>
+            </div>
+            <div className="space-y-2">
+              <FaHeartbeat className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">24</div>
+              <div className="text-sm sm:text-base opacity-90">Health Departments</div>
+            </div>
+            <div className="space-y-2">
+              <MdLocalHospital className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">19</div>
+              <div className="text-sm sm:text-base opacity-90">Facilities</div>
+            </div>
+            <div className="space-y-2">
+              <FaCheck className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
+              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">25+</div>
+              <div className="text-sm sm:text-base opacity-90">Insurance Partners</div>
+            </div>
+          </div>
+        </div>
+
+
+
         {/* Header */}
         <div className="text-center mb-8 sm:mb-12 lg:mb-16 px-4">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 leading-tight bg-gradient-to-r from-[#38B7FF] to-[#3870FF] bg-clip-text text-transparent">
@@ -85,31 +114,7 @@ export function Testimonials() {
           ))}
         </div>
 
-        {/* Stats Section */}
-        <div className="mt-12 sm:mt-16 lg:mt-20 bg-gradient-to-r from-[#38B7FF] to-[#3870FF] rounded-2xl p-6 sm:p-8 lg:p-12">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 text-center text-white">
-            <div className="space-y-2">
-              <FaSmile className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">135k+</div>
-              <div className="text-sm sm:text-base opacity-90">Satisfied Patients</div>
-            </div>
-            <div className="space-y-2">
-              <FaHeartbeat className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">24</div>
-              <div className="text-sm sm:text-base opacity-90">Health Departments</div>
-            </div>
-            <div className="space-y-2">
-              <MdLocalHospital className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">19</div>
-              <div className="text-sm sm:text-base opacity-90">Facilities</div>
-            </div>
-            <div className="space-y-2">
-              <FaCheck className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto" />
-              <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">25+</div>
-              <div className="text-sm sm:text-base opacity-90">Insurance Partners</div>
-            </div>
-          </div>
-        </div>
+       
       </div>
     </section>
   );
