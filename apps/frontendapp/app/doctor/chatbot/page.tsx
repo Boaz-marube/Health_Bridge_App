@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Bot } from 'lucide-react'
+import { Send, Bot, AlertCircle, Clock } from 'lucide-react'
+import { useRateLimit } from '../../hooks/useRateLimit'
+import { handleApiError, ApiError } from '../../utils/errorHandler'
 
 interface Message {
   id: string
@@ -14,7 +16,13 @@ export default function DoctorChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [error, setError] = useState<ApiError | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  const { isRateLimited, addRequest, getTimeUntilReset } = useRateLimit({
+    maxRequests: 15, // Doctors get higher limit
+    windowMs: 5 * 60 * 1000
+  })
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -67,16 +75,88 @@ export default function DoctorChatbotPage() {
     setInputValue('')
     setIsTyping(true)
 
-    setTimeout(() => {
+    if (isRateLimited()) {
+      const timeUntilReset = getTimeUntilReset()
+      const minutes = Math.ceil(timeUntilReset / (60 * 1000))
+      setError({
+        type: 'rate_limit',
+        message: `Rate limit exceeded. Please wait ${minutes} minute(s) before sending another message.`,
+        retryable: true,
+        retryAfter: timeUntilReset
+      })
+      return
+    }
+
+    setError(null)
+    addRequest()
+
+    let response: Response | undefined
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userRole = localStorage.getItem('userRole') || 'doctor';
+      const aiApiUrl = process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com';
+
+      // First authenticate with AI service
+      const authResponse = await fetch(`${aiApiUrl}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: user.email || 'anonymous@healthbridge.com',
+          password: 'healthbridge2024',
+          role: userRole
+        })
+      });
+
+      if (!authResponse.ok) {
+        throw new Error('AI service authentication failed');
+      }
+
+      const authData = await authResponse.json();
+      const aiToken = authData.access_token;
+
+      // Now make the chat request with AI service token
+      response = await fetch(`${aiApiUrl}/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${aiToken}`
+        },
+        body: JSON.stringify({
+          message: inputValue,
+          context: `You are a professional healthcare AI assistant for a ${userRole}. Provide clear, actionable medical insights and clinical guidance. Keep responses focused and practical (2-3 paragraphs). Avoid overly formal formatting. Focus on differential diagnosis, treatment options, and clinical considerations that help with patient care decisions.`
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const data = await response.json();
+
       const botResponse: Message = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
-        content: 'I\'m here to assist with your medical practice needs.',
+        content: data.response || data.message || 'I apologize, but I cannot process your request right now.',
         timestamp: new Date(),
       }
       setMessages(prev => [...prev, botResponse])
+      
+    } catch (err) {
+      const apiError = handleApiError(err, response)
+      setError(apiError)
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: apiError.message,
+        timestamp: new Date(),
+      }
+      setMessages(prev => [...prev, errorMessage])
+    } finally {
       setIsTyping(false)
-    }, 1000)
+    }
   }
 
   return (

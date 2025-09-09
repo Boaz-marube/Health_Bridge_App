@@ -22,16 +22,21 @@ function GoogleAuthSuccessContent() {
       // Decode user info from JWT token
       try {
         const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        const userRole = tokenPayload.userType || 'patient'; // Get role from token
+        
+        // Store the role
+        localStorage.setItem('userRole', userRole);
+        
         const user = {
           id: userId,
-          name: tokenPayload.email.split('@')[0], // Use email prefix as name
+          name: tokenPayload.email.split('@')[0],
           email: tokenPayload.email,
-          userType: 'patient' // Google users default to patient
+          userType: userRole
         };
 
         localStorage.setItem('user', JSON.stringify(user));
         
-        // Redirect to patient dashboard
+        // Redirect to dashboard
         router.push('/dashboard');
       } catch (error) {
         console.error('Error processing Google auth:', error);
