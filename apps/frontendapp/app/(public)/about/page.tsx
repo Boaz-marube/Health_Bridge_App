@@ -127,9 +127,10 @@ export default function AboutPage() {
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Compassion</h3>
                 <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  We put patients first, understanding their needs and providing care with empathy and kindness.
+                  We put our patients first, understanding their needs and providing care with empathy and kindness.
                 </p>
               </div>
+
 
               {/* Innovation */}
               <div className="text-center">
