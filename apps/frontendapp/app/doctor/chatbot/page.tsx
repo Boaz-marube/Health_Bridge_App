@@ -92,18 +92,40 @@ export default function DoctorChatbotPage() {
 
     let response: Response | undefined
     try {
-      const token = localStorage.getItem('token');
-      const userRole = localStorage.getItem('userRole');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const userRole = localStorage.getItem('userRole') || 'doctor';
+      const aiApiUrl = process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com';
 
-      response = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL || 'https://health-bridge-app-3.onrender.com'}/ai/chat`, {
+      // First authenticate with AI service
+      const authResponse = await fetch(`${aiApiUrl}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          username: user.email || 'anonymous@healthbridge.com',
+          password: 'healthbridge2024',
+          role: userRole
+        })
+      });
+
+      if (!authResponse.ok) {
+        throw new Error('AI service authentication failed');
+      }
+
+      const authData = await authResponse.json();
+      const aiToken = authData.access_token;
+
+      // Now make the chat request with AI service token
+      response = await fetch(`${aiApiUrl}/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${aiToken}`
         },
         body: JSON.stringify({
           message: inputValue,
-          context: `You are a healthcare AI assistant for a ${userRole || 'doctor'}. Provide professional medical insights, patient management advice, and clinical decision support while maintaining medical ethics and standards.`
+          context: `You are a healthcare AI assistant for a ${userRole}. Provide professional medical insights, patient management advice, and clinical decision support while maintaining medical ethics and standards.`
         })
       });
 
