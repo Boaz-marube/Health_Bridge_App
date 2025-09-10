@@ -312,15 +312,6 @@ We welcome contributions! Please follow these steps:
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
-
-## 📞 Support
-
-If you have any questions or need support, please:
-
-- 📧 Email: support@healthbridge.com
-- 🐛 Report issues: [GitHub Issues](https://github.com/your-username/health-bridge-app/issues)
-- 💬 Join our community: [Discord](https://discord.gg/healthbridge)
 
 ---
 
@@ -330,9 +321,3 @@ If you have any questions or need support, please:
 - Special thanks to the open-source community for the amazing tools and libraries
 - Inspired by the need for better digital healthcare solutions
 
----
-
-<div align="center">
-  <p><strong>Made with ❤️ by the Health Bridge Team</strong></p>
-  <p>© 2024 Health Bridge. All rights reserved.</p>
-</div>
