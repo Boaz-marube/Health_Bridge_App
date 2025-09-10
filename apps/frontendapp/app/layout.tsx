@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/app/components/theme/theme-provider";
+import ErrorBoundary from "@/app/components/ErrorBoundary";
 
 export const metadata: Metadata = {
   title: 'Health Bridge App',
@@ -25,7 +26,9 @@ export default function RootLayout({
           storageKey="health-bridge-theme"
           disableTransitionOnChange
         >
+          <ErrorBoundary>
             {children}
+          </ErrorBoundary>
         </ThemeProvider>
        
       </body>
