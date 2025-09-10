@@ -243,19 +243,23 @@
 #     return summary
 
 # def format_response_for_role(response: str, role: str, query: str) -> str:
-#     """Format the AI response simply, with role-based closing note , but if hey ask you greating say "how  can i help you?"""
+#     """Format the AI response with role-based closing notes and tailored tone."""
+#     query_lower = query.lower()
+    
+#     # Handle greetings
+#     if any(greeting in query_lower for greeting in ["hello", "hi", "hey", "greetings"]):
+#         return "How can I assist you with your medical query today?"
 
 #     if role.lower() == "doctor":
 #         return (
-#             f"{response}"
-#             "👉 Please tailor decisions to the patient’s individual situation."
+#             f"{response}\n\n"
+#             "**Clinical Recommendations:** Review the patient’s full medical history, including allergies, current medications, and comorbidities, before prescribing. Consider evidence-based guidelines (e.g., NICE, CDC, WHO) for treatment protocols. Document all clinical decisions and monitor for adverse effects or the need for specialist referral."
 #         )
 #     else:  # patient
 #         return (
-#             f"{response}"
-#             "⚠️ For personal guidance, please consult your doctor."
+#             f"{response}\n\n"
+#             "**Important Note:** This information is for educational purposes only and does not replace professional medical advice. Please consult a qualified healthcare provider for personalized diagnosis and treatment."
 #         )
-
 # # ---- TASK SELECTION LOGIC ----
 # def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
 #     """Advanced query analysis to determine the most appropriate task type."""
@@ -418,7 +422,31 @@
 #             task_key = "general_medical_task"
 #             confidence = 0.5
 
-#         # Enhanced query with memory and role context
+#         # Role-specific instruction sets — this shapes the AI's thinking
+#         if role.lower() == "doctor":
+#             role_instructions = """
+#             You are a clinical decision support AI for licensed medical professionals.
+#             - Use precise medical terminology (e.g., "beta-agonists", "FEV1", "GINA guidelines").
+#             - Reference clinical guidelines, drug classes, dosing ranges, contraindications, and differential diagnoses.
+#             - Prioritize evidence-based recommendations from authoritative sources.
+#             - Suggest diagnostic workups, lab tests, or imaging if relevant.
+#             - Mention drug interactions, side effects, or monitoring parameters.
+#             - Avoid oversimplification — the user is medically trained.
+#             - Do NOT include basic explanations (e.g., "Asthma is a condition where...") unless explicitly asked.
+#             """
+#         else:  # patient
+#             role_instructions = """
+#             You are a compassionate patient education assistant.
+#             - Use simple, non-technical language. Avoid medical jargon. If you must use it, explain it.
+#             - Focus on reassurance, practical steps, and when to seek help.
+#             - Emphasize that this is not a diagnosis or treatment — always consult a real doctor.
+#             - Use empathetic tone: "It’s understandable to feel worried..." or "Many people experience..."
+#             - Break information into short, digestible points.
+#             - Avoid alarming language. Use phrases like "usually", "often", "may help".
+#             - Never suggest specific medications or dosages — say "your doctor may prescribe..." instead.
+#             """
+
+#         # Enhanced query with memory, role context, and role-specific instructions
 #         enhanced_query = f"""
 #         USER QUERY: {query_text}
 #         USER ROLE: {role.upper()}
@@ -431,18 +459,21 @@
 
 #         TASK CONTEXT: You are a specialized medical AI assistant focused on {task_key.replace('_', ' ').replace('task', '').title()}.
 
+#         ROLE-SPECIFIC INSTRUCTIONS:
+#         {role_instructions}
+
 #         INSTRUCTIONS:
-#         1. Analyze the user's query in context of their role ({role}) and conversation history
-#         2. Provide a comprehensive, professional medical response appropriate for {role}
-#         3. If the context is insufficient, acknowledge limitations and provide general guidance
-#         4. Always include appropriate medical disclaimers
-#         5. Maintain continuity with previous conversation if relevant
+#         1. Analyze the user's query in context of their role ({role}) and conversation history.
+#         2. Generate a response strictly following the ROLE-SPECIFIC INSTRUCTIONS above.
+#         3. If the context is insufficient, acknowledge limitations and provide general guidance.
+#         4. Maintain continuity with previous conversation if relevant.
+#         5. Do NOT add disclaimers here — they will be appended later by the system.
 #         """
 
 #         # Run the selected task
 #         raw_result = run_single_task(enhanced_query, task_key)
         
-#         # Format response based on role
+#         # Format response based on role (now minimal — just greetings + short disclaimer)
 #         formatted_response = format_response_for_role(raw_result, role, query_text)
         
 #         # Store in memory
@@ -478,7 +509,6 @@
 #             "error": str(e),
 #             "response": fallback_response
 #         }
-
 # # ---- USER PROFILE MANAGEMENT ----
 # @app.post("/user/profile")
 # async def set_user_profile(request: UserProfileRequest, current_user: TokenData = Depends(get_current_user)):
