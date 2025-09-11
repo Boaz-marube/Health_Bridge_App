@@ -18,6 +18,9 @@ import argparse
 import sys
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
+ 
 
 # Add the src directory to Python path
 current_dir = Path(__file__).parent

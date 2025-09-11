@@ -65,7 +65,7 @@ def _create_groq_llm():
     
     # Use CrewAI's LLM wrapper with proper LiteLLM format
     llm = LLM(
-        model="groq/llama3-8b-8192",  # LiteLLM format: provider/model
+        model="groq/meta-llama/llama-prompt-guard-2-22m",  # LiteLLM format: provider/model
         temperature=0.1,
         api_key=api_key
     )
@@ -83,6 +83,30 @@ def _read_yaml(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as f:
         return yaml.safe_load(f) or {}
 
+
+
+def _create_gemini_llm():
+    """Create a Gemini 1.5 LLM instance for CrewAI agents using LiteLLM format."""
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "GOOGLE_API_KEY not found in environment variables. "
+            "Please add your Gemini API key to your .env file:\n"
+            "GOOGLE_API_KEY=your_api_key_here"
+        )
+    
+    # Set the environment variable for LiteLLM
+    os.environ["GOOGLE_API_KEY"] = api_key
+    
+    # Use CrewAI's LLM wrapper with proper LiteLLM format
+    llm = LLM(
+        model="gemini/gemini-1.5-flash",  # LiteLLM format: provider/model
+        temperature=0.1,
+        api_key=api_key
+    )
+    
+    logger.info("Gemini 1.5 LLM initialized successfully with LiteLLM format")
+    return llm
 # ---------------------------
 # Builders
 # ---------------------------
@@ -92,7 +116,7 @@ def _build_agents(agents_cfg: dict, db_path: str = None) -> Dict[str, Agent]:
     agents: Dict[str, Agent] = {}
     
     # Initialize Groq LLM
-    llm = _create_groq_llm()
+    llm = _create_gemini_llm()
     
     # Initialize RAG tools
     patient_rag_tool = PatientRAGTool(db_path=db_path)
