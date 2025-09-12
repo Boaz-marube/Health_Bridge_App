@@ -65,12 +65,12 @@ def _create_groq_llm():
     
     # Use CrewAI's LLM wrapper with proper LiteLLM format
     llm = LLM(
-        model="groq/meta-llama/llama-prompt-guard-2-22m",  # LiteLLM format: provider/model
+        model="groq/moonshotai/kimi-k2-instruct-0905",  # LiteLLM format: provider/model
         temperature=0.1,
         api_key=api_key
     )
     
-    logger.info("Groq Llama3-8B LLM initialized successfully with LiteLLM format")
+    logger.info("Groq MoonshotAI Kimi-K2-Instruct-0905 LLM initialized successfully with LiteLLM format")
     return llm
 
 # ---------------------------
