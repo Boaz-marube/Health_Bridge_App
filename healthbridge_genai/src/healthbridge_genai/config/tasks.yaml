@@ -20,10 +20,27 @@ medical_history_task:
 
 appointment_booking_task:
   description: |
-    Schedule or reschedule patient appointments automatically.
-    Provide confirmations once processed.
+    Handle patient appointment booking requests using the N8n Appointment Booking Tool.
+    
+    When a patient requests to book an appointment, extract the following information:
+    - Patient's email address
+    - Desired appointment time (convert to ISO format like "2025-09-10T10:00")
+    - Desired doctor's name
+    - Patient's message about the appointment
+    - Session ID for tracking
+    
+    Use the N8n Appointment Booking Tool to process the request. The tool will:
+    - Check doctor availability for the requested time
+    - Book the appointment if available
+    - Provide alternative time slots if the requested time is unavailable
+    
+    Always provide a clear, helpful response to the patient including:
+    - Confirmation of booking or explanation of unavailability
+    - Available alternative time slots if needed
+    - Next steps for the patient
   expected_output: >
-    Confirmation of scheduled/rescheduled appointments.
+    Clear confirmation of appointment booking status with available alternatives if needed,
+    formatted in a patient-friendly manner.
   agent: appointment_scheduler_agent
 
 treatment_guideline_task:

@@ -161,9 +161,11 @@ def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
                         "have had", "suffered from", "been diagnosed"],
             "weight": 1.0
         },
-        "appointment_scheduling_task": {
+        "appointment_booking_task": {
             "keywords": ["appointment", "schedule", "booking", "visit", "availability",
-                        "book a", "make an appointment", "when can i", "doctor available"],
+                        "book a", "make an appointment", "when can i", "doctor available",
+                        "book appointment", "schedule appointment", "need appointment",
+                        "see doctor", "meet doctor", "consultation", "reserve", "slot"],
             "weight": 1.0
         },
         "general_medical_task": {
