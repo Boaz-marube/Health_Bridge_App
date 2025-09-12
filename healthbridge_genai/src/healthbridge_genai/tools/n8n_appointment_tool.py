@@ -32,7 +32,7 @@ class N8nAppointmentTool(BaseTool):
     args_schema: Type[BaseModel] = N8nAppointmentInput
     
     # Class attribute for the webhook URL
-    webhook_url: str = "https://mansolo.app.n8n.cloud/webhook-test/3f50f086-4e26-4fd4-8cf2-0c685c06ed4c"
+    webhook_url: str = "https://mansolo.app.n8n.cloud/webhook/3f50f086-4e26-4fd4-8cf2-0c685c06ed4c"
 
     def _run(
         self, 
