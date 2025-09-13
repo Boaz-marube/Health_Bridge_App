@@ -15,7 +15,12 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from dotenv import load_dotenv
 import os
+import asyncio
+from fuzzywuzzy import fuzz
+from .mcp_helpers import rag_mcp_call, appointment_mcp_call
 
+# from mcp.client.stdio import StdioServer
+# from mcp.types import CallToolRequest
 
 # ---- CONFIG ----
 # PERSIST_DIRECTORY = r"C:\Users\IdeaPad-320\Desktop\health_bridge_second\Health_Bridge_App\healthbridge_genai\real_medical_db"
@@ -42,7 +47,7 @@ PERSIST_DIRECTORY = BASE_DIR / "real_medical_db"
 # sys.path.append(r"C:\Users\IdeaPad-320\Desktop\health_bridge_second\Health_Bridge_App\healthbridge_genai\real_medical_db")
 
 # ---- FASTAPI APP ----
-app = FastAPI(title="HealthBridge AI API", version="1.0.0")
+app = FastAPI(title="HealthBridge AI API", version="2.0.0")
 
 # Add CORS middleware for React frontend
 app.add_middleware(
@@ -68,6 +73,18 @@ tasks_map = None
 user_conversation_memory = defaultdict(list)
 user_profiles = {}
 user_roles = {}  # Store user roles for authentication
+
+# ---- MCP CLIENTS ----
+# RAG MCP Client
+# rag_server = StdioServer( 
+#        "python",
+#        ["-m","healthbridge_genai.tools.mcp_rag_server"],                  
+#        )
+
+# appointment_server = StdioServer(
+#        "python",
+#        ["-m","healthbridge_genai.tools.mcp_appointment_server"],                  
+#        )
 
 # ---- REQUEST MODELS ----
 class ChatRequest(BaseModel):
@@ -189,6 +206,14 @@ async def startup_event():
         print("✅ CrewAI initialized successfully")
         print(f"🤖 Available agents: {list(agents_map.keys())}")
         print(f"📋 Available tasks: {list(tasks_map.keys())}")
+        print("agents_map type:", type(agents_map))
+        print("tasks_map type:", type(tasks_map))
+
+        if not isinstance(agents_map, dict) or not isinstance(tasks_map, dict):
+          raise TypeError(
+          f"Expected dicts but got agents_map={type(agents_map)} "
+          f"tasks_map={type(tasks_map)}"
+    )
 
     except Exception as e:
         print(f"⚠️ CrewAI initialization failed: {e}")
@@ -253,58 +278,38 @@ def format_response_for_role(response: str, role: str, query: str) -> str:
     return formatted
 
 # ---- TASK SELECTION LOGIC ----
+
 def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
-    """Advanced query analysis to determine the most appropriate task type."""
     query_lower = query.lower()
     
     task_patterns = {
-        "symptom_checker_task": {
-            "keywords": ["symptom", "pain", "ache", "feel", "hurt", "unwell", "nausea", 
-                        "dizziness", "fever", "headache", "cough", "shortness of breath",
-                        "rash", "swelling", "fatigue", "weakness", "what does", "what could"],
-            "weight": 1.0
-        },
-        "treatment_guideline_task": {
-            "keywords": ["treatment", "medication", "therapy", "prescription", "drug",
-                        "how to treat", "cure", "remedy", "management", "intervention",
-                        "dosage", "medicate", "what medicine", "what drug", "should i take"],
-            "weight": 1.0
-        },
-        "medical_history_task": {
-            "keywords": ["history", "record", "previous", "past", "diagnosis", "chronic",
-                        "condition", "allergy", "allergic", "family history", "medical background",
-                        "have had", "suffered from", "been diagnosed"],
-            "weight": 1.0
-        },
         "appointment_booking_task": {
             "keywords": ["appointment", "schedule", "booking", "visit", "availability",
-                        "book a", "make an appointment", "when can i", "doctor available",
-                        "book appointment", "schedule appointment", "need appointment",
-                        "see doctor", "meet doctor", "consultation", "reserve", "slot"],
+                         "book a", "make an appointment", "when can i", "doctor available",
+                         "book appointment", "schedule appointment", "need appointment",
+                         "see doctor", "meet doctor", "consultation", "reserve", "slot"],
             "weight": 1.0
         },
+        # ... other tasks ...
         "general_medical_task": {
             "keywords": ["what is", "explain", "define", "information about", "tell me about",
-                        "overview of", "understanding", "education about"],
+                         "overview of", "understanding", "education about"],
             "weight": 0.8
         }
     }
-    
-    if role == "doctor":
-        task_patterns["treatment_guideline_task"]["weight"] = 1.2
-        task_patterns["general_medical_task"]["weight"] = 0.6
-    else:
-        task_patterns["symptom_checker_task"]["weight"] = 1.2
-        task_patterns["general_medical_task"]["weight"] = 1.0
     
     task_scores = {}
     for task_key, pattern in task_patterns.items():
         score = 0
         for keyword in pattern["keywords"]:
+            # Exact match
             if keyword in query_lower:
                 score += pattern["weight"]
                 if re.search(rf'\b{keyword}\b', query_lower):
                     score += 0.5
+            # Fuzzy match for typos (threshold: 80% similarity)
+            elif any(fuzz.partial_ratio(keyword, word) > 80 for word in query_lower.split()):
+                score += pattern["weight"] * 0.8  # Reduced weight for fuzzy match
         task_scores[task_key] = score
     
     if "?" in query:
@@ -313,7 +318,8 @@ def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
     
     selected_task = max(task_scores.items(), key=lambda x: x[1])
     
-    if selected_task[1] < 1.0:
+    # Avoid defaulting to general_medical_task unless no keywords match
+    if selected_task[1] < 0.5:  # Lower threshold for fuzzy matches
         selected_task = ("general_medical_task", 0.5)
     
     confidence = min(selected_task[1] / 3.0, 1.0)
@@ -323,7 +329,25 @@ def analyze_query_and_select_task(query: str, role: str = "patient") -> Dict:
         "confidence": round(confidence, 2),
         "scores": task_scores
     }
+    
+def extract_appointment_info(message: str):
+    """
+    Very basic extraction for demonstration.
+    Looks for doctor name and ISO datetime in the message.
+    Returns defaults if not found.
+    """
+    # Example: extract datetime in YYYY-MM-DDTHH:MM format
+    time_match = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}", message)
+    desired_time = time_match.group(0) if time_match else "2025-09-12T10:00"
 
+    # Example: extract doctor name after "Dr." or default
+    doctor_match = re.search(r"Dr\.?\s+\w+", message)
+    desired_doctor = doctor_match.group(0) if doctor_match else "Dr. Smith"
+
+    return desired_time, desired_doctor    
+    
+    
+    
 # ---- RAG ONLY ENDPOINT ----
 @app.post("/rag/query")
 async def rag_query_endpoint(request: ChatRequest, current_user: TokenData = Depends(get_current_user)):
@@ -368,84 +392,84 @@ async def rag_query_endpoint(request: ChatRequest, current_user: TokenData = Dep
 
 # ---- MAIN CHAT ENDPOINT ----
 @app.post("/ai/chat")
-async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = Depends(get_current_user)):
-    """Main endpoint for user interaction with authentication."""
+async def crewai_chat_endpoint(
+    request: ChatRequest,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Main unified endpoint with CrewAI, MCP tools, and role-based instructions."""
     query_text = request.message
     user_id = current_user.user_id
     role = current_user.role
-    conversation_id = request.conversation_id
+    conversation_id = request.conversation_id or str(uuid.uuid4())
 
     print(f"\n🤖 CrewAI chat request from user '{user_id}' (role: {role}): {query_text}")
 
-    # Get conversation history
+    # Conversation history
     conversation_history = get_conversation_history(user_id, conversation_id)
-    conversation_summary = get_conversation_summary(user_id, conversation_id) if conversation_history else "No previous conversation."
+    conversation_summary = (
+        get_conversation_summary(user_id, conversation_id)
+        if conversation_history else "No previous conversation."
+    )
 
-    # Get RAG context
-    rag_response = await rag_query_endpoint(request, current_user)
-    
-    if rag_response["status"] == "no_data":
-        return {
-            "status": "no_context",
-            "user_id": user_id,
-            "query": query_text,
-            "response": "I couldn't find relevant medical information in our database to answer your question. Please consult with a healthcare professional for personalized medical advice."
-        }
-
-    # Automatically determine the best task type
+    # Task analysis
     task_analysis = analyze_query_and_select_task(query_text, role)
     task_key = task_analysis["task_key"]
     confidence = task_analysis["confidence"]
-    
     print(f"🎯 Auto-selected task: {task_key} (confidence: {confidence})")
 
-    # Prepare RAG context
-    rag_documents = rag_response["results"]
-    rag_context = "\n\n".join([
-        f"Document {result['rank']} (Relevance: {result['similarity_score']:.3f}):\n{result['content']}"
-        for result in rag_documents
-    ])
+    # Role-based instructions
+    if role.lower() == "doctor":
+        role_instructions = """
+        You are a clinical decision support AI for licensed medical professionals.
+        - Use precise medical terminology.
+        - Reference clinical guidelines, drug classes, dosing ranges, contraindications, and differential diagnoses.
+        - Suggest diagnostic workups, lab tests, or imaging if relevant.
+        - Avoid oversimplification.
+        """
+    else:
+        role_instructions = """
+        You are a compassionate patient education assistant.
+        - Use simple, non-technical language.
+        - Emphasize practical steps and reassurance.
+        - Avoid alarming language.
+        - Never suggest specific medications or dosages.
+        """
 
-    # Process with CrewAI
-    try:
-        if crew is None or tasks_map is None:
-            raise Exception("CrewAI not initialized")
-
-        if task_key not in tasks_map:
-            print(f"⚠️ Task '{task_key}' not found, falling back to general_medical_task")
-            task_key = "general_medical_task"
-            confidence = 0.5
-
-        # Enhanced query with memory and role context
+    # Prepare enhanced query for CrewAI
+    if task_key == "appointment_booking_task":
+        desired_time, desired_doctor = extract_appointment_info(query_text)
+        response_text = await appointment_mcp_call(
+            email=current_user.email,
+            desired_time=desired_time,
+            desired_doctor=desired_doctor,
+            user_message=query_text,
+            session_id=conversation_id
+        )
+    else:
         enhanced_query = f"""
         USER QUERY: {query_text}
         USER ROLE: {role.upper()}
-        
+
         CONVERSATION CONTEXT:
         {conversation_summary}
-        
-        RELEVANT MEDICAL CONTEXT FROM DATABASE:
-        {rag_context}
 
-        TASK CONTEXT: You are a specialized medical AI assistant focused on {task_key.replace('_', ' ').replace('task', '').title()}.
+        TASK CONTEXT: {task_key.replace('_', ' ').title()}
 
-        INSTRUCTIONS:
-        1. Analyze the user's query in context of their role ({role}) and conversation history
-        2. Provide a comprehensive, professional medical response appropriate for {role}
-        3. If the context is insufficient, acknowledge limitations and provide general guidance
-        4. Always include appropriate medical disclaimers
-        5. Maintain continuity with previous conversation if relevant
+        ROLE-SPECIFIC INSTRUCTIONS:
+        {role_instructions}
         """
 
-        # Run the selected task
+    # Run query through CrewAI (MCP integration can call RAG or Appointment internally)
+    try:
+        if crew is None:
+            raise Exception("CrewAI not initialized")
+
         raw_result = run_single_task(enhanced_query, task_key)
-        
-        # Format response based on role
         formatted_response = format_response_for_role(raw_result, role, query_text)
-        
-        # Store in memory
-        new_conversation_id = add_to_memory(user_id, query_text, formatted_response, role, conversation_id)
-        
+        new_conversation_id = add_to_memory(
+            user_id, query_text, formatted_response, role, conversation_id
+        )
+
         return {
             "status": "success",
             "user_id": user_id,
@@ -454,21 +478,16 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
             "selection_confidence": confidence,
             "user_role": role,
             "conversation_id": new_conversation_id,
-            "rag_context_summary": f"Found {len(rag_documents)} relevant documents",
             "response": formatted_response
         }
-        
+
     except Exception as e:
         print(f"❌ CrewAI execution error: {e}")
-        # Fallback response
         fallback_response = f"""
-**ANALYSIS OF YOUR QUERY: "{query_text}"**
-
-I found {len(rag_documents)} relevant medical documents but encountered an error processing them.
+I found some relevant context but encountered an error processing your request.
 
 **MEDICAL DISCLAIMER:** Please consult healthcare professionals for medical advice.
 """
-        
         return {
             "status": "error",
             "user_id": user_id,

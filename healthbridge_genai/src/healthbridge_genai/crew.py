@@ -50,27 +50,49 @@ logger = logging.getLogger("healthbridge.crew")
 # LLM Configuration
 # ---------------------------
 
-def _create_groq_llm():
-    """Create a Groq LLM instance for CrewAI agents using LiteLLM format."""
-    api_key = os.getenv("GROQ_API_KEY")
+def _create_gemini_llm():
+    """Create a Gemini LLM instance for CrewAI agents using LiteLLM format."""
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise ValueError(
-            "GROQ_API_KEY not found in environment variables. "
-            "Please add your Groq API key to your .env file:\n"
-            "GROQ_API_KEY=your_api_key_here"
+            "GEMINI_API_KEY not found in environment variables. "
+            "Please add your Gemini API key to your .env file:\n"
+            "GEMINI_API_KEY=your_api_key_here"
         )
     
-    # Set the environment variable for LiteLLM
-    os.environ["GROQ_API_KEY"] = api_key
+    # Set the environment variable for LiteLLM / Gemini
+    os.environ["GEMINI_API_KEY"] = api_key
     
     # Use CrewAI's LLM wrapper with proper LiteLLM format
     llm = LLM(
-        model="groq/llama3-8b-8192",  # LiteLLM format: provider/model
+        model="gemini-1.5-flash",  # Updated Gemini model
         temperature=0.1,
         api_key=api_key
     )
     
-    logger.info("Groq Llama3-8B LLM initialized successfully with LiteLLM format")
+    logger.info("Gemini 1.5-Flash LLM initialized successfully")
+    return llm
+def _create_gemini_llm():
+    """Create a Gemini LLM instance using API Key (no ADC needed)."""
+    gemini_model = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+    gemini_api_key = os.getenv("GEMINI_API_KEY")  # Your Vertex AI API Key
+
+    if not gemini_api_key:
+        raise ValueError(
+            "GEMINI_API_KEY not found in environment variables. "
+            "Please add your Gemini API key to your .env file:\n"
+            "GEMINI_API_KEY=your_api_key_here"
+        )
+
+    # Initialize LLM with model + API key directly
+    llm = LLM(
+        model=gemini_model,
+        temperature=0.1,
+        api_key=gemini_api_key,  # Use API key instead of ADC
+        provider="vertex_ai"
+    )
+
+    logger.info(f"Gemini LLM initialized successfully with model {gemini_model}")
     return llm
 
 # ---------------------------
@@ -92,7 +114,7 @@ def _build_agents(agents_cfg: dict, db_path: str = None) -> Dict[str, Agent]:
     agents: Dict[str, Agent] = {}
     
     # Initialize Groq LLM
-    llm = _create_groq_llm()
+    llm = _create_gemini_llm()
     
     # Initialize RAG tools
     patient_rag_tool = PatientRAGTool(db_path=db_path)

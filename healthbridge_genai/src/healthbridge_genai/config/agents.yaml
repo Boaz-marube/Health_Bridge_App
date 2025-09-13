@@ -1,4 +1,14 @@
 # src/healthbridge/config/agents.yaml
+# tools:
+#   - name: rag_retrieval
+#     type: mcp
+#     endpoint: http://localhost:8001 # Where RAG MCP tool runs
+#   - name: n8n_appointment
+#     type: mcp
+#     endpoint: http://localhost:8002
+#   - name: custom_tool
+#     type: mcp
+#     endpoint: http://localhost:8003
 
 symptom_checker_agent:
   role: >
