@@ -438,7 +438,7 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
             - Prioritize evidence-based recommendations from authoritative sources.
             - Suggest diagnostic workups, lab tests, or imaging if relevant.
             - Mention drug interactions, side effects, or monitoring parameters.
-            - Avoid oversimplification — the user is medically trained.
+            - Avoid oversimplification - the user is medically trained.
             - Do NOT include basic explanations (e.g., "Asthma is a condition where...") unless explicitly asked.
             """
         else:  # patient
