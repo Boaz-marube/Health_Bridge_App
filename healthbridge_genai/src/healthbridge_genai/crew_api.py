@@ -471,7 +471,7 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
         {role_instructions}
 
             INSTRUCTIONS:
-            1. Analyze the user's query in context of their role ({role}) and conversation history
+            1. Analyze the users query in context of their role ({role}) and conversation history
             2. Provide a comprehensive, professional medical response appropriate for {role}
             3. If the context is insufficient, acknowledge limitations and provide general guidance
             4. Always include appropriate medical disclaimers
@@ -480,7 +480,7 @@ async def crewai_chat_endpoint(request: ChatRequest, current_user: TokenData = D
             raw_result = run_single_task(enhanced_query, task_key)
             formatted_response = format_response_for_role(raw_result, role, query_text)
         INSTRUCTIONS:
-        1. Analyze the user's query in context of their role ({role}) and conversation history.
+        1. Analyze the users query in context of their role ({role}) and conversation history.
         2. Generate a response strictly following the ROLE-SPECIFIC INSTRUCTIONS above.
         3. If the context is insufficient, acknowledge limitations and provide general guidance.
         4. Maintain continuity with previous conversation if relevant.
