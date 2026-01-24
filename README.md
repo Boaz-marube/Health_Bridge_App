@@ -23,7 +23,7 @@
 
 ## 🌟 Overview
 
-**Health Bridge** is a comprehensive digital healthcare platform that revolutionizes the way patients, doctors, and healthcare staff interact. Built with modern web technologies, it provides seamless appointment booking, real-time queue management, AI-powered assistance, and secure medical record management.
+**Health Bridge** is a very comprehensive digital healthcare platform that revolutionizes the way patients, doctors, and healthcare staff interact. Built with modern web technologies, it provides seamless appointment booking, real-time queue management, AI-powered assistance, and secure medical record management.
 
 ### ✨ Key Features
 
